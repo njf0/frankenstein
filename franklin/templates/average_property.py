@@ -69,6 +69,9 @@ class AverageProperty(FranklinQuestion):
         # Check if any values are missing
         if any(value is None for value in indicator_values):
             self.metadata['data_availability'] = 'partial'
+            self.metadata['answerable'] = False
+            self.answer = None
+            return
 
         # Retrieve the mean value for the subject_set
         action = FranklinAction('mean', values=indicator_values)

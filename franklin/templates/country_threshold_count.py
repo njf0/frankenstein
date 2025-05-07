@@ -107,6 +107,9 @@ class CountryThresholdCount(FranklinQuestion):
                 values.append(action.result)
             else:
                 self.metadata['data_availability'] = 'partial'
+                self.metadata['answerable'] = False
+                self.answer = None
+                return
 
         # Retrieve the value for the threshold subject
         if threshold_subject_country_code is not None:

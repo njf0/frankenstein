@@ -90,6 +90,9 @@ class IncreasePropertyComparison(FranklinQuestion):
 
             if value_a is None or value_b is None:
                 self.metadata['data_availability'] = 'partial'
+                self.metadata['answerable'] = False
+                self.answer = None
+                return
 
             values.append((country, value_a, value_b))
 
@@ -105,7 +108,10 @@ class IncreasePropertyComparison(FranklinQuestion):
         for country, value_a, value_b in values:
             if value_a is None or value_b is None:
                 self.metadata['data_availability'] = 'partial'
-                continue
+                self.metadata['answerable'] = False
+                self.answer = None
+                return
+
             action = FranklinAction('subtract', a=value_b, b=value_a)
             action.execute()
             self.actions.append(action.to_dict())
