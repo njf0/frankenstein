@@ -141,17 +141,13 @@ class TemplateFiller:
         # Save results to files
         for template_name, answerable in all_answerable.items():
             with Path('dataset', 'answerable', f'{template_name}.jsonl').open('w') as f:
-                print(f'Saving {len(answerable)} answerable examples for {template_name}')
                 for example in answerable:
                     f.write(json.dumps(example) + '\n')
 
         for template_name, not_answerable in all_not_answerable.items():
             with Path('dataset', 'unanswerable', f'{template_name}.jsonl').open('w') as f:
-                print(f'Saving {len(not_answerable)} unanswerable examples for {template_name}')
                 for example in not_answerable:
                     f.write(json.dumps(example) + '\n')
-
-        print('Done!')
 
         return all_answerable, all_not_answerable
 
