@@ -66,7 +66,8 @@ class FranklinEvaluator:
         timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
         # Generate messages for each input
-        for _, row in self.dataset.iterrows():
+        for i, row in self.dataset.iterrows():
+            logging.info(f'Processing question {i + 1}/{len(self.dataset)}')
             messages = self.model.loop(row['question'], max_loops=row['metadata']['total_actions'] * 10)
 
             # Extract the content of the 'final_answer' tool call
