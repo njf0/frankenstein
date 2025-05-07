@@ -351,7 +351,7 @@ class TransformerModel:
                         }
                     )
                     # print(messages[-1])
-                    logging.exception(messages[-1]['content'])
+                    logging.error(messages[-1]['content'])  # noqa: TRY400
                     continue
 
             # Check if the output is a tool call
@@ -421,7 +421,7 @@ class TransformerModel:
                         }
                     )
                     # print(messages[-1])
-                    logging.exception(e)
+                    logging.error(e)  # noqa: TRY400
 
         logging.info('🏁 Generation complete.')
 
