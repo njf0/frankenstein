@@ -1,0 +1,19 @@
+[project]
+name = "franklin"
+version = "0.1.0"
+description = "Frank-Inspired Evaluation of LLMs on multi-hop QA over tabular data"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "Nick Ferguson", email = "nick.ferguson@ed.ac.uk"},
+]
+dependencies = [
+    "beautifulsoup4",
+    "ipykernel",
+    "openai",
+    "pandas",
+    "rich",
+    "vllm ; sys_platform == 'linux'",
+]
+
+

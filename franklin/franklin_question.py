@@ -1,0 +1,395 @@
+"""Base class for Franklin questions."""
+
+import itertools
+import json
+import logging
+import random
+from pathlib import Path
+
+import pandas as pd
+from rich.console import Console
+from rich.table import Table
+
+from franklin.slot_values import Slot
+
+DATA_DIR = Path('resources')
+INDICATOR_DATA_DIR = DATA_DIR / 'wdi'
+INDICATOR_KEY = DATA_DIR / 'wdi.csv'
+ISO_3166 = DATA_DIR / 'iso_3166.csv'
+
+
+class FranklinQuestion:
+    """Base class for Franklin questions."""
+
+    def __init__(
+        self,
+        slot_values: dict[str, str] | None = None,
+        allowed_values: dict[str, Slot] | None = None,
+    ):
+        """Initialize a Franklin question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+        data_manager: DataManager
+            Instance of DataManager with preloaded datasets.
+
+
+        """
+        # Indicator/country-related data things
+        # Create mapping of country_codes to country_names
+        self.country_region_data = pd.read_csv(ISO_3166)
+        self.c2n = self.country_region_data.set_index('country_code')['country_name'].to_dict()
+        self.n2c = self.country_region_data.set_index('country_name')['country_code'].to_dict()
+
+        # Create mapping of indicator names to indicator ids
+        self.indicator_key = pd.read_csv(INDICATOR_KEY)
+        self.n2i = self.indicator_key.set_index('name')['id'].to_dict()
+        self.i2n = self.indicator_key.set_index('id')['name'].to_dict()
+
+        # Core FranklinQuestion attributes
+        self.allowed_values = allowed_values
+        self.question = None
+        self.actions = []
+        self.answer = None
+
+        # Metadata
+        self.metadata = {
+            'answerable': True,
+            'answer_format': None,
+            'data_availability': 'full',
+            'question_template': self.__class__.__name__,
+        }
+
+    def get_random_combination(
+        self,
+    ) -> dict:
+        """Get a random combination of slot values based on the allowed values.
+
+        Parameters
+        ----------
+        allowed_values: dict
+            Allowed values for the slots.
+
+        Returns
+        -------
+        combination: dict
+            A random combination of slot values.
+
+        """
+        valid_combination = False
+        while not valid_combination:
+            # Fill slot values with random values from the allowed values
+            comb = {slot_name: random.choice(slot.get_values()) for slot_name, slot in self.allowed_values.items()}
+            # Validate the combination
+            valid_combination = self.validate_combination(comb)
+
+        return comb
+
+    def get_all_combinations(
+        self,
+        allowed_values: dict[str, Slot],
+    ) -> list:
+        """Get all possible combinations of slot values, bearing in mind constraints. Could be very slow.
+
+        Parameters
+        ----------
+        allowed_values: dict
+            Allowed values for the slots.
+
+        Returns
+        -------
+        combinations: list
+            A list of all possible combinations of slot values.
+
+        """
+        # Get all possible combinations of slot values
+        combs = itertools.product(*[v.get_values() for v in allowed_values.values()])
+
+        # Filter out invalid combinations
+        combs = [c for c in combs if self.validate_combination(dict(zip(allowed_values.keys(), c)))]
+
+        # Convert to list of dictionaries
+        return [dict(zip(allowed_values.keys(), combination)) for combination in combs]
+
+    def validate_combination(self, combination: dict) -> bool:
+        """Validate the combination of slot values. Can be overridden in subclasses.
+
+        This method is used to check if the combination of slot values is valid. It can be overridden in subclasses
+        to add custom validation logic. The default implementation always returns True.
+
+        Parameters
+        ----------
+        combination: dict
+            A combination of slot values.
+
+        Returns
+        -------
+        bool
+            True if the combination is valid, False otherwise.
+
+        """
+        return True
+
+    def create_question(
+        self,
+        slot_values: dict[str, str],
+    ) -> str:
+        """Turn a collection of slot values in to a natural language question."""
+        formatted_slot_values = slot_values.copy()
+
+        # Get property name from id
+        if 'property' in slot_values:
+            property_name = self.i2n[slot_values['property']]
+            formatted_slot_values['property'] = property_name
+        if 'property_1' in slot_values:
+            property_1_name = self.i2n[slot_values['property_1']]
+            formatted_slot_values['property_1'] = property_1_name
+        if 'property_2' in slot_values:
+            property_2_name = self.i2n[slot_values['property_2']]
+            formatted_slot_values['property_2'] = property_2_name
+        # Get country name from code
+        if 'subject' in slot_values:
+            subject_name = self.c2n[slot_values['subject']]
+            formatted_slot_values['subject'] = subject_name
+        if 'subject_a' in slot_values:
+            subject_a_name = self.c2n[slot_values['subject_a']]
+            formatted_slot_values['subject_a'] = subject_a_name
+        if 'subject_b' in slot_values:
+            subject_b_name = self.c2n[slot_values['subject_b']]
+            formatted_slot_values['subject_b'] = subject_b_name
+
+        self.slot_values = slot_values
+
+        for key, value in slot_values.items():
+            setattr(self, key, value)
+
+        self.question = self.template.format(**formatted_slot_values)
+
+        return self.question
+
+    def get_subject_property_value(
+        self,
+        subject: str,
+        property: str,
+        time: str,
+    ) -> float | str | None:
+        """Get the property value of a subject.
+
+        Parameters
+        ----------
+        subject: str
+            Subject to get the property value for.
+        property: str
+            Property to get the value of.
+        time: str
+            Time to get the value at.
+
+        Returns
+        -------
+        float | str | None
+            Value of the property for the subject.
+
+        """
+        try:
+            # Convert name to id
+            property = self.indicator_names[property]
+            data = self.data[property]
+            value = data.loc[subject, time]
+
+        except KeyError:
+            value = None
+
+        return value
+
+    def get_subjects_in_subject_set(
+        self,
+        df: pd.DataFrame,
+        subject_set: str,
+    ):
+        """Get alpha-3 codes and names of subjects in a given subject set.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame of country/region data.
+        subject_set: str
+            Region to get subjects from.
+
+        """
+        df = df[df['region'] == subject_set].copy()
+
+        return df
+
+    def compare_values(
+        self,
+        values: pd.Series,
+        operator: str,
+    ) -> int:
+        """Compare values in a Series.
+
+        Parameters
+        ----------
+        values: pd.Series
+            Series of values to compare.
+        operator: str
+            Operator to compare values.
+
+        Returns
+        -------
+        int
+            Index of the value that satisfies the comparison.
+
+        """
+        if operator == 'highest':
+            index = values.idxmax()
+        elif operator == 'lowest':
+            index = values.idxmin()
+        else:
+            raise ValueError(f'Operator {operator} not supported.')
+
+        return index
+
+    def compute_increase(
+        self,
+        values_a: float,
+        values_b: float,
+        as_percentage: bool = True,
+    ) -> pd.Series:
+        """Compute the percentage increase between two series of values.
+
+        Parameters
+        ----------
+        values_a: pd.Series
+            Series of initial values.
+        values_b: pd.Series
+            Series of later values.
+        as_percentage: bool, optional
+            Whether to return the increase as a percentage, by default False.
+
+        Returns
+        -------
+        pd.Series
+            Series of percentage increases.
+
+        """
+        if values_a is None or values_b is None:
+            increase = None
+            return increase
+
+        increase = (values_b - values_a) / values_a
+
+        if as_percentage:
+            increase *= 100
+
+        return increase
+
+    def threshold(
+        self,
+        values: pd.Series,
+        threshold: float,
+    ) -> pd.Series:
+        """Create a new series with truth values depending on whether the values are above or below a threshold.
+
+        Parameters
+        ----------
+        values: pd.Series
+            Series of values to compare.
+        threshold: float
+            Threshold value.
+
+        Returns
+        -------
+        pd.Series
+            Series of truth values.
+
+        """
+        if self.operator == 'higher':
+            return values > threshold
+        elif self.operator == 'lower':
+            return values < threshold
+
+    def lookup(
+        self,
+        subject: str,
+        property: str,
+        time: str,
+    ) -> float | str | None:
+        """Lookup the value of a subject's property at a given time.
+
+        Parameters
+        ----------
+        subject: str
+            Subject to lookup.
+        property: str
+            Property to lookup.
+        time: str
+            Time to lookup.
+
+        Returns
+        -------
+        float | str | None
+            Value of the property for the subject at the given time.
+
+        """
+        try:
+            logging.info(f'lookup("{subject}", "{property}", "{time}")')
+            return self.data[property].loc[subject, time]
+        except KeyError:
+            logging.warning(f'No data for the property "{property}" for the subject "{subject}" at time "{time}".')
+            return None
+
+    def format_output(
+        self,
+    ) -> dict:
+        """Format question, facts, etc., for output into dataset."""
+        return {
+            'question': self.question,
+            'actions': self.actions,
+            'answer': self.answer,
+            'metadata': {
+                'question_template': self.__class__.__name__,
+                'slot_values': self.slot_values,
+                'answerable': self.metadata['answerable'],
+                'data_availability': self.metadata['data_availability'],
+                'answer_format': self.metadata['answer_format'],
+                'total_actions': len(self.actions),
+            },
+        }
+
+    def compute_answer(self) -> str:
+        """Compute the answer to the question."""
+        raise NotImplementedError
+
+    def compute_actions(self) -> str:
+        """Compute the actions to be taken for the question."""
+        raise NotImplementedError
+
+    def pretty_print(self) -> str:
+        """Pretty print the question."""
+        console = Console()
+
+        # Compute answer and format output
+        self.compute_actions()
+        formatted_output = self.format_output()
+
+        # Create a table for the question template, slot values, and question
+        table = Table(title='Data point', show_lines=True)
+
+        table.add_column('Key', justify='right', style='cyan', no_wrap=True)
+        table.add_column('Value', style='magenta')
+
+        table.add_row('question', formatted_output['question'])
+        table.add_row('actions', json.dumps(formatted_output['actions'], indent=2))
+        table.add_row('answer', str(self.answer))
+
+        console.print(table)
+
+        # New table for metadata
+        metadata_table = Table(title='Metadata', show_lines=True)
+        metadata_table.add_column('Key', justify='right', style='cyan', no_wrap=True)
+        metadata_table.add_column('Value', style='magenta')
+        for key, value in formatted_output['metadata'].items():
+            metadata_table.add_row(key, str(value))
+        console.print(metadata_table)

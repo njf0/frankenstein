@@ -1,2 +1,2 @@
-# frankie
-Frank-Inspired Evaluation of LLMs on multi-hop QA over tabular data 
+# franklin
+Frank-Inspired Evaluation of LLMs on multi-hop QA over tabular data
