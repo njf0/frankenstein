@@ -445,6 +445,7 @@ class TransformerModel:
                             'content': f'Error: {e!s}',
                         }
                     )
+                    logging.error(f'Error: {e!s}')
 
         logging.info('🏁 Generation complete.')
 

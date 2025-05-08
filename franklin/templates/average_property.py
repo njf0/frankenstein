@@ -60,6 +60,7 @@ class AverageProperty(FranklinQuestion):
                 indicator_values.append(value)
             else:
                 self.metadata['data_availability'] = 'partial'
+                self.metadata['answerable'] = False
 
         # Check if lists are empty
         if not indicator_values:
