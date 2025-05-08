@@ -77,6 +77,8 @@ class TotalProperty(FranklinQuestion):
         self.metadata['answerable'] = True
         self.metadata['data_availability'] = 'full'
 
+        return self.answer
+
     def validate_combination(self, combination: dict) -> bool:
         """Validate the combination of slot values.
 

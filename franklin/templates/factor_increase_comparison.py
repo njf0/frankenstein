@@ -90,7 +90,6 @@ class FactorIncreaseComparison(FranklinQuestion):
         if value_a is None or value_b is None:
             self.metadata['answerable'] = False
             self.metadata['data_availability'] = 'partial'
-            self.metadata['answerable'] = False
             self.answer = None
             return
 

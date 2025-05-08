@@ -135,13 +135,15 @@ class RegionComparisonResult(FranklinQuestion):
             return
 
         # Set the final answer
-        action = FranklinAction('final_answer', answer=(property_1_value))
+        action = FranklinAction('final_answer', answer=property_1_value)
         action.execute()
         self.actions.append(action.to_dict())
         self.answer = action.result
 
         self.metadata['answerable'] = True
         self.metadata['data_availability'] = 'full'
+
+        return self.answer
 
 
 if __name__ == '__main__':

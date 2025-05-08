@@ -128,6 +128,7 @@ class CountryThresholdCount(FranklinQuestion):
                 self.metadata['answerable'] = False
                 self.answer = None
                 return
+
         elif threshold_subject_country_code is None:
             # Country code is already in the list
             action = FranklinAction(
@@ -152,9 +153,26 @@ class CountryThresholdCount(FranklinQuestion):
                 action.execute()
                 self.actions.append(action.to_dict())
                 comparisons.append(action.result)
+            elif self.operator == 'lower':
+                action = FranklinAction(
+                    'less_than',
+                    a=value,
+                    b=threshold_value,
+                )
+                action.execute()
+                self.actions.append(action.to_dict())
+                comparisons.append(action.result)
 
-        # Get the number of countries that meet the threshold
+        # Get the number of countries that satisfy the condition
         self.answer = sum(comparisons)
+
+        # Final answer
+        action = FranklinAction(
+            'final_answer',
+            answer=self.answer
+        )
+        action.execute()
+        self.actions.append(action.to_dict())
 
         return self.answer
 

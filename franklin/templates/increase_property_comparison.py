@@ -143,6 +143,17 @@ class IncreasePropertyComparison(FranklinQuestion):
         # Set the answer to the country with the 'operator' increase
         self.answer = [country for country, delta in deltas if delta == action.result]
 
+        # Call the final_answer tool to format the answer
+        action = FranklinAction(
+            'final_answer',
+            answer=self.answer,
+        )
+        action.execute()
+        self.actions.append(action.to_dict())
+        self.answer = action.result
+
+        return self.answer
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionComparison question.')

@@ -67,7 +67,7 @@ class PropertyOfSubject(FranklinQuestion):
 
         self.metadata['answerable'] = True
         self.metadata['data_availability'] = 'full'
-        answer = FranklinAction('final_answer', value=value)
+        answer = FranklinAction('final_answer', answer=value)
         answer.execute()
         self.actions.append(answer.to_dict())
         self.answer = value
