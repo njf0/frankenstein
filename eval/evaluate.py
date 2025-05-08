@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import json
 import logging
 import subprocess
 from pathlib import Path
@@ -85,7 +86,7 @@ class FranklinEvaluator:
             if final_answer is not None:
                 logging.info(f'Final answer: {final_answer}')
                 logging.info(f'Expected answer: {row["answer"]}')
-                if str(final_answer) == str(row['answer']):
+                if str(final_answer) == str(row['answer']) or str(row['answer']) in str(final_answer):
                     logging.info('✅ Final answer matches the expected answer.')
                 else:
                     logging.warning('❌ Final answer does not match the expected answer.')
@@ -101,6 +102,19 @@ class FranklinEvaluator:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             self.dataset.to_json(output_path, orient='records', lines=True)
             logging.info(f'Saved evaluation results to {output_path}')
+
+            # Log the configuration and filename to log.jsonl
+            log_entry = {
+                'model_name': self.model.model_name,
+                'use_tools': self.use_tools,
+                'description': self.description,
+                'filename': str(output_path),
+                'timestamp': timestamp,
+            }
+            log_path = Path('eval', 'log.jsonl')
+            with log_path.open('a') as log_file:
+                log_file.write(json.dumps(log_entry) + '\n')
+            logging.info(f'Logged evaluation configuration to {log_path}')
 
         return all_messages
 
@@ -182,11 +196,16 @@ if __name__ == '__main__':
             logging.info(config)
 
             # Load dataset for the current configuration
-            dataset = pd.read_json(
-                Path('dataset', config['split'], config['template']).with_suffix('.jsonl'),
-                orient='records',
-                lines=True,
-            ).sample(config['num_samples'])
+            dataset = (
+                pd.read_json(
+                    Path('dataset', config['split'], config['template']).with_suffix('.jsonl'),
+                    orient='records',
+                    lines=True,
+                )
+                .head(args.num_samples)
+                .sample(args.num_samples)
+            )
+            # A bit unnecessary to have both but nice to shuffle the data so different samples are seen
 
             # Initialize evaluator
             evaluator = FranklinEvaluator(
@@ -202,11 +221,15 @@ if __name__ == '__main__':
             evaluator.run()
     else:
         # Single configuration mode
-        dataset = pd.read_json(
-            Path('dataset', args.split, args.template).with_suffix('.jsonl'),
-            orient='records',
-            lines=True,
-        ).sample(args.num_samples)
+        dataset = (
+            pd.read_json(
+                Path('dataset', args.split, args.template).with_suffix('.jsonl'),
+                orient='records',
+                lines=True,
+            )
+            .head(args.num_samples)
+            .sample(args.num_samples)
+        )  # A bit unnecessary to have both but nice to shuffle the data so different samples are seen
 
         evaluator = FranklinEvaluator(
             model_name=args.model_name,

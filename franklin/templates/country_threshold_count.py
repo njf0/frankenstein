@@ -44,7 +44,7 @@ class CountryThresholdCount(FranklinQuestion):
             True if the combination is valid, False otherwise.
 
         """
-        countries_in_region = FranklinAction('get_countries_in_region', region_name=combination['subject_set'])
+        countries_in_region = FranklinAction('get_country_codes_in_region', region_name=combination['subject_set'])
         countries_in_region.execute()
 
         return combination['subject'] not in countries_in_region.result
@@ -54,7 +54,7 @@ class CountryThresholdCount(FranklinQuestion):
     ):
         """Compute result for the question using FranklinActions."""
         # Get countries in the subject_set
-        action = FranklinAction('get_countries_in_region', region_name=self.subject_set)
+        action = FranklinAction('get_country_codes_in_region', region_name=self.subject_set)
         action.execute()
         self.actions.append(action.to_dict())
         country_codes = action.result

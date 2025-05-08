@@ -25,7 +25,7 @@ class AverageProperty(FranklinQuestion):
     ):
         """Compute result for the question using FranklinActions."""
         # Get countries in the subject_set
-        action = FranklinAction('get_countries_in_region', region_name=self.subject_set)
+        action = FranklinAction('get_country_codes_in_region', region_name=self.subject_set)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result

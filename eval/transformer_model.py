@@ -111,7 +111,7 @@ class GetIndicatorCodeFromName(BaseModel):
 
 
 class GetMembership(BaseModel):
-    name: Literal['get_countries_in_region']
+    name: Literal['get_country_codes_in_region']
     arguments: dict[str, str]
 
     @property
@@ -380,7 +380,6 @@ class TransformerModel:
                         'content': 'No tool calls found.',
                     }
                 )
-                # print(messages[-1])
                 logging.error(messages[-1]['content'])
                 continue
 
@@ -404,26 +403,36 @@ class TransformerModel:
                         ],
                     }
                 )
-                # print(messages[-1])
-                # args_string = ", ".join(
-                #     [f"{k} = {v}" for k, v in call_json["arguments"].items()]
-                # )
-                logging.info(f'{call_json["name"]}({call_json["arguments"]})')
+                args_string = ', '.join([f'{k} = {v}' for k, v in call_json['arguments'].items()])
+                logging.info(f'{call_json["name"]}({args_string})')
 
                 # Process the tool call and get the output
                 try:
                     tool_call_output = self.process_tool_call(tool_call=call_json)
 
-                    # Append the tool call output to the list
-                    messages.append(
-                        {
-                            'role': 'tool',
-                            'name': tool_call_output['name'],
-                            'content': str(tool_call_output['result']),
-                        }
-                    )
-                    if tool_call_output['name'] not in ('final_answer', 'think'):
-                        # print(messages[-1])
+                    # Check if the tool call output is empty
+                    if tool_call_output['result'] is None:
+                        result = 'Your function call was correct, but no data is available for this query.'
+
+                        # Append modified message
+                        messages.append(
+                            {
+                                'role': 'tool',
+                                'name': tool_call_output['name'],
+                                'content': str(result),
+                            }
+                        )
+                        logging.warning(result)
+
+                    # Or append as normal
+                    else:
+                        messages.append(
+                            {
+                                'role': 'tool',
+                                'name': call_json['name'],
+                                'content': str(tool_call_output['result']),
+                            }
+                        )
                         logging.info(f'→ {tool_call_output["result"]}')
 
                 # Handle any exceptions that occur during processing
@@ -431,12 +440,11 @@ class TransformerModel:
                     # Append the error message to the list
                     messages.append(
                         {
-                            'role': 'user',
-                            'content': str(e),
+                            'role': 'tool',
+                            'name': call_json['name'],
+                            'content': f'Error: {e!s}',
                         }
                     )
-                    # print(messages[-1])
-                    logging.error(e)  # noqa: TRY400
 
         logging.info('🏁 Generation complete.')
 

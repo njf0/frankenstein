@@ -4,10 +4,12 @@ import argparse
 import importlib
 import inspect
 import json
+import logging
 import pkgutil
 from pathlib import Path
 
 import templates
+from rich.logging import RichHandler
 from rich.progress import Progress
 
 
@@ -108,12 +110,16 @@ class TemplateFiller:
                     # Generate a random combination of slot values
                     t = template_class()
                     combination = t.get_random_combination()
+
+                    # Check if the combination is already used
                     if combination in used_combinations:
                         continue
+
+                    # Add the combination to the used combinations
                     used_combinations.append(combination)
-                    t.create_question(combination)
 
                     # Compute the answer
+                    t.create_question(combination)
                     t.compute_actions()
                     output = t.format_output()
 
@@ -125,14 +131,16 @@ class TemplateFiller:
                         not_answerable.append(output)
                         progress.update(tasks[template_name]['unanswerable'], advance=1)
 
+                    # Check if we have enough examples
                     if len(answerable) == self.n and len(not_answerable) == self.n:
                         break
 
+                    # Check if we have too many attempts
                     if answerable_attempts > 100 * self.n:
-                        print(f'Answerable examples not filled after 1000 attempts for {template_name}, skipping.')
+                        print(f'Answerable examples not filled after {self.n * 1000} attempts for {template_name}, skipping.')
                         break
                     if not_answerable_attempts > 1000 * self.n:
-                        print(f'Unanswerable examples not filled after 1000 attempts for {template_name}, skipping.')
+                        print(f'Unanswerable examples not filled after {self.n * 1000} attempts for {template_name}, skipping.')
                         break
 
                 all_answerable[template_name] = answerable
@@ -140,9 +148,18 @@ class TemplateFiller:
 
         # Save results to files
         for template_name, answerable in all_answerable.items():
-            with Path('dataset', 'answerable', f'{template_name}.jsonl').open('w') as f:
+            with Path('dataset', 'repeats', f'{template_name}.jsonl').open('w') as f:
                 for example in answerable:
                     f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n') # Used for 'repeats' dataset
+                    # f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n')
+                    # f.write(json.dumps(example) + '\n')
 
         for template_name, not_answerable in all_not_answerable.items():
             with Path('dataset', 'unanswerable', f'{template_name}.jsonl').open('w') as f:
@@ -164,6 +181,15 @@ if __name__ == '__main__':
     )
     parser.add_argument('--save', '-s', action='store_true')
     args = parser.parse_args()
+
+    # Set up logging
+    FORMAT = '%(message)s'
+    logging.basicConfig(
+        level=logging.ERROR,
+        format=FORMAT,
+        datefmt='[%X]',
+        handlers=[RichHandler()],
+    )
 
     # Filter selected templates
     selected_templates = [t for t in TEMPLATES if t[0] in args.templates]

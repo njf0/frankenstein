@@ -49,7 +49,7 @@ class IncreasePropertyComparison(FranklinQuestion):
         """Compute answer in terms of FranklinAction."""
         # Get countries in the subject_set
         action = FranklinAction(
-            'get_countries_in_region',
+            'get_country_codes_in_region',
             region_name=self.subject_set,
         )
         action.execute()

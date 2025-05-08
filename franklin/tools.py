@@ -374,12 +374,10 @@ def retrieve_value(country_code: str, indicator_code: str, year: str) -> float |
     try:
         value = data.loc[country_code, year]
     except KeyError:
-        logging.warning(f'No data available for {country_code} in {year} for indicator {indicator_code}.')
-        return 'Your function call was correct, but no data is available for the provided arguments.'
+        return None
 
     if pd.isna(value):
-        logging.warning(f'No data available for {country_code} in {year} for indicator {indicator_code}.')
-        return 'Your function call was correct, but no data is available for the provided arguments.'
+        return None
 
     return value
 
