@@ -126,16 +126,16 @@ class IncreasePropertyComparison(FranklinQuestion):
             return
 
         # Sort the countries by the largest increase
-        action = FranklinAction('sort', data=[d[1] for d in deltas])
+        action = FranklinAction('sort', values=[d[1] for d in deltas])
         action.execute()
         self.actions.append(action.to_dict())
         sorted_countries = action.result
 
         # Get the country with the 'operator' increase
         if self.operator == 'highest':
-            action = FranklinAction('maximum', data=sorted_countries)
+            action = FranklinAction('maximum', values=sorted_countries)
         elif self.operator == 'lowest':
-            action = FranklinAction('minimum', data=sorted_countries)
+            action = FranklinAction('minimum', values=sorted_countries)
 
         action.execute()
         self.actions.append(action.to_dict())

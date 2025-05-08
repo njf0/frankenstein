@@ -60,6 +60,11 @@ class TopNTotal(FranklinQuestion):
 
             if value is not None:
                 property_values.append((country_code, value))
+            else:
+                self.metadata['data_availability'] = 'partial'
+                self.metadata['answerable'] = False
+                self.answer = None
+                return
 
         # Check if there are no valid property values
         if not property_values:

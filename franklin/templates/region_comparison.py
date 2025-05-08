@@ -60,6 +60,8 @@ class RegionComparison(FranklinQuestion):
         if any(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'partial'
             self.metadata['answerable'] = False
+            self.answer = None
+            return
 
         # Use maximum or minimum tool to find the target value
         values = [v[1] for v in property_values if v[1] is not None]
