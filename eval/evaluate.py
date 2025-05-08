@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import logging
+import subprocess
 from pathlib import Path
 
 import pandas as pd
@@ -174,7 +175,7 @@ if __name__ == '__main__':
 
         logging.info(f'Loaded {len(batch_configs)} configurations from batch.jsonl')
 
-        # subprocess.run(["vllm", "serve", batch_configs[0]["model_name"]])
+        subprocess.run(['vllm', 'serve', batch_configs[0]['model_name']], check=False)
 
         for config in batch_configs.to_dict(orient='records'):
             logging.info('Running evaluation for the following configuration:')

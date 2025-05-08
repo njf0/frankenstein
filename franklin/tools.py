@@ -1,9 +1,18 @@
 """Library of tools to be provided to the model and provide the basis for solutions."""
 
 import inspect
+import logging
 from pathlib import Path
 
 import pandas as pd
+from rich.logging import RichHandler
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(message)s',
+    datefmt='[%X]',
+    handlers=[RichHandler(rich_tracebacks=True)],
+)
 
 
 class FranklinActionError(Exception):
@@ -281,8 +290,8 @@ def get_country_code_from_name(country_name: str) -> str:
     data = pd.read_csv(Path('resources', 'iso_3166.csv'))
     try:
         return data[data['country_name'] == country_name]['country_code'].to_list()[0]
-    except IndexError:
-        raise InvalidCountryName(country_name)
+    except IndexError as e:
+        raise InvalidCountryName(country_name) from e
 
 
 def get_indicator_code_from_name(indicator_name: str) -> str:
@@ -319,8 +328,8 @@ def sort(values: list[float]) -> list[float]:
     return sorted(values)
 
 
-def get_countries_in_region(region_name: str) -> list[str]:
-    """Get the list of countries which are members of a region.
+def get_country_codes_in_region(region_name: str) -> list[str]:
+    """Get the list of country codes in a given region.
 
     Args:
         region_name: The region to get the countries for.
@@ -345,6 +354,7 @@ def retrieve_value(country_code: str, indicator_code: str, year: str) -> float |
         The value of the property for the subject at the given year.
 
     Raises:
+        InvalidCountryCode: If the country code is not valid.
         InvalidIndicatorCode: If the file for the indicator code does not exist.
 
     """
@@ -363,25 +373,13 @@ def retrieve_value(country_code: str, indicator_code: str, year: str) -> float |
 
     try:
         value = data.loc[country_code, year]
-    except KeyError as e:
-        raise NoDataAvailable(
-            name=indicator_code,
-            arguments={
-                'country_code': country_code,
-                'indicator_code': indicator_code,
-                'year': year,
-            },
-        ) from e
+    except KeyError:
+        logging.warning(f'No data available for {country_code} in {year} for indicator {indicator_code}.')
+        return 'Your function call was correct, but no data is available for the provided arguments.'
 
     if pd.isna(value):
-        raise NoDataAvailable(
-            name=indicator_code,
-            arguments={
-                'country_code': country_code,
-                'indicator_code': indicator_code,
-                'year': year,
-            },
-        )
+        logging.warning(f'No data available for {country_code} in {year} for indicator {indicator_code}.')
+        return 'Your function call was correct, but no data is available for the provided arguments.'
 
     return value
 
