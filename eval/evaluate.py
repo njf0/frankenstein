@@ -4,7 +4,8 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-
+import gc  # Add this import at the top
+from vllm import LLM, SamplingParams
 import pandas as pd
 from rich.logging import RichHandler
 
@@ -189,8 +190,6 @@ if __name__ == '__main__':
 
         logging.info(f'Loaded {len(batch_configs)} configurations from batch.jsonl')
 
-        # subprocess.run(['vllm', 'serve', batch_configs.iloc[0]['model_name']], check=False)
-
         for config in batch_configs.to_dict(orient='records'):
             logging.info('Running evaluation for the following configuration:')
             logging.info(config)
@@ -202,10 +201,9 @@ if __name__ == '__main__':
                     orient='records',
                     lines=True,
                 )
-                .head(args.num_samples)
-                .sample(args.num_samples)
+                .head(config['num_samples'])
+                # .sample(args.num_samples)
             )
-            # A bit unnecessary to have both but nice to shuffle the data so different samples are seen
 
             # Initialize evaluator
             evaluator = FranklinEvaluator(
@@ -219,6 +217,10 @@ if __name__ == '__main__':
 
             # Run evaluation
             evaluator.run()
+
+            # Unload the model and free memory
+            del evaluator  # Delete the evaluator instance
+            gc.collect()   # Force garbage collection
     else:
         # Single configuration mode
         dataset = (
@@ -228,7 +230,7 @@ if __name__ == '__main__':
                 lines=True,
             )
             .head(args.num_samples)
-            .sample(args.num_samples)
+            # .sample(args.num_samples)
         )  # A bit unnecessary to have both but nice to shuffle the data so different samples are seen
 
         evaluator = FranklinEvaluator(

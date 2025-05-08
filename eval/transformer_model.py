@@ -7,7 +7,7 @@ from openai import OpenAI
 from pydantic import BaseModel, Field, ValidationError
 from rich.logging import RichHandler
 from vllm import LLM
-from vllm.sampling_params import GuidedDecodingParams
+from vllm.sampling_params import GuidedDecodingParams, SamplingParams
 
 from eval.prompts import BASE_PROMPT, FULL_TOOL_USE, SIMULATE_TOOL_USE
 from franklin.action import FranklinAction
@@ -190,10 +190,10 @@ class TransformerModel:
         """
         self.model_name = model_name
 
-        self.client = OpenAI(
-            base_url='http://localhost:8000/v1',
-            api_key='token-abc123',
-        )
+        # self.client = OpenAI(
+        #     base_url='http://localhost:8000/v1',
+        #     api_key='token-abc123',
+        # )
 
         if use_tools == 'full':
             self.system_prompt = BASE_PROMPT + FULL_TOOL_USE
@@ -284,31 +284,31 @@ class TransformerModel:
             The generated response from the model.
 
         """
-        # # Set sampling parameters with a fixed temperature of 0.2
-        # sampling_params = SamplingParams(
-        #     max_tokens=1024,
-        #     guided_decoding=self.guided_decoding_params_json,
-        #     temperature=0.2,
-        # )
-
-        # # Generate the response using the LLM
-        # outputs = self.llm.chat(
-        #     messages,
-        #     sampling_params=sampling_params,
-        #     use_tqdm=False,
-        # )
-
-        # # Extract the generated text from the outputs
-        # output_text = outputs[0].outputs[0].text
-
-        # Try VLLM serve
-        completion = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=messages,
-            guided_json=self.json_schema,
+        # Set sampling parameters with a fixed temperature of 0.2
+        sampling_params = SamplingParams(
+            max_tokens=4096,
+            guided_decoding=self.guided_decoding_params_json,
+            temperature=0.2,
         )
 
-        output_text = completion.choices[0].message
+        # Generate the response using the LLM
+        outputs = self.llm.chat(
+            messages,
+            sampling_params=sampling_params,
+            use_tqdm=False,
+        )
+
+        # Extract the generated text from the outputs
+        output_text = outputs[0].outputs[0].text
+
+        # # Try VLLM serve
+        # completion = self.client.chat.completions.create(
+        #     model=self.model_name,
+        #     messages=messages,
+        #     extra_body={'guided_json': self.json_schema},
+        # )
+
+        # output_text = completion.choices[0].message.content
 
         return output_text
 
@@ -403,7 +403,7 @@ class TransformerModel:
                         ],
                     }
                 )
-                args_string = ', '.join([f'{k} = {v}' for k, v in call_json['arguments'].items()])
+                args_string = ', '.join([f"{k} = '{v}'" for k, v in call_json['arguments'].items()])
                 logging.info(f'{call_json["name"]}({args_string})')
 
                 # Process the tool call and get the output
