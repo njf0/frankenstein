@@ -1,3 +1,5 @@
+{"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "split": "answerable", "num_samples": 100, "use_tools": "full", "save": true, "description": "", "debug": false, "template": "AverageProperty"}
+{"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "split": "answerable", "num_samples": 100, "use_tools": "full", "save": true, "description": "", "debug": false, "template": "CountryPropertyComparison"}
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "split": "answerable", "num_samples": 100, "use_tools": "full", "save": true, "description": "", "debug": false, "template": "CountryThresholdCount"}
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "split": "answerable", "num_samples": 100, "use_tools": "full", "save": true, "description": "", "debug": false, "template": "FactorIncreaseComparison"}
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "split": "answerable", "num_samples": 100, "use_tools": "full", "save": true, "description": "", "debug": false, "template": "IncreasePropertyComparison"}

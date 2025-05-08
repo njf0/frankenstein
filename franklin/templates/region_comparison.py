@@ -56,6 +56,11 @@ class RegionComparison(FranklinQuestion):
             self.answer = None
             return
 
+        # Check if any values are missing
+        if any(v[1] is None for v in property_values):
+            self.metadata['data_availability'] = 'partial'
+            self.metadata['answerable'] = False
+
         # Use maximum or minimum tool to find the target value
         values = [v[1] for v in property_values if v[1] is not None]
         if self.operator == 'highest':

@@ -68,6 +68,20 @@ class TopNTotal(FranklinQuestion):
             self.answer = None
             return
 
+        # Check if all values are missing
+        if all(v[1] is None for v in property_values):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
+            self.answer = None
+            return
+
+        # Check if any values are missing
+        if any(v[1] is None for v in property_values):
+            self.metadata['data_availability'] = 'partial'
+            self.metadata['answerable'] = False
+            self.answer = None
+            return
+
         # Use maximum or minimum tool to find the top `n` values
         values = [float(v[1]) for v in property_values]
         action = FranklinAction('sort', values=values)

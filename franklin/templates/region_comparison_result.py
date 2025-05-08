@@ -93,6 +93,20 @@ class RegionComparisonResult(FranklinQuestion):
 
             property_2_values.append((country_code, value))
 
+        # Check if all values are missing
+        if all(v[1] is None for v in property_2_values):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
+            self.answer = None
+            return
+
+        # Check if any values are missing
+        if any(v[1] is None for v in property_2_values):
+            self.metadata['data_availability'] = 'partial'
+            self.metadata['answerable'] = False
+            self.answer = None
+            return
+
         # Use maximum or minimum tool to find the target value
         values = [v[1] for v in property_2_values if v[1] is not None]
         if self.operator == 'highest':

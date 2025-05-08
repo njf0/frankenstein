@@ -148,7 +148,7 @@ class TemplateFiller:
 
         # Save results to files
         for template_name, answerable in all_answerable.items():
-            with Path('dataset', 'repeats', f'{template_name}.jsonl').open('w') as f:
+            with Path('dataset', 'answerable', f'{template_name}.jsonl').open('w') as f:
                 for example in answerable:
                     f.write(json.dumps(example) + '\n')
                     # f.write(json.dumps(example) + '\n') # Used for 'repeats' dataset
