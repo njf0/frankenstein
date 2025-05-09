@@ -25,3 +25,6 @@
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T10:44:47.jsonl", "timestamp": "2025-05-09T10:44:47"}
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T11:44:46.jsonl", "timestamp": "2025-05-09T11:44:46"}
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T11:54:55.jsonl", "timestamp": "2025-05-09T11:54:55"}
+{"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T12:24:36.jsonl", "timestamp": "2025-05-09T12:24:36"}
+{"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T13:03:42.jsonl", "timestamp": "2025-05-09T13:03:42"}
+{"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T13:36:42.jsonl", "timestamp": "2025-05-09T13:36:42"}
