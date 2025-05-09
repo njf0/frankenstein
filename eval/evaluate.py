@@ -15,42 +15,36 @@ from eval.transformer_model import TransformerModel
 class FranklinEvaluator:
     """Evaluate the performance of a transformer model on a split/portion/template of the dataset."""
 
-    def __init__(
-        self,
-        model_name: str,
-        dataset: pd.DataFrame,
-        use_tools: str = 'full',
-        debug: bool = False,
-        save: bool = False,
-        description: str = '',
-    ):
+    def __init__(self, **kwargs):
         """Initialize the evaluator.
 
         Parameters
         ----------
-        model_name : str
-            Name of the transformer model.
-        dataset : pd.DataFrame
-            The inputs to be used for evaluation. This should be a dataset file from `datasets/`.
-        use_tools : str
-            Tool-use mode. Can be 'full', 'simulate', or 'none'.
-        debug : bool
-            Enable debug mode for the model.
-        save : bool
-            Whether to save the results or not.
-        description : str
-            Description of the evaluation.
-
+        kwargs : dict
+            All arguments passed to the parser, except `load_from_batch`.
         """
-        self.model = TransformerModel(
-            model_name=model_name,
-            use_tools=use_tools,
-            debug=debug,
+        self.model_name = kwargs.get('model_name')
+        self.use_tools = kwargs.get('use_tools', 'full')
+        self.debug = kwargs.get('debug', False)
+        self.save = kwargs.get('save', False)
+        self.description = kwargs.get('description', '')
+        self.num_samples = kwargs.get('num_samples', 20)
+        self.template = kwargs.get('template', '')
+        self.split = kwargs.get('split', '')
+
+        # Load dataset
+        dataset_path = Path('dataset', self.split, self.template).with_suffix('.jsonl')
+        self.dataset = (
+            pd.read_json(dataset_path, orient='records', lines=True)
+            .head(self.num_samples)
         )
-        self.dataset = dataset
-        self.use_tools = use_tools
-        self.save = save
-        self.description = description
+        logging.info(f'Loaded dataset from {dataset_path} with {len(self.dataset)} samples.')
+
+        self.model = TransformerModel(
+            model_name=self.model_name,
+            use_tools=self.use_tools,
+            debug=self.debug,
+        )
 
     def run(self) -> dict:
         """Evaluate the model on the dataset.
@@ -106,9 +100,14 @@ class FranklinEvaluator:
 
             # Log the configuration and filename to log.jsonl
             log_entry = {
-                'model_name': self.model.model_name,
+                'model_name': self.model_name,
                 'use_tools': self.use_tools,
                 'description': self.description,
+                'num_samples': self.num_samples,
+                'template': self.template,
+                'split': self.split,
+                'debug': self.debug,
+                'save': self.save,
                 'filename': str(output_path),
                 'timestamp': timestamp,
             }
@@ -190,30 +189,12 @@ if __name__ == '__main__':
 
         logging.info(f'Loaded {len(batch_configs)} configurations from batch.jsonl')
 
-        for config in batch_configs.to_dict(orient='records'):
-            logging.info('Running evaluation for the following configuration:')
+        for i, config in enumerate(batch_configs.to_dict(orient='records')):
+            logging.info(f'Running configuration {i + 1}/{len(batch_configs)}:')
             logging.info(config)
 
-            # Load dataset for the current configuration
-            dataset = (
-                pd.read_json(
-                    Path('dataset', config['split'], config['template']).with_suffix('.jsonl'),
-                    orient='records',
-                    lines=True,
-                )
-                .head(config['num_samples'])
-                # .sample(args.num_samples)
-            )
-
             # Initialize evaluator
-            evaluator = FranklinEvaluator(
-                model_name=config['model_name'],
-                dataset=dataset,
-                use_tools=config['use_tools'],
-                debug=config['debug'],
-                save=config['save'],
-                description=config['description'],
-            )
+            evaluator = FranklinEvaluator(**config)
 
             # Run evaluation
             evaluator.run()
@@ -221,36 +202,24 @@ if __name__ == '__main__':
             # Unload the model and free memory
             del evaluator  # Delete the evaluator instance
             gc.collect()   # Force garbage collection
+
     else:
         # Single configuration mode
-        dataset = (
-            pd.read_json(
-                Path('dataset', args.split, args.template).with_suffix('.jsonl'),
-                orient='records',
-                lines=True,
-            )
-            .head(args.num_samples)
-            # .sample(args.num_samples)
-        )  # A bit unnecessary to have both but nice to shuffle the data so different samples are seen
-
         evaluator = FranklinEvaluator(
             model_name=args.model_name,
-            dataset=dataset,
             use_tools=args.use_tools,
             debug=args.debug,
             save=args.save,
             description=args.description,
+            num_samples=args.num_samples,
+            template=args.template,
+            split=args.split,
         )
 
-        logging.info('Launching evaluation with the following configuration:')
-        logging.info(f'Model name: {args.model_name}')
-        logging.info(f'Template: {args.template}')
-        logging.info(f'Split: {args.split}')
-        logging.info(f'Number of samples: {args.num_samples}')
-        logging.info(f'Use tools: {args.use_tools}')
-        logging.info(f'Save results: {args.save}')
-        logging.info(f'Description: {args.description}')
-        logging.info(f'Debug mode: {args.debug}')
-        logging.info(f'Dataset size: {len(dataset)}')
+        logging.info('Running config:')
+        logging.info(vars(args))
 
         evaluator.run()
+
+        del evaluator
+        gc.collect()
