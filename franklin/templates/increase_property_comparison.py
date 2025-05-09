@@ -91,8 +91,6 @@ class IncreasePropertyComparison(FranklinQuestion):
             if value_a is None or value_b is None:
                 self.metadata['data_availability'] = 'partial'
                 self.metadata['answerable'] = False
-                self.answer = None
-                return
 
             values.append((country, value_a, value_b))
 
@@ -103,14 +101,19 @@ class IncreasePropertyComparison(FranklinQuestion):
             self.answer = None
             return
 
+        # Check if any values are None
+        if any(value_a is None or value_b is None for _, value_a, value_b in values):
+            self.metadata['data_availability'] = 'partial'
+            self.metadata['answerable'] = False
+            self.answer = None
+            return
+
         # Get the country with the largest increase
         deltas = []
         for country, value_a, value_b in values:
             if value_a is None or value_b is None:
                 self.metadata['data_availability'] = 'partial'
                 self.metadata['answerable'] = False
-                self.answer = None
-                return
 
             action = FranklinAction('subtract', a=value_b, b=value_a)
             action.execute()
@@ -122,8 +125,6 @@ class IncreasePropertyComparison(FranklinQuestion):
         if all(delta is None for delta in deltas):
             self.metadata['data_availability'] = 'missing'
             self.metadata['answerable'] = False
-            self.answer = None
-            return
 
         # Sort the countries by the largest increase
         action = FranklinAction('sort', values=[d[1] for d in deltas])

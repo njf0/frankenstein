@@ -63,15 +63,6 @@ class TopNTotal(FranklinQuestion):
             else:
                 self.metadata['data_availability'] = 'partial'
                 self.metadata['answerable'] = False
-                self.answer = None
-                return
-
-        # Check if there are no valid property values
-        if not property_values:
-            self.metadata['data_availability'] = 'missing'
-            self.metadata['answerable'] = False
-            self.answer = None
-            return
 
         # Check if all values are missing
         if all(v[1] is None for v in property_values):

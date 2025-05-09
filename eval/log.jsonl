@@ -18,3 +18,5 @@
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T06:07:46.jsonl", "timestamp": "2025-05-09T06:07:46"}
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T06:48:44.jsonl", "timestamp": "2025-05-09T06:48:44"}
 {"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T07:16:26.jsonl", "timestamp": "2025-05-09T07:16:26"}
+{"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T09:09:40.jsonl", "timestamp": "2025-05-09T09:09:40"}
+{"model_name": "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct/", "use_tools": "full", "description": "", "filename": "eval/runs/2025-05-09T09:41:58.jsonl", "timestamp": "2025-05-09T09:41:58"}

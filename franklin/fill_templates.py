@@ -124,10 +124,10 @@ class TemplateFiller:
                     output = t.format_output()
 
                     # Add to answerable or not_answerable list
-                    if output['metadata']['answerable'] and len(answerable) < self.n:
+                    if output['metadata']['data_availability'] == 'full' and len(answerable) < self.n:
                         answerable.append(output)
                         progress.update(tasks[template_name]['answerable'], advance=1)
-                    elif not output['metadata']['answerable'] and len(not_answerable) < self.n:
+                    elif output['metadata']['data_availability'] == 'missing' and len(not_answerable) < self.n:
                         not_answerable.append(output)
                         progress.update(tasks[template_name]['unanswerable'], advance=1)
 
@@ -146,11 +146,10 @@ class TemplateFiller:
                 all_answerable[template_name] = answerable
                 all_not_answerable[template_name] = not_answerable
 
-        # Save results to files
-        for template_name, answerable in all_answerable.items():
-            with Path('dataset', 'answerable', f'{template_name}.jsonl').open('w') as f:
-                for example in answerable:
-                    f.write(json.dumps(example) + '\n')
+                # Save results to files
+                # with Path('dataset', 'answerable', f'{template_name}.jsonl').open('w') as f:
+                #     for example in answerable:
+                #         f.write(json.dumps(example) + '\n')
                     # f.write(json.dumps(example) + '\n') # Used for 'repeats' dataset
                     # f.write(json.dumps(example) + '\n')
                     # f.write(json.dumps(example) + '\n')
@@ -161,10 +160,9 @@ class TemplateFiller:
                     # f.write(json.dumps(example) + '\n')
                     # f.write(json.dumps(example) + '\n')
 
-        for template_name, not_answerable in all_not_answerable.items():
-            with Path('dataset', 'unanswerable', f'{template_name}.jsonl').open('w') as f:
-                for example in not_answerable:
-                    f.write(json.dumps(example) + '\n')
+                with Path('dataset', 'unanswerable', f'{template_name}.jsonl').open('w') as f:
+                    for example in not_answerable:
+                        f.write(json.dumps(example) + '\n')
 
         return all_answerable, all_not_answerable
 
