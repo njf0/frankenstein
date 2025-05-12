@@ -32,6 +32,8 @@ If you have found the answer, call the final_answer tool and provide your answer
 
 {{'tool_calls': [{{'name': 'final_answer', 'arguments': {{'answer': '<your answer here>'}}}}]}}
 
+Only provide the answer (e.g., the number, string, or boolean value) in the answer field. Do not include any additional text or explanations. Do not perform any rounding or formatting of the answer.
+
 """
 
 

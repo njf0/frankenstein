@@ -98,13 +98,13 @@ class FranklinEvaluator:
             # Log the configuration and filename to log.jsonl
             log_entry = {
                 'model_name': self.model_name,
-                'use_tools': self.use_tools,
-                'description': self.description,
-                'num_samples': self.num_samples,
-                'template': self.template,
                 'split': self.split,
-                'debug': self.debug,
+                'num_samples': self.num_samples,
+                'use_tools': self.use_tools,
                 'save': self.save,
+                'description': self.description,
+                'debug': self.debug,
+                'template': self.template,
                 'filename': str(output_path),
                 'timestamp': timestamp,
             }
