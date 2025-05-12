@@ -32,7 +32,7 @@ If you have found the answer, call the final_answer tool and provide your answer
 
 {{'tool_calls': [{{'name': 'final_answer', 'arguments': {{'answer': '<your answer here>'}}}}]}}
 
-Only provide the answer (e.g., the number, string, or boolean value) in the answer field. Do not include any additional text or explanations. Do not perform any rounding or formatting of the answer.
+Only provide the answer (e.g., the number, list, string, or boolean value) in the answer field. Do not include any additional text or explanations. Do not perform any rounding or formatting of the answer.
 
 """
 
@@ -45,12 +45,12 @@ To perform each step in the task, simulate a tool use step by calling the tool w
 
 When simulating a tool call, *only generate the tool call* and do not include any other text. Include your output as a 'result' key in the tool call, like this:
 
-{json.dumps({'name': 'tool_name', 'arguments': {'arg1': 'value1', 'arg2': 'value2'}, 'result': 'simulated_output'}, indent=2)}
+{json.dumps({"name": "tool_name", "arguments": {"arg1": "value1", "arg2": "value2"}, "result": "simulated_output"}, indent=2)}
 
 To provide the final answer, use the final_answer tool to return the answer.
 
 """
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(json.dumps(FULL_TOOL_USE, indent=2))
