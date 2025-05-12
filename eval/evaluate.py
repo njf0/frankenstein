@@ -1,11 +1,10 @@
 import argparse
 import datetime
+import gc  # Add this import at the top
 import json
 import logging
-import subprocess
 from pathlib import Path
-import gc  # Add this import at the top
-from vllm import LLM, SamplingParams
+
 import pandas as pd
 from rich.logging import RichHandler
 
@@ -22,6 +21,7 @@ class FranklinEvaluator:
         ----------
         kwargs : dict
             All arguments passed to the parser, except `load_from_batch`.
+
         """
         self.model_name = kwargs.get('model_name')
         self.use_tools = kwargs.get('use_tools', 'full')
@@ -34,10 +34,7 @@ class FranklinEvaluator:
 
         # Load dataset
         dataset_path = Path('dataset', self.split, self.template).with_suffix('.jsonl')
-        self.dataset = (
-            pd.read_json(dataset_path, orient='records', lines=True)
-            .head(self.num_samples)
-        )
+        self.dataset = pd.read_json(dataset_path, orient='records', lines=True).head(self.num_samples)
         logging.info(f'Loaded dataset from {dataset_path} with {len(self.dataset)} samples.')
 
         self.model = TransformerModel(
@@ -201,7 +198,7 @@ if __name__ == '__main__':
 
             # Unload the model and free memory
             del evaluator  # Delete the evaluator instance
-            gc.collect()   # Force garbage collection
+            gc.collect()  # Force garbage collection
 
     else:
         # Single configuration mode
