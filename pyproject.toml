@@ -1,5 +1,5 @@
 [project]
-name = "franklin"
+name = "frankenstein"
 version = "0.1.0"
 description = "Frank-Inspired Evaluation of LLMs on multi-hop QA over tabular data"
 readme = "README.md"

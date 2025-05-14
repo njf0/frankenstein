@@ -1,2 +1,2 @@
-# franklin
-Frank-Inspired Evaluation of LLMs on multi-hop QA over tabular data
+# frankenstein
+FRANK-inspired object-level reasoning with an LLM-based meta-level reasoner.
