@@ -36,12 +36,12 @@ class Subtract(BaseModel):
     arguments: dict[str, str]
 
     @property
-    def a(self) -> str:
-        return self.arguments.get('a', '')
+    def value_a(self) -> str:
+        return self.arguments.get('value_a', '')
 
     @property
-    def b(self) -> str:
-        return self.arguments.get('b', '')
+    def value_b(self) -> str:
+        return self.arguments.get('value_b', '')
 
 
 class GreaterThan(BaseModel):
@@ -49,12 +49,12 @@ class GreaterThan(BaseModel):
     arguments: dict[str, str]
 
     @property
-    def a(self) -> str:
-        return self.arguments.get('a', '')
+    def value_a(self) -> str:
+        return self.arguments.get('value_a', '')
 
     @property
-    def b(self) -> str:
-        return self.arguments.get('b', '')
+    def value_b(self) -> str:
+        return self.arguments.get('value_b', '')
 
 
 class LessThan(BaseModel):
@@ -62,12 +62,12 @@ class LessThan(BaseModel):
     arguments: dict[str, str]
 
     @property
-    def a(self) -> str:
-        return self.arguments.get('a', '')
+    def value_a(self) -> str:
+        return self.arguments.get('value_a', '')
 
     @property
-    def b(self) -> str:
-        return self.arguments.get('b', '')
+    def value_b(self) -> str:
+        return self.arguments.get('value_b', '')
 
 
 class Multiply(BaseModel):
@@ -84,12 +84,12 @@ class Divide(BaseModel):
     arguments: dict[str, str]
 
     @property
-    def a(self) -> str:
-        return self.arguments.get('a', '')
+    def value_a(self) -> str:
+        return self.arguments.get('value_a', '')
 
     @property
-    def b(self) -> str:
-        return self.arguments.get('b', '')
+    def value_b(self) -> str:
+        return self.arguments.get('value_b', '')
 
 
 class GetCountryCodeFromName(BaseModel):
@@ -169,7 +169,7 @@ class FullOutput(BaseModel):
 
 
 # --- Main Model Class ---
-class TransformerModel:
+class vLLMModel:
     def __init__(
         self,
         model_name: str,
@@ -260,12 +260,7 @@ class TransformerModel:
         name = tool_call.get('name')
         args = tool_call.get('arguments', {})
 
-        return FranklinAction(
-            name,
-            **args,
-        ).execute(
-            error_handling='raise',
-        )
+        return FranklinAction(name, **args).execute(error_handling='raise')
 
     def generate(
         self,
@@ -315,7 +310,6 @@ class TransformerModel:
     def loop(
         self,
         input_text: str,
-        max_loops: int,
     ) -> list[dict]:
         """Run a full tool-using loop for a single input.
 
@@ -340,7 +334,7 @@ class TransformerModel:
         logging.info(f'❓ {input_text}')
 
         # Main loop to process messages until a final answer is provided
-        while not self._has_final_answer(messages) and len(messages) < max_loops:
+        while not self._has_final_answer(messages):
             # Do an input thing where I can just press enter to continue or any other key to stop
             if self.debug:
                 i = input('')
@@ -445,10 +439,163 @@ class TransformerModel:
                             'content': f'Error: {e!s}',
                         }
                     )
-                    logging.error(f'Error: {e!s}')
+                    logging.exception(f'Error: {e!s}')
 
         logging.info('🏁 Generation complete.')
 
+        return messages
+
+
+class OpenAIModel:
+    def __init__(
+        self,
+        model_name: str,
+        use_tools: str = 'none',
+        debug: bool = False,
+    ) -> None:
+        """Initialize the OpenAI model with the given parameters."""
+        self.model_name = model_name
+
+        self.client = OpenAI()
+
+        if use_tools == 'full':
+            self.system_prompt = BASE_PROMPT + FULL_TOOL_USE
+        elif use_tools == 'simulate':
+            self.system_prompt = BASE_PROMPT + SIMULATE_TOOL_USE
+        else:
+            self.system_prompt = BASE_PROMPT
+
+        self.use_tools = use_tools
+        self.debug = debug
+
+        # Use OpenAIFinalOutput for OpenAI structured outputs
+        # self.json_schema = OpenAIOutput.model_json_schema()
+
+    def _has_final_answer(
+        self,
+        messages: list[dict],
+    ) -> bool:
+        """Check if the final answer has been provided in the messages."""
+        for message in messages:
+            if (message.get('role') == 'tool' and message.get('name') == 'final_answer') or (
+                message.get('role') == 'assistant' and messages.count(message) > 10
+            ):
+                return True
+
+    def process_tool_call(
+        self,
+        tool_call: dict,
+    ) -> dict:
+        """Process a tool call and return the result."""
+        name = tool_call.get('name')
+        args = tool_call.get('arguments', {})
+        return FranklinAction(name, **args).execute(error_handling='raise')
+
+    def generate(
+        self,
+        messages: list[dict],
+    ) -> str:
+        """Generate a response from the OpenAI model using Structured Outputs."""
+        response = self.client.responses.parse(
+            model=self.model_name,
+            input=messages,
+            text_format=openai_schema,
+        )
+        return response.output_parsed
+
+    def loop(
+        self,
+        input_text: str,
+    ) -> list[dict]:
+        """Run a full tool-using loop for a single input."""
+        messages = [
+            {'role': 'system', 'content': self.system_prompt},
+            {'role': 'user', 'content': input_text},
+        ]
+        logging.info(f'❓ {input_text}')
+
+        while not self._has_final_answer(messages):
+            if self.debug:
+                i = input('')
+                if i.lower() != '':
+                    break
+
+            messages_copy = deepcopy(messages)
+            try:
+                parsed = self.generate(messages_copy)
+            except Exception as e:
+                messages.append(
+                    {
+                        'role': 'user',
+                        'content': f'Error processing structured output: {e!s}',
+                    }
+                )
+                logging.exception(messages[-1]['content'])
+                continue
+
+            tool_calls = parsed.tool_calls if isinstance(parsed.tool_calls, list) else [parsed.tool_calls]
+
+            if not tool_calls:
+                messages.append(
+                    {
+                        'role': 'user',
+                        'content': 'No tool calls found.',
+                    }
+                )
+                logging.error(messages[-1]['content'])
+                continue
+
+            for call in tool_calls:
+                call_json = dict(call)  # Already a dict from TypedDict
+                messages.append(
+                    {
+                        'role': 'assistant',
+                        'tool_calls': [
+                            {
+                                'type': 'function',
+                                'function': {
+                                    'name': call_json['name'],
+                                    'arguments': json.dumps(call_json['arguments']),
+                                },
+                            }
+                        ],
+                    }
+                )
+                args_string = ', '.join([f"{k} = '{v}'" for k, v in call_json['arguments'].items()])
+                logging.info(f'{call_json["name"]}({args_string})')
+
+                try:
+                    tool_call_output = self.process_tool_call(tool_call=call_json)
+                    if tool_call_output['result'] is None:
+                        result = 'Your function call was correct, but no data is available for this query.'
+                        messages.append(
+                            {
+                                'role': 'tool',
+                                'name': tool_call_output['name'],
+                                'content': str(result),
+                            }
+                        )
+                        logging.warning(result)
+                    else:
+                        messages.append(
+                            {
+                                'role': 'tool',
+                                'name': call_json['name'],
+                                'content': str(tool_call_output['result']),
+                            }
+                        )
+                        logging.info(f'→ {tool_call_output["result"]}')
+                except Exception as e:
+                    messages.append(
+                        {
+                            'role': 'tool',
+                            'name': call_json['name'],
+                            'content': f'Error: {e!s}',
+                        }
+                    )
+                    logging.exception(f'Error: {e!s}')
+
+        logging.info('🏁 Generation complete.')
         return messages
 
 
@@ -457,10 +604,14 @@ if __name__ == '__main__':
     FORMAT = '%(message)s'
     logging.basicConfig(level='NOTSET', format=FORMAT, datefmt='[%X]', handlers=[RichHandler()])
 
-    model = TransformerModel(
-        model_name='meta-llama/Llama-3.2-3B-Instruct',
+    # print(json.dumps(FullOutput.model_json_schema(), indent=2))
+
+    model = OpenAIModel(
+        model_name='gpt-4o-mini',
         use_tools='full',
     )
 
-    messages = model.loop('Is 53 greater than 50?')
+    messages = model.loop(
+        'What was the change in the Net ODA received (% of central government expense) of Indonesia between 2014 and 2016?'
+    )
     print(json.dumps(messages, indent=2))

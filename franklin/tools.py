@@ -98,46 +98,46 @@ def add(values: list[float]) -> float:
     return sum(float(value) for value in values)
 
 
-def subtract(a: float, b: float) -> float:
+def subtract(value_a: float, value_b: float) -> float:
     """Subtract two numbers.
 
     Args:
-        a: The first number.
-        b: The second number.
+        value_a: The first number.
+        value_b: The second number.
 
     Returns:
         The difference between the two numbers.
 
     """
-    return float(a) - float(b)
+    return float(value_a) - float(value_b)
 
 
-def greater_than(a: float, b: float) -> bool:
-    """Check if a is greater than b.
-
-    Args:
-        a: The first number.
-        b: The second number.
-
-    Returns:
-        True if a is greater than b, False otherwise.
-
-    """
-    return float(a) > float(b)
-
-
-def less_than(a: float, b: float) -> bool:
-    """Check if a is less than b.
+def greater_than(value_a: float, value_b: float) -> bool:
+    """Check if value_a is greater than value_b.
 
     Args:
-        a: The first number.
-        b: The second number.
+        value_a: The first number.
+        value_b: The second number.
 
     Returns:
-        True if a is less than b, False otherwise.
+        True if value_a is greater than value_b, False otherwise.
 
     """
-    return float(a) < float(b)
+    return float(value_a) > float(value_b)
+
+
+def less_than(value_a: float, value_b: float) -> bool:
+    """Check if value_a is less than value_b.
+
+    Args:
+        value_a: The first number.
+        value_b: The second number.
+
+    Returns:
+        True if value_a is less than value_b, False otherwise.
+
+    """
+    return float(value_a) < float(value_b)
 
 
 def multiply(values: list[float]) -> float:
@@ -162,20 +162,20 @@ def multiply(values: list[float]) -> float:
     return product
 
 
-def divide(a: float, b: float) -> float:
+def divide(value_a: float, value_b: float) -> float:
     """Divide two numbers.
 
     Args:
-        a: The first number.
-        b: The second number.
+        value_a: The first number.
+        value_b: The second number.
 
     Returns:
         The quotient of the two numbers.
 
     """
-    if float(b) == 0:
+    if float(value_b) == 0:
         raise ZeroDivisionError('Division by zero is not allowed. Double-check your inputs.')
-    return float(a) / float(b)
+    return float(value_a) / float(value_b)
 
 
 def mean(values: list[float]) -> float:
@@ -382,7 +382,7 @@ def retrieve_value(country_code: str, indicator_code: str, year: str) -> float |
     return value
 
 
-def final_answer(answer) -> str:
+def final_answer(answer: str) -> str:
     """Indicate that the final answer has been computed.
 
     Args:

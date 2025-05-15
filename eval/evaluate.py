@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 from rich.logging import RichHandler
 
-from eval.transformer_model import TransformerModel
+from eval.generate import vLLMModel
 
 
 class FranklinEvaluator:
@@ -37,7 +37,7 @@ class FranklinEvaluator:
         self.dataset = pd.read_json(dataset_path, orient='records', lines=True).head(self.num_samples)
         logging.info(f'Loaded dataset from {dataset_path} with {len(self.dataset)} samples.')
 
-        self.model = TransformerModel(
+        self.model = vLLMModel(
             model_name=self.model_name,
             use_tools=self.use_tools,
             debug=self.debug,
