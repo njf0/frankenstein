@@ -1,171 +1,16 @@
 import json
 import logging
 from copy import deepcopy
-from typing import Annotated, List, Literal, Union
 
 from openai import OpenAI
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import ValidationError
 from rich.logging import RichHandler
 from vllm import LLM
 from vllm.sampling_params import GuidedDecodingParams, SamplingParams
 
 from eval.prompts import BASE_PROMPT, FULL_TOOL_USE, SIMULATE_TOOL_USE
 from franklin.action import FranklinAction
-
-
-class Think(BaseModel):
-    name: Literal['think']
-    arguments: dict[str, str]
-
-    @property
-    def thought(self) -> str:
-        return self.arguments.get('thought', '')
-
-
-class Add(BaseModel):
-    name: Literal['add']
-    arguments: dict[str, str]
-
-    @property
-    def values(self) -> List[str]:
-        return self.arguments.get('values', '').split(',')
-
-
-class Subtract(BaseModel):
-    name: Literal['subtract']
-    arguments: dict[str, str]
-
-    @property
-    def value_a(self) -> str:
-        return self.arguments.get('value_a', '')
-
-    @property
-    def value_b(self) -> str:
-        return self.arguments.get('value_b', '')
-
-
-class GreaterThan(BaseModel):
-    name: Literal['greater_than']
-    arguments: dict[str, str]
-
-    @property
-    def value_a(self) -> str:
-        return self.arguments.get('value_a', '')
-
-    @property
-    def value_b(self) -> str:
-        return self.arguments.get('value_b', '')
-
-
-class LessThan(BaseModel):
-    name: Literal['less_than']
-    arguments: dict[str, str]
-
-    @property
-    def value_a(self) -> str:
-        return self.arguments.get('value_a', '')
-
-    @property
-    def value_b(self) -> str:
-        return self.arguments.get('value_b', '')
-
-
-class Multiply(BaseModel):
-    name: Literal['multiply']
-    arguments: dict[str, str]
-
-    @property
-    def values(self) -> List[str]:
-        return self.arguments.get('values', '').split(',')
-
-
-class Divide(BaseModel):
-    name: Literal['divide']
-    arguments: dict[str, str]
-
-    @property
-    def value_a(self) -> str:
-        return self.arguments.get('value_a', '')
-
-    @property
-    def value_b(self) -> str:
-        return self.arguments.get('value_b', '')
-
-
-class GetCountryCodeFromName(BaseModel):
-    name: Literal['get_country_code_from_name']
-    arguments: dict[str, str]
-
-    @property
-    def country_name(self) -> str:
-        return self.arguments.get('country_name', '')
-
-
-class GetIndicatorCodeFromName(BaseModel):
-    name: Literal['get_indicator_code_from_name']
-    arguments: dict[str, str]
-
-    @property
-    def indicator_name(self) -> str:
-        return self.arguments.get('indicator_name', '')
-
-
-class GetMembership(BaseModel):
-    name: Literal['get_country_codes_in_region']
-    arguments: dict[str, str]
-
-    @property
-    def region_name(self) -> str:
-        return self.arguments.get('region_name', '')
-
-
-class RetrieveValue(BaseModel):
-    name: Literal['retrieve_value']
-    arguments: dict[str, str]
-
-    @property
-    def country_code(self) -> str:
-        return self.arguments.get('country_code', '')
-
-    @property
-    def indicator_code(self) -> str:
-        return self.arguments.get('indicator_code', '')
-
-    @property
-    def year(self) -> str:
-        return self.arguments.get('year', '')
-
-
-class FinalAnswer(BaseModel):
-    name: Literal['final_answer']
-    arguments: dict[str, str]
-
-    @property
-    def value(self) -> str:
-        return self.arguments.get('value', '')
-
-
-ToolCall = Annotated[
-    Union[
-        Think,  # ⬅️ Add this at the top to encourage LLM to generate it first
-        Add,
-        Subtract,
-        GreaterThan,
-        LessThan,
-        Multiply,
-        Divide,
-        GetCountryCodeFromName,
-        GetIndicatorCodeFromName,
-        GetMembership,
-        RetrieveValue,
-        FinalAnswer,
-    ],
-    Field(discriminator='name'),
-]
-
-
-class FullOutput(BaseModel):
-    tool_calls: List[ToolCall]
+from franklin.schema import ToolCalls
 
 
 # --- Main Model Class ---
@@ -213,7 +58,7 @@ class vLLMModel:
         )
 
         # Generate grammar from Pydantic model
-        self.json_schema = FullOutput.model_json_schema()
+        self.json_schema = ToolCalls.model_json_schema()
         self.guided_decoding_params_json = GuidedDecodingParams(json=self.json_schema)
 
     def _has_final_answer(
@@ -347,10 +192,10 @@ class vLLMModel:
 
             # Parse the output text using the FullOutput model
             try:
-                parsed = FullOutput.model_validate_json(output_text)
+                parsed = ToolCalls.model_validate_json(output_text)
             except ValidationError:
                 try:
-                    parsed = FullOutput.model_validate_json(json.loads(output_text))
+                    parsed = ToolCalls.model_validate_json(json.loads(output_text))
                 except (json.JSONDecodeError, json.decoder.JSONDecodeError):
                     # Handle any parsing errors
                     messages.append(
@@ -499,7 +344,7 @@ class OpenAIModel:
         response = self.client.responses.parse(
             model=self.model_name,
             input=messages,
-            text_format=openai_schema,
+            text_format=ToolCalls,
         )
         return response.output_parsed
 
@@ -611,7 +456,9 @@ if __name__ == '__main__':
         use_tools='full',
     )
 
-    messages = model.loop(
-        'What was the change in the Net ODA received (% of central government expense) of Indonesia between 2014 and 2016?'
+    messages = model.generate(
+        messages=[
+            {'role': 'system', 'content': model.system_prompt},
+            {'role': 'user', 'content': 'What was the Arable land (% of land area) of Oman in 2015?'},
+        ]
     )
-    print(json.dumps(messages, indent=2))

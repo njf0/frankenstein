@@ -7,63 +7,14 @@ from pathlib import Path
 import pandas as pd
 from rich.logging import RichHandler
 
+from franklin.exceptions import InvalidCountryCode, InvalidCountryName, InvalidIndicatorCode, InvalidIndicatorName
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(message)s',
     datefmt='[%X]',
     handlers=[RichHandler(rich_tracebacks=True)],
 )
-
-
-class FranklinActionError(Exception):
-    """Base class for all Franklin action-related errors."""
-
-    pass
-
-
-class InvalidIndicatorName(FranklinActionError):
-    """Exception raised when an invalid indicator name is used."""
-
-    def __init__(self, indicator_name: str):
-        super().__init__(
-            f"Indicator name '{indicator_name}' is not valid. Ensure you have used the correct indicator name from the question."
-        )
-
-
-class InvalidIndicatorCode(FranklinActionError):
-    """Exception raised when an invalid indicator code is used."""
-
-    def __init__(self, indicator_code: str):
-        super().__init__(
-            f"Indicator code '{indicator_code}' is not valid. Ensure you have used the 'get_indicator_code_from_name' function to get the code from the indicator name."
-        )
-
-
-class InvalidCountryName(FranklinActionError):
-    """Exception raised when an invalid country name is used."""
-
-    def __init__(self, country_name: str):
-        super().__init__(
-            f"Country name '{country_name}' is not valid. Double-check the country name in the question and ensure it is spelled correctly."
-        )
-
-
-class InvalidCountryCode(FranklinActionError):
-    """Exception raised when an invalid country code is used."""
-
-    def __init__(self, country_code: str):
-        super().__init__(
-            f"Country code '{country_code}' is not valid. Ensure you have used the 'get_country_code_from_name' function to get the code from the country name."
-        )
-
-
-class NoDataAvailable(FranklinActionError):
-    """Exception raised when no data is available for a given indicator and country."""
-
-    def __init__(self, name: str, arguments: dict):
-        super().__init__(
-            f"No data is available for country code '{arguments['country_code']}' for indicator code '{arguments['indicator_code']}' in year '{arguments['year']}'. Re-plan and consider if it is still possible to answer the question. If not, call the 'question_unanswerable' function to end the conversation."
-        )
 
 
 def think(thought: str) -> str:
@@ -393,16 +344,6 @@ def final_answer(answer: str) -> str:
 
     """
     return str(answer)
-
-
-# def question_unanswerable() -> str:
-#     """Call this function if the question is unanswerable and the conversation should end.
-
-#     Returns:
-#         A string indicating that the question is unanswerable.
-
-#     """
-#     return 1
 
 
 tools = [
