@@ -228,6 +228,19 @@ def minimum(values: list[float]) -> float:
     return min(values)
 
 
+def count(values: list[float | str]) -> int:
+    """Count the number of elements in a list.
+
+    Args:
+        values: A list of numbers to count.
+
+    Returns:
+        The number of elements in the list.
+
+    """
+    pass
+
+
 def get_country_code_from_name(country_name: str) -> str:
     """Get the three-letter country code from a country name.
 

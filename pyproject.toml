@@ -10,6 +10,7 @@ authors = [
 dependencies = [
     "beautifulsoup4",
     "ipykernel",
+    "litellm>=1.69.3",
     "openai",
     "pandas",
     "rich",

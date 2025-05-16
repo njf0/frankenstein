@@ -5,6 +5,7 @@ from typing import Union, get_args, get_origin
 
 import rich.console
 import rich.table
+
 from franklin import tools
 
 

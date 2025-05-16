@@ -46,14 +46,14 @@ class FranklinAction:
         try:
             tool = self.tool_map[self.action]
             self.result = tool(**self.kwargs)
-        except Exception:
+        except Exception as e:
             self.result = None
             if error_handling == 'raise':
-                raise
+                self.result = e
             elif error_handling == 'ignore':
                 self.result = None
 
-        return self.to_dict()
+        return self.result
 
     def to_dict(self):
         """Return the action as a dictionary."""

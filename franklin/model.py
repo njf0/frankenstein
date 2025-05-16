@@ -1,4 +1,7 @@
-"""Library of tools to be provided to the model and provide the basis for solutions."""
+"""Library of tools to be provided to the model and provide the basis for solutions.
+
+Currently unused in favour of existing/simpler approach in tools.py, but kept for future reference.
+"""
 
 from pathlib import Path
 
