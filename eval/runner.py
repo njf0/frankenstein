@@ -62,6 +62,8 @@ class Runner:
 
         """
         if finish_reason == 'stop':
+            # log message content before stopping
+            logging.info(f'💬 {messages[-1].get("content")}')
             logging.info('🛑 Model indicated a stop condition.')
             return True
 
@@ -69,6 +71,11 @@ class Runner:
             tool_calls = message.get('tool_calls', [])
             for tool_call in tool_calls:
                 if tool_call.get('function', {}).get('name') == 'final_answer':
+                    # Log a final answer function call as below
+                    parsed_args = json.loads(tool_call['function']['arguments'])
+                    name = tool_call['function']['name']
+                    args_string = ', '.join([f"{k} = '{v}'" for k, v in parsed_args.items()])
+                    logging.info(f'🔧 {name}({args_string})')
                     logging.info('🏁 Final answer tool called.')
                     return True
 
@@ -167,7 +174,7 @@ class Runner:
                 messages.append(
                     {
                         'role': 'tool',
-                        'tool_call_id': tool_call['id'],
+                        'tool_call_id': tool_call.id,
                         'content': str(result),
                     }
                 )
@@ -183,9 +190,9 @@ if __name__ == '__main__':
     runner = Runner(
         model_name='openai/gpt-4o-mini',
         tools=get_tool_metadata(),
-        debug=False,
+        debug=True,
     )
 
     runner.loop(
-        'How many countries are there in Western Europe?',
+        'Did Northern Europe have a higher range of values for Annual freshwater withdrawals, total (billion cubic meters) than Eastern Asia in 2014?',
     )

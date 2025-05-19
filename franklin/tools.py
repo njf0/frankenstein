@@ -7,7 +7,13 @@ from pathlib import Path
 import pandas as pd
 from rich.logging import RichHandler
 
-from franklin.exceptions import InvalidCountryCode, InvalidCountryName, InvalidIndicatorCode, InvalidIndicatorName
+from franklin.exceptions import (
+    InvalidCountryCode,
+    InvalidCountryName,
+    InvalidIndicatorCode,
+    InvalidIndicatorName,
+    NoDataAvailable,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -95,7 +101,7 @@ def multiply(values: list[float]) -> float:
     """Multiply a list of numbers.
 
     Args:
-        list: A list of numbers to multiply.
+        values: A list of numbers to multiply.
 
     Returns:
         The product of the numbers in the list.
@@ -337,13 +343,20 @@ def retrieve_value(country_code: str, indicator_code: str, year: str) -> float |
 
     try:
         value = data.loc[country_code, year]
-    except KeyError:
-        return None
+    except KeyError as e:
+        raise NoDataAvailable(
+            {
+                'country_code': country_code,
+                'indicator_code': indicator_code,
+                'year': year,
+            }
+        ) from e
 
     if pd.isna(value):
         return None
 
     return value
+    # return {'subject': country_code, 'property': indicator_code, 'object': float(value), 'time': year}
 
 
 def final_answer(answer: str) -> str:

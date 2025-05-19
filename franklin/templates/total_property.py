@@ -51,20 +51,18 @@ class TotalProperty(FranklinQuestion):
             property_values.append(value)
             # else:
             #     self.metadata['data_availability'] = 'partial'
-            #     self.metadata['answerable'] = False
+            #
 
         # Check if all values are missing
         if all(v is None for v in property_values):
             self.metadata['data_availability'] = 'missing'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Check if any values are missing
         if any(v is None for v in property_values):
             self.metadata['data_availability'] = 'partial'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Compute the total property value
@@ -79,7 +77,6 @@ class TotalProperty(FranklinQuestion):
         self.actions.append(action.to_dict())
         self.answer = action.result
 
-        self.metadata['answerable'] = True
         self.metadata['data_availability'] = 'full'
 
         return self.answer

@@ -96,15 +96,13 @@ class RegionComparisonResult(FranklinQuestion):
         # Check if all values are missing
         if all(v[1] is None for v in property_2_values):
             self.metadata['data_availability'] = 'missing'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Check if any values are missing
         if any(v[1] is None for v in property_2_values):
             self.metadata['data_availability'] = 'partial'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Use maximum or minimum tool to find the target value
@@ -130,8 +128,7 @@ class RegionComparisonResult(FranklinQuestion):
         # Check if the required value is missing
         if property_1_value is None:
             self.metadata['data_availability'] = 'missing'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Set the final answer
@@ -140,7 +137,6 @@ class RegionComparisonResult(FranklinQuestion):
         self.actions.append(action.to_dict())
         self.answer = action.result
 
-        self.metadata['answerable'] = True
         self.metadata['data_availability'] = 'full'
 
         return self.answer

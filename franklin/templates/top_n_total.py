@@ -62,20 +62,17 @@ class TopNTotal(FranklinQuestion):
                 property_values.append((country_code, value))
             else:
                 self.metadata['data_availability'] = 'partial'
-                self.metadata['answerable'] = False
 
         # Check if all values are missing
         if all(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'missing'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Check if any values are missing
         if any(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'partial'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Use maximum or minimum tool to find the top `n` values
@@ -96,8 +93,7 @@ class TopNTotal(FranklinQuestion):
         # Check if the number of top countries is less than `n`
         if len(top_countries) < int(self.n):
             self.metadata['data_availability'] = 'partial'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Set the final answer
@@ -106,7 +102,6 @@ class TopNTotal(FranklinQuestion):
         self.actions.append(action.to_dict())
         self.answer = action.result
 
-        self.metadata['answerable'] = True
         self.metadata['data_availability'] = 'full'
 
     def validate_combination(self, combination: dict) -> bool:

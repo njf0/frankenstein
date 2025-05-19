@@ -97,14 +97,12 @@ class CountryPropertyComparison(FranklinQuestion):
         # Check if values are missing
         if value_a is None and value_b is None:
             self.metadata['data_availability'] = 'missing'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         elif value_a is None or value_b is None:
             self.metadata['data_availability'] = 'partial'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Compare the values
@@ -124,7 +122,7 @@ class CountryPropertyComparison(FranklinQuestion):
         self.actions.append(action.to_dict())
 
         self.answer = action.result
-        self.metadata['answerable'] = True
+
         self.metadata['data_availability'] = 'full'
 
         return self.answer

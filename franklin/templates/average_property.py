@@ -39,11 +39,7 @@ class AverageProperty(FranklinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Provisionally set the data availability to 'full'
-        self.metadata['data_availability'] = 'full'
-
         # Get the country codes from the country names and then get the value
-        # country_codes = []
         indicator_values = []
         for country in countries:
             action = FranklinAction(
@@ -60,22 +56,17 @@ class AverageProperty(FranklinQuestion):
                 indicator_values.append(value)
             else:
                 self.metadata['data_availability'] = 'partial'
-                self.metadata['answerable'] = False
-            # print(value, self.metadata['answerable'])
-
 
         # Check if lists are empty
         if not indicator_values:
-            self.metadata['answerable'] = False
             self.metadata['data_availability'] = 'missing'
-            self.answer = None
+
             return
 
         # Check if any values are missing
         if any(value is None for value in indicator_values):
             self.metadata['data_availability'] = 'partial'
-            self.metadata['answerable'] = False
-            self.answer = None
+
             return
 
         # Retrieve the mean value for the subject_set
@@ -90,14 +81,7 @@ class AverageProperty(FranklinQuestion):
         self.actions.append(action.to_dict())
         self.answer = action.result
 
-        # # Now get the country code which had the median value
-        # country_code = country_codes[indicator_values.index(value)]
-        # action = FranklinAction('final_answer', value=country_code)
-        # action.execute()
-        # self.actions.append(action.to_dict())
-        # self.answer = action.result
-
-        return
+        return self.answer
 
 
 if __name__ == '__main__':

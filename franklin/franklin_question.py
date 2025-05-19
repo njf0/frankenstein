@@ -2,7 +2,6 @@
 
 import itertools
 import json
-import logging
 import random
 from pathlib import Path
 
@@ -56,7 +55,7 @@ class FranklinQuestion:
 
         # Metadata
         self.metadata = {
-            'answerable': True,
+            'answerable': None,
             'answer_format': None,
             'data_availability': 'full',
             'question_template': self.__class__.__name__,
@@ -169,177 +168,6 @@ class FranklinQuestion:
 
         return self.question
 
-    def get_subject_property_value(
-        self,
-        subject: str,
-        property: str,
-        time: str,
-    ) -> float | str | None:
-        """Get the property value of a subject.
-
-        Parameters
-        ----------
-        subject: str
-            Subject to get the property value for.
-        property: str
-            Property to get the value of.
-        time: str
-            Time to get the value at.
-
-        Returns
-        -------
-        float | str | None
-            Value of the property for the subject.
-
-        """
-        try:
-            # Convert name to id
-            property = self.indicator_names[property]
-            data = self.data[property]
-            value = data.loc[subject, time]
-
-        except KeyError:
-            value = None
-
-        return value
-
-    def get_subjects_in_subject_set(
-        self,
-        df: pd.DataFrame,
-        subject_set: str,
-    ):
-        """Get alpha-3 codes and names of subjects in a given subject set.
-
-        Parameters
-        ----------
-        df: pd.DataFrame
-            DataFrame of country/region data.
-        subject_set: str
-            Region to get subjects from.
-
-        """
-        df = df[df['region'] == subject_set].copy()
-
-        return df
-
-    def compare_values(
-        self,
-        values: pd.Series,
-        operator: str,
-    ) -> int:
-        """Compare values in a Series.
-
-        Parameters
-        ----------
-        values: pd.Series
-            Series of values to compare.
-        operator: str
-            Operator to compare values.
-
-        Returns
-        -------
-        int
-            Index of the value that satisfies the comparison.
-
-        """
-        if operator == 'highest':
-            index = values.idxmax()
-        elif operator == 'lowest':
-            index = values.idxmin()
-        else:
-            raise ValueError(f'Operator {operator} not supported.')
-
-        return index
-
-    def compute_increase(
-        self,
-        values_a: float,
-        values_b: float,
-        as_percentage: bool = True,
-    ) -> pd.Series:
-        """Compute the percentage increase between two series of values.
-
-        Parameters
-        ----------
-        values_a: pd.Series
-            Series of initial values.
-        values_b: pd.Series
-            Series of later values.
-        as_percentage: bool, optional
-            Whether to return the increase as a percentage, by default False.
-
-        Returns
-        -------
-        pd.Series
-            Series of percentage increases.
-
-        """
-        if values_a is None or values_b is None:
-            increase = None
-            return increase
-
-        increase = (values_b - values_a) / values_a
-
-        if as_percentage:
-            increase *= 100
-
-        return increase
-
-    def threshold(
-        self,
-        values: pd.Series,
-        threshold: float,
-    ) -> pd.Series:
-        """Create a new series with truth values depending on whether the values are above or below a threshold.
-
-        Parameters
-        ----------
-        values: pd.Series
-            Series of values to compare.
-        threshold: float
-            Threshold value.
-
-        Returns
-        -------
-        pd.Series
-            Series of truth values.
-
-        """
-        if self.operator == 'higher':
-            return values > threshold
-        elif self.operator == 'lower':
-            return values < threshold
-
-    def lookup(
-        self,
-        subject: str,
-        property: str,
-        time: str,
-    ) -> float | str | None:
-        """Lookup the value of a subject's property at a given time.
-
-        Parameters
-        ----------
-        subject: str
-            Subject to lookup.
-        property: str
-            Property to lookup.
-        time: str
-            Time to lookup.
-
-        Returns
-        -------
-        float | str | None
-            Value of the property for the subject at the given time.
-
-        """
-        try:
-            logging.info(f'lookup("{subject}", "{property}", "{time}")')
-            return self.data[property].loc[subject, time]
-        except KeyError:
-            logging.warning(f'No data for the property "{property}" for the subject "{subject}" at time "{time}".')
-            return None
-
     def format_output(
         self,
     ) -> dict:
@@ -372,6 +200,13 @@ class FranklinQuestion:
 
         # Compute answer and format output
         self.compute_actions()
+
+        # Decide if data_availability == partial is answerable or not
+        if self.metadata['data_availability'] == 'missing' or self.metadata['data_availability'] == 'partial':
+            self.metadata['answerable'] = False
+        elif self.metadata['data_availability'] == 'full':
+            self.metadata['answerable'] = True
+
         formatted_output = self.format_output()
 
         # Create a table for the question template, slot values, and question

@@ -81,16 +81,14 @@ class FactorIncreaseComparison(FranklinQuestion):
 
         # Set data availability to 'missing' if all values are missing
         if value_a is None and value_b is None:
-            self.metadata['answerable'] = False
             self.metadata['data_availability'] = 'missing'
-            self.answer = None
+
             return None
 
         # Set data availability to 'partial' if there is at least one missing value
         if value_a is None or value_b is None:
-            self.metadata['answerable'] = False
             self.metadata['data_availability'] = 'partial'
-            self.answer = None
+
             return
 
         # Compute the increase

@@ -60,12 +60,10 @@ class PropertyOfSubject(FranklinQuestion):
         value = action.result
 
         if value is None:
-            self.metadata['answerable'] = False
             self.metadata['data_availability'] = 'missing'
-            self.answer = None
+
             return None
 
-        self.metadata['answerable'] = True
         self.metadata['data_availability'] = 'full'
         answer = FranklinAction('final_answer', answer=value)
         answer.execute()

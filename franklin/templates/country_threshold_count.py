@@ -107,8 +107,7 @@ class CountryThresholdCount(FranklinQuestion):
                 values.append(action.result)
             else:
                 self.metadata['data_availability'] = 'partial'
-                self.metadata['answerable'] = False
-                self.answer = None
+
                 return
 
         # Retrieve the value for the threshold subject
@@ -125,8 +124,7 @@ class CountryThresholdCount(FranklinQuestion):
 
             if threshold_value is None:
                 self.metadata['data_availability'] = 'missing'
-                self.metadata['answerable'] = False
-                self.answer = None
+
                 return
 
         elif threshold_subject_country_code is None:
@@ -167,10 +165,7 @@ class CountryThresholdCount(FranklinQuestion):
         self.answer = sum(comparisons)
 
         # Final answer
-        action = FranklinAction(
-            'final_answer',
-            answer=self.answer
-        )
+        action = FranklinAction('final_answer', answer=self.answer)
         action.execute()
         self.actions.append(action.to_dict())
 

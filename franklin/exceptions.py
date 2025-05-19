@@ -46,7 +46,7 @@ class InvalidCountryCode(Exception):
 class NoDataAvailable(Exception):
     """Exception raised when no data is available for a given indicator and country."""
 
-    def __init__(self, name: str, arguments: dict):
+    def __init__(self, arguments: dict):
         super().__init__(
             f"No data is available for country code '{arguments['country_code']}' for indicator code '{arguments['indicator_code']}' in year '{arguments['year']}'. Re-plan and consider if it is still possible to answer the question. If not, call the 'question_unanswerable' function to end the conversation."
         )
