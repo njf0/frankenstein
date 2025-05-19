@@ -46,10 +46,10 @@ class FranklinAction:
         try:
             tool = self.tool_map[self.action]
             self.result = tool(**self.kwargs)
-        except Exception as e:
+        except Exception:
             self.result = None
             if error_handling == 'raise':
-                self.result = e
+                raise
             elif error_handling == 'ignore':
                 self.result = None
 

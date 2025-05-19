@@ -12,6 +12,7 @@ from franklin.exceptions import (
     InvalidCountryName,
     InvalidIndicatorCode,
     InvalidIndicatorName,
+    InvalidRegionName,
     NoDataAvailable,
 )
 
@@ -309,6 +310,10 @@ def get_country_codes_in_region(region_name: str) -> list[str]:
 
     """
     data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+
+    if region_name not in data['region'].tolist():
+        raise InvalidRegionName(region_name)
+
     return data[data['region'] == region_name]['country_code'].tolist()
 
 

@@ -169,7 +169,13 @@ class Runner:
                 key = (name, json.dumps(parsed_args, sort_keys=True))
                 self.tool_call_counts[key] = self.tool_call_counts.get(key, 0) + 1
 
-                result = FranklinAction(action=name, **parsed_args).execute()
+                try:
+                    result = FranklinAction(action=name, **parsed_args).execute(error_handling='raise')
+                    logging.info(f'↪️  {result}')
+
+                except Exception as e:
+                    result = f'Error: {e}'
+                    logging.warning(f'⚠️  {result}')
 
                 messages.append(
                     {
@@ -178,7 +184,6 @@ class Runner:
                         'content': str(result),
                     }
                 )
-                logging.info(f'↪️  {result}')
 
         return messages
 
@@ -194,5 +199,5 @@ if __name__ == '__main__':
     )
 
     runner.loop(
-        'Did Northern Europe have a higher range of values for Annual freshwater withdrawals, total (billion cubic meters) than Eastern Asia in 2014?',
+        'In 2022, what proportion of the total Use of IMF credit (DOD, current US$) of South-eastern Asia was contributed by Cambodia?',
     )
