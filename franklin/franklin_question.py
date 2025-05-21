@@ -47,6 +47,10 @@ class FranklinQuestion:
         self.n2i = self.indicator_key.set_index('name')['id'].to_dict()
         self.i2n = self.indicator_key.set_index('id')['name'].to_dict()
 
+        # Indicator paraphrases
+        with Path('resources', 'indicator_paraphrases.json').open() as f:
+            self.indicator_paraphrases = json.load(f)
+
         # Core FranklinQuestion attributes
         self.allowed_values = allowed_values
         self.question = None
@@ -140,8 +144,8 @@ class FranklinQuestion:
 
         # Get property name from id
         if 'property' in slot_values:
-            property_name = self.i2n[slot_values['property']]
-            formatted_slot_values['property'] = property_name
+            paraphrase = random.choice(self.indicator_paraphrases[slot_values['property']])
+            formatted_slot_values['property'] = paraphrase
         if 'property_1' in slot_values:
             property_1_name = self.i2n[slot_values['property_1']]
             formatted_slot_values['property_1'] = property_1_name

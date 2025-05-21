@@ -236,7 +236,7 @@ def minimum(values: list[float]) -> float:
 
 
 def count(values: list[float | str]) -> int:
-    """Count the number of elements in a list.
+    """Count the number of non-None elements in a list.
 
     Args:
         values: A list of numbers to count.
@@ -245,7 +245,32 @@ def count(values: list[float | str]) -> int:
         The number of elements in the list.
 
     """
-    pass
+    if isinstance(values, str):
+        values = values.strip('[]\'"')
+        values = [float(value.strip()) for value in values.split(',')]
+    else:
+        values = [float(value) for value in values]
+    # Remove NaN values
+    values = [value for value in values if pd.notna(value)]
+    return len(values)
+
+
+def search_for_indicator_codes(keywords: list[str]) -> list[str]:
+    """Search the database of indicators for codes and names that match the keywords.
+
+    Args:
+        keywords: A list of keywords to search for.
+
+    Returns:
+        A list of indicator codes that match the keywords.
+
+    """
+    data = pd.read_csv(Path('resources', 'wdi.csv'))
+    data['name_lower'] = data['name'].str.lower()
+    keywords = [keyword.lower() for keyword in keywords]
+
+    filtered = data[data['name_lower'].str.contains('|'.join(keywords))]
+    return filtered[['id', 'name']].to_dict(orient='records')
 
 
 def get_country_code_from_name(country_name: str) -> str:
@@ -384,3 +409,77 @@ tools = [
         inspect.isfunction,
     )
 ]
+
+
+if __name__ == '__main__':
+    print('\n=== Think ===')
+    print('think("First I will check the indicator code")')
+    print('Result:', think('First I will check the indicator code'))
+
+    print('\n=== Add ===')
+    print('add([1, 2, 3])')
+    print('Result:', add([1, 2, 3]))
+
+    print('\n=== Subtract ===')
+    print('subtract(10, 4)')
+    print('Result:', subtract(10, 4))
+
+    print('\n=== Multiply ===')
+    print('multiply([2, 3, 4])')
+    print('Result:', multiply([2, 3, 4]))
+
+    print('\n=== Divide ===')
+    print('divide(20, 5)')
+    print('Result:', divide(20, 5))
+
+    print('\n=== Mean ===')
+    print('mean([1, 2, 3, 4, 5])')
+    print('Result:', mean([1, 2, 3, 4, 5]))
+
+    print('\n=== Median ===')
+    print('median([1, 3, 2, 5, 4])')
+    print('Result:', median([1, 3, 2, 5, 4]))
+
+    print('\n=== Mode ===')
+    print('mode([1, 2, 2, 3, 4])')
+    print('Result:', mode([1, 2, 2, 3, 4]))
+
+    print('\n=== Maximum ===')
+    print('maximum([1, 5, 3, 2])')
+    print('Result:', maximum([1, 5, 3, 2]))
+
+    print('\n=== Minimum ===')
+    print('minimum([1, 5, 3, 2])')
+    print('Result:', minimum([1, 5, 3, 2]))
+
+    print('\n=== Greater Than ===')
+    print('greater_than(5, 3)')
+    print('Result:', greater_than(5, 3))
+
+    print('\n=== Less Than ===')
+    print('less_than(2, 7)')
+    print('Result:', less_than(2, 7))
+
+    print('\n=== Count ===')
+    print('count([1, 2, 3, 4, 5])')
+    print('Result:', count([1, 2, 3, 4, 5]))
+
+    print('\n=== Search for Indicator Codes ===')
+    print('search_for_indicator_codes(["GDP", "growth"])')
+    print('Result:', search_for_indicator_codes(['GDP', 'growth']))
+
+    print('\n=== Get Country Code from Name ===')
+    print('get_country_code_from_name("Comoros")')
+    print('Result:', get_country_code_from_name('Comoros'))
+
+    print('\n=== Get Indicator Code from Name ===')
+    print('get_indicator_code_from_name("Revenue, excluding grants (% of GDP)")')
+    print('Result:', get_indicator_code_from_name('Revenue, excluding grants (% of GDP)'))
+
+    print('\n=== Get Country Codes in Region ===')
+    print('get_country_codes_in_region("Eastern Europe")')
+    print('Result:', get_country_codes_in_region('Eastern Europe'))
+
+    print('\n=== Final Answer ===')
+    print('final_answer("42")')
+    print('Result:', final_answer('42'))

@@ -88,7 +88,7 @@ def get_indicators(
     data = response.json()[1:][0]
 
     # Need a list[dict] of indicator codes, names, and descriptions
-    indicators = [{'id': i['id'], 'name': i['name'], 'sourceNote': i['sourceNote']} for i in data]
+    indicators = [{'id': i['id'], 'name': i['name'], 'description': i['sourceNote']} for i in data]
 
     if featured:
         # Get the list of featured indicator codes

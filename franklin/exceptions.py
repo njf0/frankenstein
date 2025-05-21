@@ -3,7 +3,7 @@ class InvalidIndicatorName(Exception):
 
     def __init__(self, indicator_name: str):
         super().__init__(
-            f"Indicator name '{indicator_name}' is not valid. Ensure you have used the correct indicator name from the question."
+            f"Error: indicator name '{indicator_name}' is not valid. Ensure you have used the correct indicator name from the question."
         )
 
 
@@ -12,7 +12,7 @@ class InvalidIndicatorCode(Exception):
 
     def __init__(self, indicator_code: str):
         super().__init__(
-            f"Indicator code '{indicator_code}' is not valid. Ensure you have used the 'get_indicator_code_from_name' function to get the code from the indicator name."
+            f"Error: indicator code '{indicator_code}' is not valid. Ensure you have used the 'get_indicator_code_from_name' function to get the code from the indicator name."
         )
 
 
@@ -21,7 +21,7 @@ class InvalidCountryName(Exception):
 
     def __init__(self, country_name: str):
         super().__init__(
-            f"Country name '{country_name}' is not valid. Double-check the country name in the question and ensure it is spelled correctly."
+            f"Error: country name '{country_name}' is not valid. Double-check the country name in the question and ensure it is spelled correctly."
         )
 
 
@@ -30,7 +30,7 @@ class InvalidRegionName(Exception):
 
     def __init__(self, region_name: str):
         super().__init__(
-            f"Region name '{region_name}' is not valid. Ensure you have used the correct region name from the question."
+            f"Error: region name '{region_name}' is not valid. Ensure you have used the correct region name from the question."
         )
 
 
@@ -39,7 +39,7 @@ class InvalidCountryCode(Exception):
 
     def __init__(self, country_code: str):
         super().__init__(
-            f"Country code '{country_code}' is not valid. Ensure you have used the 'get_country_code_from_name' function to get the code from the country name."
+            f"Error: country code '{country_code}' is not valid. Ensure you have used the 'get_country_code_from_name' function to get the code from the country name."
         )
 
 
@@ -48,5 +48,5 @@ class NoDataAvailable(Exception):
 
     def __init__(self, arguments: dict):
         super().__init__(
-            f"Your function call was correct, but no data is available for country code '{arguments['country_code']}' for indicator code '{arguments['indicator_code']}' in year '{arguments['year']}'."
+            f"Warning: your function call was correct, but no data is available for country code '{arguments['country_code']}' for indicator code '{arguments['indicator_code']}' in year '{arguments['year']}'."
         )

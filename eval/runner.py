@@ -140,7 +140,11 @@ class Runner:
         while True:
             if self.debug:
                 i = input('')
-                if i.lower() != '':
+                if i.lower() == 'nodebug':
+                    self.debug = False
+                    logging.info('🪲  Debug mode disabled.')
+                if i.lower() == 'exit':
+                    logging.info('🛑  Cancelled by user.')
                     break
 
             message, finish_reason = self.generate(messages)
@@ -159,23 +163,31 @@ class Runner:
                 break
 
             for tool_call in message.tool_calls:
+                # Parse the function call
                 name = tool_call.function.name
                 arguments = tool_call.function.arguments
                 parsed_args = json.loads(arguments)
 
+                # Format and log the function call
                 args_string = ', '.join([f"{k} = '{v}'" for k, v in parsed_args.items()])
                 logging.info(f'🔧 {name}({args_string})')
 
+                # Update the tool call counts
                 key = (name, json.dumps(parsed_args, sort_keys=True))
                 self.tool_call_counts[key] = self.tool_call_counts.get(key, 0) + 1
 
+                # Execute the function call
                 try:
                     result = FranklinAction(action=name, **parsed_args).execute(error_handling='raise')
                     logging.info(f'↪️  {result}')
 
                 except Exception as e:
-                    result = f'Error: {e}'
-                    logging.warning(f'⚠️  {result}')
+                    result = e
+                    # Check if first word of message is "Warning" or "Error" and log accordingly
+                    if str(result).startswith('Warning'):
+                        logging.warning(f'⚠️  {result}')
+                    elif str(result).startswith('Error'):
+                        logging.error(f'❌ {result}')  # noqa: TRY400
 
                 messages.append(
                     {
@@ -199,5 +211,5 @@ if __name__ == '__main__':
     )
 
     runner.loop(
-        'In 2022, what proportion of the total Use of IMF credit (DOD, current US$) of South-eastern Asia was contributed by Cambodia?',
+        'Which country in Eastern Europe had the highest increase in proportion of GDP represented by tax revenue between 2007 and 2013?'
     )
