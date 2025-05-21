@@ -1,0 +1,72 @@
+{
+  "NY.GNP.PCAP.PP.CD": [
+    "average gross national income per person adjusted for purchasing power parity",
+    "per capita GNI measured in international dollars",
+    "gross national income per person using PPP conversion",
+    "income per person in current international dollars adjusted for cost of living",
+    "GNI per capita expressed in purchasing power parity terms"
+  ],
+  "CM.MKT.INDX.ZG": [
+    "annual percentage change in S&P Global stock indices",
+    "yearly growth rate of S&P Global equity markets",
+    "annual change in S&P Global stock market prices",
+    "yearly percentage change in S&P Global equity indices",
+    "annual return rate of S&P Global stock indices"
+  ],
+  "TX.VAL.FUEL.ZS.UN": [
+    "fuel exports as a share of total merchandise exports",
+    "proportion of merchandise exports made up by fuels",
+    "percentage of goods exports that are fuels",
+    "share of mineral fuel exports in total merchandise exports",
+    "fuel commodities as a percentage of merchandise exports"
+  ],
+  "TM.VAL.MRCH.CD.WT": [
+    "Value of imported goods in current US dollars",
+    "Total merchandise imports measured in current US dollars",
+    "Dollar value of goods imported",
+    "Merchandise import value in current US dollars",
+    "Total value of imported merchandise in US dollars"
+  ],
+  "SI.POV.GAPS": [
+    "average income shortfall below $2.15 a day poverty line",
+    "mean poverty gap at $2.15 daily income",
+    "depth of poverty relative to $2.15 a day",
+    "percentage shortfall from $2.15 daily poverty threshold",
+    "poverty gap measured at $2.15 per day"
+  ],
+  "SE.SEC.ENRR": [
+    "secondary school enrollment rate",
+    "gross enrollment in secondary education",
+    "total secondary education enrollment percentage",
+    "overall secondary school attendance rate",
+    "secondary education gross enrollment ratio"
+  ],
+  "SE.PRE.ENRR": [
+    "preprimary school enrollment rate",
+    "gross enrollment in preprimary education",
+    "percentage of children enrolled in preprimary school",
+    "total preprimary enrollment as a share of age group",
+    "preprimary education enrollment percentage"
+  ],
+  "AG.LND.FRST.K2": [
+    "forest land area in square kilometers",
+    "total forest coverage in square kilometers",
+    "area covered by forests in square kilometers",
+    "size of forested land in square kilometers",
+    "forested territory measured in square kilometers"
+  ],
+  "SP.DYN.TFRT.IN": [
+    "average number of children per woman",
+    "total births per woman over her lifetime",
+    "number of children born to a woman",
+    "lifetime fertility rate per woman",
+    "average births per woman during childbearing years"
+  ],
+  "SE.PRM.NENR": [
+    "primary school enrollment rate",
+    "net enrollment in primary education",
+    "percentage of children enrolled in primary school",
+    "primary education net enrollment",
+    "share of official primary school-age children enrolled"
+  ]
+}

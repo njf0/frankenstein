@@ -168,7 +168,9 @@ class FranklinQuestion:
         for key, value in slot_values.items():
             setattr(self, key, value)
 
-        self.question = self.template.format(**formatted_slot_values)
+        template_choice = random.choice(self.templates)
+
+        self.question = template_choice.format(**formatted_slot_values)
 
         return self.question
 

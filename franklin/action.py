@@ -1,7 +1,7 @@
 import inspect
 import json
 
-from franklin import tools
+from franklin.tools import arithmetic, data_retrieval
 
 
 class FranklinAction:
@@ -22,7 +22,11 @@ class FranklinAction:
             The arguments for the action.
 
         """
-        self.tool_map = dict(inspect.getmembers(tools, inspect.isfunction))
+        # Collect all functions from both modules
+        tool_map = {}
+        for module in (arithmetic, data_retrieval):
+            tool_map.update(dict(inspect.getmembers(module, inspect.isfunction)))
+        self.tool_map = tool_map
 
         if not isinstance(action, str):
             raise TypeError(f'Action must be a string, got {type(action)}.')

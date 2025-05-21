@@ -1,0 +1,72 @@
+{
+  "DT.DOD.DSTC.IR.ZS": [
+    "short-term debt as a percentage of total reserves",
+    "proportion of total reserves comprised of short-term debt",
+    "share of total reserves represented by short-term debt",
+    "ratio of short-term debt to total reserves",
+    "percentage of total reserves made up of short-term debt"
+  ],
+  "SI.POV.DDAY": [
+    "poverty headcount ratio at $2.15 a day (2017 PPP) as a percentage of the population",
+    "share of population living on less than $2.15 a day (2017 PPP)",
+    "proportion of people below the $2.15 a day poverty line (2017 PPP)",
+    "percentage of population under the $2.15 a day (2017 PPP) poverty threshold",
+    "population share below $2.15 a day (201"
+  ],
+  "SE.PRM.UNER.FE": [
+    "number of primary-school-age girls not enrolled in school",
+    "primary-age female children not attending school",
+    "out-of-school primary-age girls",
+    "female children of primary school age not enrolled",
+    "girls of primary school age not attending school"
+  ],
+  "AG.LND.FRST.ZS": [
+    "forest area as a percentage of total land area",
+    "share of land area covered by forests",
+    "proportion of land area that is forested",
+    "percentage of land area classified as forest",
+    "forest coverage as a percent of land area"
+  ],
+  "SI.POV.GAPS": [
+    "poverty gap percentage at $2.15 a day (2017 PPP)",
+    "mean income shortfall as a percentage of the $2.15 a day poverty line (2017 PPP)",
+    "average poverty gap at $2.15 a day (2017 PPP) as a percent",
+    "percentage shortfall from the $2.15 a day poverty line (2017 PPP)",
+    "depth of poverty at $2.15 a day (2017 PPP)"
+  ],
+  "BX.GRT.EXTA.CD.WD": [
+    "total grants excluding technical cooperation in current US dollars",
+    "value of grants excluding technical cooperation (current US$)",
+    "grants amount excluding technical cooperation in current US dollars",
+    "grants (excluding technical cooperation) measured in current US dollars",
+    "grants excluding technical cooperation expressed in current US dollars"
+  ],
+  "IC.BUS.NREG": [
+    "number of new businesses registered",
+    "count of newly registered businesses",
+    "total new business registrations",
+    "number of new limited liability corporations registered",
+    "total new company registrations"
+  ],
+  "ER.H2O.INTR.PC": [
+    "renewable internal freshwater resources per person in cubic meters",
+    "per capita renewable internal freshwater resources in cubic meters",
+    "cubic meters of renewable internal freshwater resources per capita",
+    "renewable internal freshwater supply per person in cubic meters",
+    "per person renewable internal freshwater resources measured in cubic meters"
+  ],
+  "SN.ITK.DEFC.ZS": [
+    "prevalence of undernourishment as a percentage of the population",
+    "share of the population experiencing undernourishment",
+    "proportion of people undernourished in the population",
+    "percentage of the population that is undernourished",
+    "rate of undernourishment among the population"
+  ],
+  "EG.ELC.RNEW.ZS": [
+    "share of renewable electricity in total electricity output",
+    "proportion of electricity generated from renewables",
+    "percentage of total electricity output from renewable sources",
+    "renewable energy share of total electricity generation",
+    "fraction of electricity output produced by renewables"
+  ]
+}

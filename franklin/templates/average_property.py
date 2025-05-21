@@ -15,7 +15,12 @@ class AverageProperty(FranklinQuestion):
         slot_values: dict[str, str] | None = None,
     ):
         """Initialize a property increase comparison question."""
-        self.template = 'What was the mean {property} of the countries in the region of {subject_set} in {time}?'
+        self.templates = (
+            'What was the mean {property} of the countries in {subject_set} in {time}?',
+            'For the countries in {subject_set}, what was the mean {property} in {time}?',
+            'In {time}, what was the mean {property} of the countries in {subject_set}?',
+        )
+
         allowed_values = {'subject_set': SubjectSet, 'property': Property, 'time': Time}
 
         super().__init__(slot_values, allowed_values)

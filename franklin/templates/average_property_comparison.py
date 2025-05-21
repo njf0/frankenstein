@@ -15,7 +15,13 @@ class AveragePropertyComparison(FranklinQuestion):
         slot_values: dict[str, str] | None = None,
     ):
         """Initialize an average property comparison question."""
-        self.template = 'Was the {property} of {subject} {operator} than the average value for {subject_set} in {time}?'
+        self.templates = (
+            'Was the {property} of {subject} {operator} than the average value for {subject_set} in {time}?',
+            'In {time}, was the {property} of {subject} {operator} than the average value for {subject_set}?',
+            "Was {subject}'s {property} {operator} than the average value for {subject_set} in {time}?",
+            "In {time}, was {subject}'s {property} {operator} than the average value for {subject_set}?",
+        )
+
         allowed_values = {
             'property': Property,
             'subject': Subject,

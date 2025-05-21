@@ -15,7 +15,12 @@ class FactorIncreaseComparison(FranklinQuestion):
         slot_values: dict[str, str] | None = None,
     ):
         """Initialize a factor increase comparison question."""
-        self.template = 'What was the change in the {property} of {subject} between {time_a} and {time_b}?'
+        self.templates = (
+            'What was the change in the {property} of {subject} between {time_a} and {time_b}?',
+            'By how much did the {property} of {subject} change between {time_a} and {time_b}?',
+            'What was the difference in the {property} of {subject} between {time_a} and {time_b}?',
+            'Between {time_a} and {time_b}, what was the change in the {property} of {subject}?',
+        )
         allowed_values = {'subject': Subject, 'property': Property, 'time_a': Time, 'time_b': Time}
 
         super().__init__(slot_values, allowed_values)

@@ -1,5 +1,6 @@
 """Module containing types of slots and their values."""
 
+import json
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -37,7 +38,7 @@ class Subject(Slot):
     @classmethod
     def get_values(cls) -> list[str]:
         """Return all subjects."""
-        return cls.read_csv_file(cls.DATA_PATH / 'iso_3166.csv', 'country_code')
+        return cls.read_csv_file(cls.DATA_PATH / 'iso_3166.csv', column_name='country_code')
 
 
 class SubjectSet(Slot):
@@ -57,7 +58,9 @@ class Property(Slot):
         cls,
     ) -> list[str]:
         """Return all unique properties."""
-        return cls.read_csv_file(cls.DATA_PATH / 'wdi.csv', 'id')
+        with open(cls.DATA_PATH / 'indicator_paraphrases.json', encoding='utf-8') as f:
+            paraphrases = json.load(f)
+        return list(paraphrases.keys())
 
 
 class Number(Slot):

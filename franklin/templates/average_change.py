@@ -15,8 +15,11 @@ class AverageChange(FranklinQuestion):
         slot_values: dict[str, str] | None = None,
     ):
         """Initialize an average yearly change question."""
-        self.template = (
-            'What was the average yearly change in the {property} of {subject} for each year between {time_a} and {time_b}?'
+        self.templates = (
+            'What was the average yearly change in the {property} in {subject} for each year between {time_a} and {time_b}?',
+            'For each year between {time_a} and {time_b}, what was the average yearly change in the {property} in {subject}?',
+            "What was the average yearly change in {subject}'s {property} for each year between {time_a} and {time_b}?",
+            "For each year between {time_a} and {time_b}, what was the average yearly change in {subject}'s {property}?",
         )
         allowed_values = {
             'property': Property,

@@ -15,7 +15,13 @@ class CountryPropertyComparison(FranklinQuestion):
         slot_values: dict[str, str] | None = None,
     ):
         """Initialize a CountryPropertyComparison question."""
-        self.template = 'Did {subject_a} have a {operator} {property} in {time_a} than {subject_b} had in {time_b}?'
+        self.templates = (
+            'Did {subject_a} have a {operator} {property} in {time_a} than {subject_b} had in {time_b}?',
+            'Was the {property} of {subject_a} in {time_a} {operator} than that of {subject_b} in {time_b}?',
+            'In {time_a}, was the {property} of {subject_a} {operator} than that of {subject_b} in {time_b}?',
+            "In {time_a}, was {subject_a}'s {property} {operator} than {subject_b}'s in {time_b}?",
+        )
+
         allowed_values = {
             'subject_a': Subject,
             'property': Property,

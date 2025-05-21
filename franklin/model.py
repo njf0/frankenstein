@@ -9,11 +9,11 @@ import pandas as pd
 from pydantic import BaseModel
 
 from franklin.exceptions import (
-    InvalidCountryCode,
-    InvalidCountryName,
-    InvalidIndicatorCode,
-    InvalidIndicatorName,
-    InvalidRegionName,
+    InvalidCountryCodeError,
+    InvalidCountryNameError,
+    InvalidIndicatorCodeError,
+    InvalidIndicatorNameError,
+    InvalidRegionNameError,
 )
 
 
@@ -116,7 +116,7 @@ class GetCountryCodeFromName(BaseModel):
         try:
             return data[data['country_name'] == self.country_name]['country_code'].to_list()[0]
         except IndexError as e:
-            raise InvalidCountryName(self.country_name) from e
+            raise InvalidCountryNameError(self.country_name) from e
 
 
 class GetIndicatorCodeFromName(BaseModel):
@@ -129,7 +129,7 @@ class GetIndicatorCodeFromName(BaseModel):
         try:
             return data[data['name'] == self.indicator_name.strip()]['id'].to_list()[0]
         except IndexError as e:
-            raise InvalidIndicatorName(self.indicator_name) from e
+            raise InvalidIndicatorNameError(self.indicator_name) from e
 
 
 class GetMembership(BaseModel):
@@ -142,7 +142,7 @@ class GetMembership(BaseModel):
         try:
             return data[data['region_name'] == self.region_name]['country_code'].to_list()
         except IndexError as e:
-            raise InvalidRegionName(self.region_name) from e
+            raise InvalidRegionNameError(self.region_name) from e
 
 
 class RetrieveValue(BaseModel):
@@ -156,7 +156,7 @@ class RetrieveValue(BaseModel):
         # Check country code is valid
         data = pd.read_csv(Path('resources', 'iso_3166.csv'))
         if self.country_code not in data['country_code'].tolist():
-            raise InvalidCountryCode(self.country_code)
+            raise InvalidCountryCodeError(self.country_code)
 
         try:
             data = pd.read_csv(
@@ -164,7 +164,7 @@ class RetrieveValue(BaseModel):
                 index_col='country_code',
             )
         except FileNotFoundError as e:
-            raise InvalidIndicatorCode(self.indicator_code) from e
+            raise InvalidIndicatorCodeError(self.indicator_code) from e
 
         try:
             value = data.loc[self.country_code, self.year]

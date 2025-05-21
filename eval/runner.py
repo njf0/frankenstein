@@ -6,7 +6,7 @@ import logging
 import litellm
 from rich.logging import RichHandler
 
-from eval.prompts import BASE_PROMPT, FULL_TOOL_USE
+from eval.prompts import ALL_TOOLS, ARITHMETIC_TOOLS, BASE_PROMPT, DATA_TOOLS, TOOL_USE_BASE
 from franklin.action import FranklinAction
 from franklin.utils import get_tool_metadata
 
@@ -17,7 +17,7 @@ class Runner:
     def __init__(
         self,
         model_name: str,
-        tools: list[dict] | None = None,
+        toolset: str = 'all',
         debug: bool = False,
     ) -> None:
         """Initialize the Runner class.
@@ -33,8 +33,17 @@ class Runner:
 
         """
         self.model_name = model_name
-        self.system_prompt = BASE_PROMPT + FULL_TOOL_USE
-        self.tools = tools
+
+        if toolset == 'arithmetic':
+            self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + ARITHMETIC_TOOLS
+            self.tools = get_tool_metadata(toolset='arithmetic')
+        elif toolset == 'data':
+            self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + DATA_TOOLS
+            self.tools = get_tool_metadata(toolset='data')
+        elif toolset == 'all':
+            self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + ALL_TOOLS
+            self.tools = get_tool_metadata(toolset='all')
+
         self.debug = debug
         self.MAX_REPEATED_TOOL_CALLS = 10
         self.tool_call_counts = {}
@@ -135,6 +144,13 @@ class Runner:
             {'role': 'system', 'content': self.system_prompt},
             {'role': 'user', 'content': input_text},
         ]
+
+        if self.debug:
+            # Log the system prompt
+            logging.info(f'🧑‍💻 SYSTEM PROMPT: {self.system_prompt}')
+            # Log the user input
+            logging.info(f'🧑‍💻 USER PROMPT: {input_text}')
+
         logging.info(f'❓ {input_text}')
 
         while True:
@@ -206,7 +222,7 @@ if __name__ == '__main__':
 
     runner = Runner(
         model_name='openai/gpt-4o-mini',
-        tools=get_tool_metadata(),
+        toolset='all',
         debug=True,
     )
 

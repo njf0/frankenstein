@@ -15,9 +15,12 @@ class CountryThresholdCount(FranklinQuestion):
         slot_values: dict[str, str] | None = None,
     ):
         """Initialize a CountryThresholdCount question."""
-        self.template = (
-            'How many countries in the region of {subject_set} had a {operator} {property} than {subject} in {time}?'
+        self.templates = (
+            'How many countries in the region of {subject_set} had a {operator} {property} than {subject} in {time}?',
+            'In {time}, how many countries in the region of {subject_set} had a {operator} {property} than {subject}?',
+            'In {subject_set}, how many countries had a {operator} {property} than {subject} in {time}?',
         )
+
         allowed_values = {
             'subject_set': SubjectSet,
             'operator': BinaryOperator,
@@ -161,8 +164,18 @@ class CountryThresholdCount(FranklinQuestion):
                 self.actions.append(action.to_dict())
                 comparisons.append(action.result)
 
+        # Filter out None results and set data availability accordingly
+        valid_comparisons = [c for c in comparisons if c is not None]
+        if not valid_comparisons:
+            self.metadata['data_availability'] = 'missing'
+            return
+        if any(c is None for c in comparisons):
+            self.metadata['data_availability'] = 'partial'
+        else:
+            self.metadata['data_availability'] = 'full'
+
         # Get the number of countries that satisfy the condition
-        self.answer = sum(comparisons)
+        self.answer = sum(valid_comparisons)
 
         # Final answer
         action = FranklinAction('final_answer', answer=self.answer)
