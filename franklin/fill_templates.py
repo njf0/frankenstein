@@ -150,15 +150,15 @@ class TemplateFiller:
                 # with Path('dataset', 'answerable', f'{template_name}.jsonl').open('w') as f:
                 #     for example in answerable:
                 #         f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n') # Used for 'repeats' dataset
-                    # f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n')
-                    # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n') # Used for 'repeats' dataset
+                # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n')
+                # f.write(json.dumps(example) + '\n')
 
                 with Path('dataset', 'unanswerable', f'{template_name}.jsonl').open('w') as f:
                     for example in not_answerable:

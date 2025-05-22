@@ -1,940 +1,660 @@
 {
   "AG.LND.CREL.HA": [
-    "area of land used for growing cereals in hectares",
-    "hectares of land harvested for cereal crops",
-    "land area dedicated to cereal production in hectares",
-    "total hectares of cereal crop land",
-    "size of cereal-producing land in hectares"
+    "land area used for cereal farming",
+    "hectares of land growing cereal crops",
+    "cereal crop harvested land size",
+    "land planted with cereals in hectares",
+    "area of land producing cereal grains"
   ],
   "AG.LND.FRST.K2": [
     "forest land area in square kilometers",
-    "total forest coverage measured in square kilometers",
-    "area covered by forests in square kilometers",
-    "size of forested land in square kilometers",
-    "extent of forest area in square kilometers"
+    "total forest coverage in square kilometers",
+    "land area covered by forests",
+    "forested land size in square kilometers",
+    "total area of forested land"
   ],
   "AG.LND.TOTL.K2": [
     "total land area in square kilometers",
-    "country land size in square kilometers",
-    "land surface area excluding water bodies",
-    "total terrestrial area of a country",
-    "land area measured in square kilometers"
-  ],
-  "AG.PRD.CROP.XD": [
-    "crop production index with 2014-2016 as base",
-    "agricultural crop output index relative to 2014-2016",
-    "crop yield index compared to 2014-2016 average",
-    "crop production level indexed to 2014-2016",
-    "agricultural production index using 2014-2016 as baseline"
-  ],
-  "AG.PRD.FOOD.XD": [
-    "food production index with base years 2014 to 2016",
-    "index of food crop production relative to 2014-2016",
-    "food crop production level compared to 2014-2016 average",
-    "measure of edible food production using 2014-2016 as baseline",
-    "food production index benchmarked to 2014-2016 average"
-  ],
-  "AG.PRD.LVSK.XD": [
-    "livestock production index with base years 2014 to 2016",
-    "livestock output index compared to 2014-2016",
-    "animal product production index using 2014-2016 as baseline",
-    "livestock production level indexed to 2014-2016",
-    "livestock and animal product output index (2014-2016 = 100)"
+    "country land size excluding water bodies",
+    "land area excluding lakes and rivers",
+    "total terrestrial area in sq km",
+    "country's land surface area"
   ],
   "AG.SRF.TOTL.K2": [
-    "total land and water area in square kilometers",
-    "country size measured in square kilometers",
-    "total surface area including inland waters",
-    "overall area of the country in square kilometers",
-    "land and water surface area of the country"
+    "total land and water area",
+    "country surface area in square kilometers",
+    "total area including inland water",
+    "land and inland water surface size",
+    "country's total area in sq km"
   ],
   "AG.YLD.CREL.KG": [
     "cereal production per hectare",
-    "kilograms of cereal harvested per hectare",
-    "cereal crop yield in kilograms per hectare",
-    "amount of cereal produced per hectare",
-    "cereal harvest weight per hectare"
-  ],
-  "BM.GSR.ROYL.CD": [
-    "payments for using intellectual property in current US dollars",
-    "charges for intellectual property use in current US dollars",
-    "payments for licensed intellectual property rights in current US dollars",
-    "fees for intellectual property usage in current US dollars",
-    "payments for authorized use of intellectual property in current US dollars"
-  ],
-  "BN.CAB.XOKA.CD": [
-    "current account balance in current US dollars",
-    "net current account value in US dollars",
-    "balance of payments current account in US dollars",
-    "current account surplus or deficit in current US dollars",
-    "net exports and income balance in current US dollars"
-  ],
-  "BX.GRT.EXTA.CD.WD": [
-    "grants received excluding technical cooperation in current US dollars",
-    "non-repayable grants excluding technical assistance in current US dollars",
-    "financial grants without repayment excluding technical cooperation in current US dollars",
-    "current US dollar value of grants excluding technical cooperation",
-    "funds received as grants excluding technical cooperation in current US dollars"
-  ],
-  "BX.GRT.TECH.CD.WD": [
-    "technical cooperation grants in current US dollars",
-    "grants for technical assistance in current US dollars",
-    "funding for technical cooperation in current US dollars",
-    "technical cooperation financial grants in current US dollars",
-    "technical assistance grants measured in current US dollars"
-  ],
-  "BX.GSR.ROYL.CD": [
-    "Payments received for intellectual property use in current US dollars",
-    "Receipts from licensing intellectual property rights in current US dollars",
-    "Income from authorized use of patents and trademarks in current US dollars",
-    "Earnings from intellectual property charges in current US dollars",
-    "Revenue from intellectual property licensing fees in current US dollars"
-  ],
-  "BX.KLT.DINV.CD.WD": [
-    "net foreign direct investment inflows in current US dollars",
-    "net incoming foreign direct investment in current US dollars",
-    "foreign direct investment net inflows measured in current US dollars",
-    "net foreign direct investment received in current US dollars",
-    "net inward foreign direct investment in current US dollars"
-  ],
-  "BX.TRF.PWKR.CD.DT": [
-    "personal remittances received in current US dollars",
-    "money sent home by workers abroad in current US dollars",
-    "funds received from personal transfers and employee compensation in current US dollars",
-    "total personal remittance inflows in current US dollars",
-    "income received from abroad by individuals in current US dollars"
+    "kilograms of cereal per hectare",
+    "cereal crop yield per hectare",
+    "cereal harvest weight per hectare",
+    "cereal grain yield per hectare"
   ],
   "CM.MKT.INDX.ZG": [
-    "annual percentage change in S&P Global stock indices",
-    "yearly growth rate of S&P Global equity markets",
-    "annual percent change in S&P Global stock market prices",
-    "yearly change in S&P Global equity index values",
-    "annual percentage variation in S&P Global stock indices"
-  ],
-  "CM.MKT.LCAP.CD": [
-    "total market value of listed domestic companies in current US dollars",
-    "market capitalization of domestic publicly traded companies in current US dollars",
-    "combined stock market value of domestic listed companies in current US dollars",
-    "total equity market value of domestic listed firms in current US dollars",
-    "market value of shares of domestic listed companies in current US dollars"
+    "annual change in global stock indices",
+    "yearly percent change in S&P equity indices",
+    "annual growth rate of global stock markets",
+    "yearly percent change in S&P global equity prices",
+    "annual variation in S&P global stock indices"
   ],
   "CM.MKT.LDOM.NO": [
-    "total number of listed domestic companies",
-    "total count of companies listed on the domestic stock exchange",
-    "number of companies with shares listed locally",
-    "total listed companies on the national exchange",
-    "count of domestic companies publicly traded on the stock market"
+    "total number of listed companies",
+    "total domestic companies on stock exchange",
+    "total companies listed on local exchange",
+    "total publicly traded domestic companies",
+    "total companies listed on domestic stock market"
   ],
   "CM.MKT.TRNR": [
-    "turnover ratio of domestic stock trading",
-    "annual turnover rate of domestic shares",
-    "domestic shares trading turnover percentage",
-    "yearly turnover ratio of local stocks",
-    "domestic stock market turnover rate"
-  ],
-  "DT.DOD.DECT.CD": [
-    "total external debt in current US dollars",
-    "overall external debt owed to foreigners in current US dollars",
-    "total foreign debt stock measured in current US dollars",
-    "aggregate external debt amount in current US dollars",
-    "total external borrowing in current US dollars"
-  ],
-  "DT.DOD.DIMF.CD": [
-    "amount of IMF credit used in current US dollars",
-    "value of IMF loans outstanding in current US dollars",
-    "total IMF borrowing in current US dollars",
-    "IMF credit utilization measured in current US dollars",
-    "outstanding IMF debt in current US dollars"
-  ],
-  "DT.DOD.DPNG.CD": [
-    "Private nonguaranteed external debt in current US dollars",
-    "Private sector external debt without public guarantees",
-    "External debt owed by private borrowers in current US dollars",
-    "Private nonguaranteed foreign debt in current US dollars",
-    "External debt stocks of private nonguaranteed loans in current US dollars"
-  ],
-  "DT.DOD.DPPG.CD": [
-    "public and publicly guaranteed external debt in current US dollars",
-    "total public external debt owed in current US dollars",
-    "public and publicly backed foreign debt measured in current US dollars",
-    "amount of public and guaranteed external debt in current US dollars",
-    "outstanding public and publicly guaranteed foreign debt in current US dollars"
-  ],
-  "DT.DOD.DSTC.CD": [
-    "short-term external debt in current US dollars",
-    "external debt due within one year in US dollars",
-    "short-term foreign debt measured in current US dollars",
-    "external debt with maturity under one year in US dollars",
-    "current US dollar value of short-term external debt"
-  ],
-  "DT.DOD.MWBG.CD": [
-    "World Bank loans and credits in current US dollars",
-    "Outstanding World Bank debt in current US dollars",
-    "Total IBRD and IDA loans in current US dollars",
-    "Publicly guaranteed World Bank debt in current US dollars",
-    "World Bank lending and credits outstanding in current US dollars"
-  ],
-  "DT.ODA.ODAT.CD": [
-    "net official development assistance received in current US dollars",
-    "net foreign aid received in current US dollars",
-    "net concessional loans and grants received in current US dollars",
-    "net development aid received in current US dollars",
-    "net official financial assistance received in current US dollars"
-  ],
-  "EG.EGY.PRIM.PP.KD": [
-    "energy use per unit of GDP at purchasing power parity",
-    "primary energy consumption per dollar of GDP in 2017 PPP",
-    "energy intensity of the economy measured in megajoules per dollar",
-    "amount of primary energy used for each dollar of GDP at 2017 PPP",
-    "megajoules of energy consumed per 2017 PPP dollar of economic output"
-  ],
-  "EG.GDP.PUSE.KO.PP.KD": [
-    "GDP generated per kilogram of oil equivalent energy",
-    "economic output per unit of energy use in constant 2021 international dollars",
-    "gross domestic product per energy consumed measured in constant 2021 PPP dollars",
-    "purchasing power parity GDP per kilogram of oil equivalent energy",
-    "value of GDP produced per unit of energy use in 2021 constant PPP dollars"
+    "domestic shares turnover ratio",
+    "turnover of domestic stock market",
+    "annual domestic stock trading ratio",
+    "domestic equity turnover rate",
+    "domestic shares trading volume ratio"
   ],
   "EG.USE.PCAP.KG.OE": [
-    "energy consumption per person measured in kilograms of oil equivalent",
-    "per capita energy use in kilograms of oil equivalent",
-    "average individual energy use in kg of oil equivalent",
-    "energy usage per person expressed in kg of oil equivalent",
-    "kilograms of oil equivalent energy use per capita"
+    "energy use per person in oil equivalent",
+    "per capita energy consumption in oil units",
+    "average energy use per person measured in oil",
+    "individual energy use in kilograms of oil equivalent",
+    "energy consumption per capita in oil equivalent units"
   ],
   "EN.ATM.PM25.MC.M3": [
-    "average annual exposure to fine particulate matter",
-    "mean yearly PM2.5 pollution levels",
-    "typical population exposure to PM2.5 particles",
-    "annual mean concentration of fine airborne particles",
-    "average PM2.5 air pollution exposure per person"
+    "average annual pm2.5 exposure",
+    "mean yearly pm2.5 pollution level",
+    "population-weighted pm2.5 concentration",
+    "annual pm2.5 air pollution exposure",
+    "average pm2.5 particle exposure"
   ],
   "EN.BIR.THRD.NO": [
     "number of threatened bird species",
-    "count of endangered and vulnerable birds",
-    "total bird species at risk",
-    "number of bird species facing threats",
-    "count of birds classified as threatened"
+    "count of endangered bird species",
+    "total vulnerable bird species",
+    "bird species at risk",
+    "number of rare and endangered birds"
   ],
   "EN.FSH.THRD.NO": [
     "number of threatened fish species",
-    "count of fish species at risk",
-    "total fish species classified as threatened",
-    "fish species listed as endangered or vulnerable",
-    "number of fish species facing conservation concerns"
+    "count of endangered fish species",
+    "fish species at risk",
+    "fish species classified as vulnerable",
+    "total fish species under threat"
   ],
   "EN.HPT.THRD.NO": [
-    "Number of threatened higher plant species",
-    "Count of endangered vascular plant species",
-    "Total threatened native vascular plants",
-    "Number of at-risk higher plant species",
-    "Count of vulnerable higher plant species"
+    "number of threatened native vascular plants",
+    "count of at-risk higher plant species",
+    "total endangered higher plant species",
+    "number of vulnerable native vascular plants",
+    "count of higher plants classified as threatened"
   ],
   "EN.MAM.THRD.NO": [
-    "Number of threatened mammal species",
-    "Count of at-risk mammal species",
-    "Mammal species classified as threatened",
-    "Total endangered and vulnerable mammals",
-    "Mammal species facing conservation risks"
+    "number of threatened mammal species",
+    "count of endangered and vulnerable mammals",
+    "total at-risk mammal species",
+    "number of mammals facing extinction risk",
+    "count of mammal species with conservation concerns"
   ],
   "EN.POP.DNST": [
-    "people per square kilometer of land",
-    "number of people living per square kilometer",
-    "population concentration per square kilometer",
-    "average people per square kilometer of land area",
-    "population density measured in people per square kilometer"
+    "population per square kilometer",
+    "number of people per land area",
+    "people living per square kilometer",
+    "population concentration per land area",
+    "inhabitants per square kilometer of land"
   ],
   "ER.H2O.FWTL.K3": [
-    "total annual freshwater withdrawals in billion cubic meters",
-    "yearly freshwater extraction volume",
-    "total water withdrawn annually in billion cubic meters",
-    "annual freshwater use measured in billion cubic meters",
-    "total yearly freshwater taken in billion cubic meters"
+    "total annual freshwater withdrawals",
+    "yearly freshwater use in billion cubic meters",
+    "total water taken annually",
+    "annual freshwater extraction volume",
+    "yearly freshwater consumption total"
   ],
   "ER.H2O.INTR.K3": [
-    "total renewable freshwater resources in billion cubic meters",
-    "total renewable internal freshwater supply in billion cubic meters",
-    "total renewable freshwater available within the country in billion cubic meters",
-    "total internal renewable freshwater resources in billion cubic meters",
-    "total renewable freshwater flow inside the country in billion cubic meters"
-  ],
-  "FI.RES.TOTL.CD": [
-    "total foreign exchange and gold reserves in current US dollars",
-    "total monetary reserves including gold valued in current US dollars",
-    "combined gold and foreign currency reserves in current US dollars",
-    "total official reserves held by monetary authorities in current US dollars",
-    "overall reserves of gold and foreign exchange in current US dollars"
+    "total renewable freshwater resources",
+    "renewable internal freshwater supply",
+    "total renewable water from rivers and groundwater",
+    "internal renewable freshwater volume",
+    "renewable freshwater resources within the country"
   ],
   "FM.LBL.BMNY.ZG": [
     "annual growth rate of broad money",
     "yearly increase in broad money supply",
     "broad money growth percentage per year",
-    "annual change in broad money",
-    "yearly broad money supply growth rate"
+    "annual change in broad money stock",
+    "yearly broad money supply growth"
   ],
   "FP.CPI.TOTL.ZG": [
-    "annual consumer price inflation rate",
+    "annual consumer price inflation",
     "yearly change in consumer prices",
-    "inflation rate based on consumer price index",
-    "annual percentage increase in consumer costs",
-    "yearly inflation in consumer goods and services prices"
+    "inflation rate for consumer goods",
+    "annual increase in consumer costs",
+    "yearly consumer price index change"
   ],
   "FR.INR.DPST": [
-    "interest rate paid on bank deposits",
-    "bank deposit interest rate percentage",
-    "percentage interest earned on savings deposits",
-    "interest rate for demand and time deposits",
-    "deposit interest rate as a percentage"
+    "bank deposit interest rate",
+    "interest rate on savings deposits",
+    "rate paid on bank deposits",
+    "deposit account interest rate",
+    "interest earned on bank deposits"
   ],
   "FR.INR.LEND": [
     "bank lending interest rate",
-    "borrowing interest rate for private sector loans",
-    "interest rate on bank loans",
-    "short- and medium-term loan interest rate",
-    "lending rate as a percentage"
+    "interest rate on loans",
+    "borrowing interest rate for private sector",
+    "loan interest rate percentage",
+    "bank loan interest rate"
   ],
   "FR.INR.LNDP": [
-    "difference between lending and deposit interest rates",
-    "gap between loan and deposit rates",
+    "difference between lending and deposit rates",
+    "gap between loan and deposit interest rates",
     "spread between bank lending and deposit rates",
-    "difference in interest rates for loans and deposits",
-    "margin between lending rate and deposit rate"
+    "difference in interest rates on loans and deposits",
+    "margin between lending and deposit rates"
   ],
   "FR.INR.RINR": [
-    "inflation-adjusted lending interest rate",
-    "real interest rate percentage",
-    "lending rate after inflation adjustment",
-    "inflation-corrected interest rate",
-    "interest rate accounting for inflation"
+    "inflation-adjusted lending rate",
+    "lending interest rate after inflation",
+    "real borrowing cost",
+    "interest rate adjusted for inflation",
+    "inflation-corrected lending rate"
   ],
   "FR.INR.RISK": [
-    "lending risk premium as a percentage",
-    "interest rate spread between loans and treasury bills",
-    "bank loan interest rate margin over government bills",
-    "difference between lending rate and treasury bill rate",
-    "extra interest charged on loans compared to treasury bills"
+    "lending risk premium",
+    "bank loan interest spread",
+    "loan rate minus treasury bill rate",
+    "lending rate risk margin",
+    "interest rate difference on loans"
   ],
   "IC.BUS.NREG": [
-    "number of newly registered businesses",
-    "count of new business registrations",
-    "total new limited liability companies registered",
-    "number of new companies formed",
-    "annual new business registration count"
-  ],
-  "IE.PPI.ENGY.CD": [
-    "investment in energy projects with private involvement in current US dollars",
-    "private sector funding for energy infrastructure in current US dollars",
-    "private investment in electricity and natural gas projects in current US dollars",
-    "financial commitments to energy projects with private participation in current US dollars",
-    "capital invested by private entities in energy sector projects in current US dollars"
-  ],
-  "IE.PPI.TRAN.CD": [
-    "investment in transport projects with private sector involvement in current US dollars",
-    "private investment in transport infrastructure measured in current US dollars",
-    "transport infrastructure investment with private participation in current US dollars",
-    "private sector commitments to transport projects in current US dollars",
-    "funding for transport projects involving private partners in current US dollars"
-  ],
-  "IE.PPI.WATR.CD": [
-    "Investment in water and sanitation projects with private involvement in current US dollars",
-    "Private sector investment in water and sanitation infrastructure in current US dollars",
-    "Funding for water and sanitation with private participation measured in current US dollars",
-    "Private investment commitments in water and sanitation facilities in current US dollars",
-    "Capital invested in water and sanitation projects with private partners in current US dollars"
-  ],
-  "IE.PPN.ICTI.CD": [
-    "investment in public-private ICT projects in current US dollars",
-    "funding committed to public-private partnerships for ICT infrastructure in current US dollars",
-    "financial commitments to public-private ICT initiatives in current US dollars",
-    "money invested in public-private ICT partnerships measured in current US dollars",
-    "capital invested in public-private ICT infrastructure projects in current US dollars"
+    "number of new businesses registered",
+    "count of newly registered companies",
+    "new limited liability companies registered",
+    "annual new business registrations",
+    "number of new firms registered"
   ],
   "IP.JRN.ARTC.SC": [
-    "number of scientific and technical journal articles published",
-    "count of scientific and engineering research articles",
-    "total scientific and technical research papers",
-    "quantity of published science and technology articles",
-    "volume of scientific and technical journal publications"
+    "number of scientific journal articles",
+    "count of technical research papers",
+    "scientific and engineering article output",
+    "published science and tech papers",
+    "volume of research journal articles"
   ],
   "IP.PAT.NRES": [
-    "number of patent applications filed by nonresidents",
-    "patent filings by foreign inventors",
-    "patent applications from outside residents",
-    "international patent applications by nonresidents",
-    "patents filed by nonresident applicants"
+    "patent applications filed by nonresidents",
+    "patent filings from foreign applicants",
+    "patent requests by nonresident inventors",
+    "international patent applications by outsiders",
+    "patent submissions from nonlocal applicants"
   ],
   "IP.PAT.RESD": [
-    "number of patent applications filed by residents",
-    "patent applications submitted by local inventors",
-    "resident-filed patent applications",
-    "patents applied for by residents",
-    "patent filings by domestic applicants"
+    "patent applications filed by residents",
+    "resident patent filings",
+    "patents applied for by local residents",
+    "domestic patent applications",
+    "patent requests from residents"
   ],
   "IQ.CPA.ECON.XQ": [
-    "average score for economic management quality",
-    "economic management performance rating",
-    "macroeconomic and fiscal policy effectiveness score",
-    "debt and fiscal policy management rating",
-    "overall economic management cluster rating"
+    "economic management score",
+    "macroeconomic management rating",
+    "fiscal and debt policy score",
+    "economic policy management rating",
+    "overall economic management rating"
   ],
   "IQ.CPA.IRAI.XQ": [
     "IDA resource allocation score",
-    "IDA allocation index from 1 to 6",
-    "average IDA resource rating",
-    "IDA country allocation rating",
-    "IDA resource distribution index"
+    "average IDA allocation rating",
+    "IDA allocation index value",
+    "IDA country allocation score",
+    "overall IDA allocation rating"
   ],
   "IQ.CPA.PUBS.XQ": [
-    "average score for public sector management and institutions",
-    "public sector management and institutions quality rating",
-    "rating of public sector governance and management",
-    "public sector institutions performance score",
-    "public sector management and institutions effectiveness rating"
+    "public sector management quality score",
+    "public institutions performance rating",
+    "governance and management cluster average",
+    "public sector effectiveness index",
+    "quality of public administration score"
   ],
   "IQ.CPA.SOCI.XQ": [
-    "average score for social inclusion and equity policies",
-    "social inclusion and equity policy rating",
-    "social equity and inclusion policy index",
-    "average rating of social inclusion and equity policies",
-    "social inclusion and equity policy cluster score"
+    "average score of social inclusion policies",
+    "social equity policy cluster rating",
+    "social inclusion and equity policy average",
+    "rating of policies for social inclusion and equity",
+    "average score for social inclusion and equity policies"
   ],
   "IQ.CPA.STRC.XQ": [
-    "average score of structural policy quality",
-    "structural policy performance rating",
-    "structural policy cluster score",
+    "average score of structural policies",
+    "structural policy rating average",
     "average rating of trade and financial policies",
-    "overall structural policy assessment score"
+    "business and financial policy score average",
+    "structural policy cluster score"
   ],
   "IS.AIR.DPRT": [
     "number of registered airline departures worldwide",
-    "total takeoffs by registered air carriers globally",
-    "worldwide flights by registered airlines",
-    "global departures of registered air carriers",
-    "total registered carrier takeoffs worldwide"
+    "worldwide departures by registered air carriers",
+    "total takeoffs by registered airlines globally",
+    "global flights by registered carriers",
+    "registered airline takeoffs worldwide"
   ],
   "IS.RRS.TOTL.KM": [
     "total length of railway routes",
-    "total kilometers of rail lines",
-    "total railway route distance",
-    "length of train service routes",
-    "total rail network length in kilometers"
+    "total railway route kilometers",
+    "length of rail lines available",
+    "total kilometers of rail routes",
+    "total railway route distance"
   ],
   "IS.SHP.GOOD.TU": [
-    "container port traffic measured in twenty-foot equivalent units",
+    "container port traffic in twenty-foot equivalent units",
     "flow of containers through ports in TEUs",
-    "volume of container shipments at ports in twenty-foot units",
-    "port container handling in standard twenty-foot containers",
-    "total container movements at ports counted in TEUs"
+    "volume of container shipments at ports",
+    "container throughput measured in TEUs",
+    "port container handling in standard units"
   ],
   "LP.EXP.DURS.MD": [
     "median export lead time in days",
     "typical export shipment lead time",
-    "median time from shipment to port for exports",
-    "average export lead time for half of shipments",
-    "median days to export goods"
+    "median days to export goods",
+    "average export processing time",
+    "median export shipping lead time"
   ],
   "LP.IMP.DURS.MD": [
-    "median import lead time in days",
-    "typical import delivery time in days",
-    "median days from port to consignee",
-    "average import transit time in days",
-    "typical shipment arrival time after import"
+    "median import delivery time in days",
+    "typical import lead time from port",
+    "median days for import arrival",
+    "average import transit time to consignee",
+    "typical shipment lead time for imports"
   ],
   "LP.LPI.OVRL.XQ": [
     "overall logistics performance score",
-    "national logistics efficiency rating",
+    "logistics efficiency rating",
     "country logistics quality index",
-    "logistics service effectiveness score",
-    "logistics performance rating from 1 to 5"
-  ],
-  "NV.MNF.TECH.ZS.UN": [
-    "share of medium and high-tech manufacturing in total manufacturing value added",
-    "proportion of medium and high-tech industry value added in manufacturing",
-    "percentage of manufacturing value added from medium and high-tech sectors",
-    "medium and high-tech manufacturing contribution to total manufacturing value added",
-    "medium and high-tech manufacturing value added as a share of total manufacturing"
+    "logistics service performance score",
+    "logistics operations effectiveness rating"
   ],
   "NY.GDP.DEFL.KD.ZG": [
-    "annual GDP deflator inflation rate",
-    "yearly inflation based on GDP deflator",
-    "annual price change measured by GDP deflator",
-    "GDP deflator inflation percentage per year",
-    "yearly growth rate of GDP deflator inflation"
-  ],
-  "NY.GDP.MKTP.CD": [
-    "gross domestic product in current US dollars",
-    "total economic output in current US dollars",
-    "value of all goods and services produced in current US dollars",
-    "overall GDP measured in current US dollars",
-    "total market value of production in current US dollars"
+    "annual GDP price inflation rate",
+    "yearly GDP deflator inflation",
+    "inflation rate from GDP deflator",
+    "annual price change in GDP",
+    "yearly GDP implicit deflator growth"
   ],
   "NY.GDP.MKTP.KD.ZG": [
     "annual GDP growth rate",
-    "yearly increase in gross domestic product",
+    "yearly increase in GDP",
     "GDP growth percentage per year",
-    "yearly GDP expansion rate",
-    "annual percentage change in GDP"
-  ],
-  "NY.GDP.PCAP.CD": [
-    "GDP per person in current US dollars",
-    "average economic output per person in current dollars",
-    "gross domestic product per capita in current US dollars",
-    "per capita GDP measured in current US dollars",
-    "economic production per person in current US dollars"
+    "annual economic growth rate",
+    "yearly GDP expansion rate"
   ],
   "NY.GDP.PCAP.KD.ZG": [
     "annual growth rate of GDP per person",
     "yearly increase in GDP per capita",
-    "yearly percentage growth of income per person",
-    "annual percent change in GDP per capita",
-    "yearly growth rate of average economic output per person"
-  ],
-  "NY.GDP.PCAP.PP.CD": [
-    "GDP per person adjusted for purchasing power",
-    "average income per capita in international dollars",
-    "per capita GDP using PPP conversion",
-    "gross domestic product per person in current international dollars",
-    "income per person measured by purchasing power parity"
-  ],
-  "NY.GNP.ATLS.CD": [
-    "Gross national income in current US dollars using the Atlas method",
-    "Total national income measured in current US dollars with Atlas adjustment",
-    "GNI calculated in current US dollars by the Atlas conversion",
-    "National income in current US dollars averaged by the Atlas method",
-    "Gross national income expressed in current US dollars with Atlas smoothing"
-  ],
-  "NY.GNP.MKTP.PP.CD": [
-    "gross national income measured by purchasing power parity in current international dollars",
-    "total national income adjusted for purchasing power in current international dollars",
-    "GNI calculated using PPP conversion in current international dollars",
-    "national income expressed in current international dollars at purchasing power parity",
-    "gross national income valued at purchasing power parity in current international dollars"
-  ],
-  "NY.GNP.PCAP.CD": [
-    "average gross national income per person in current US dollars",
-    "gross national income per capita using the Atlas conversion method",
-    "per person GNI measured in current US dollars with Atlas adjustment",
-    "average income per capita converted by the World Bank Atlas method",
-    "GNI per person expressed in current US dollars using Atlas method"
-  ],
-  "NY.GNP.PCAP.PP.CD": [
-    "average gross national income per person adjusted for purchasing power parity",
-    "per capita GNI measured in international dollars",
-    "gross national income per person in PPP terms",
-    "income per person using purchasing power parity",
-    "GNI per capita expressed in current international dollars"
+    "GDP per capita growth rate per year",
+    "annual percent change in GDP per person",
+    "yearly GDP growth per capita"
   ],
   "PA.NUS.FCRF": [
     "official exchange rate in local currency per US dollar",
-    "average local currency to US dollar exchange rate",
-    "yearly average exchange rate of local currency against the US dollar",
-    "official annual average currency exchange rate to the US dollar",
-    "average local currency units per US dollar exchange rate"
+    "average annual exchange rate to the US dollar",
+    "local currency units per US dollar average",
+    "yearly average official exchange rate",
+    "official local currency to dollar exchange rate"
   ],
   "PA.NUS.PPP": [
     "purchasing power parity conversion rate for GDP",
-    "GDP PPP exchange rate in local currency",
-    "local currency units per international dollar for GDP",
+    "PPP exchange rate for GDP",
     "GDP purchasing power parity factor",
-    "PPP conversion factor for gross domestic product"
+    "local currency units per international dollar for GDP",
+    "GDP price level adjustment factor"
   ],
   "PA.NUS.PPPC.RF": [
     "price level ratio of PPP to exchange rate",
     "purchasing power parity price level comparison",
+    "price level difference using PPP and exchange rate",
     "ratio of PPP conversion factor to market exchange rate",
-    "relative price level based on PPP and exchange rate",
-    "price level difference measured by PPP and exchange rate"
+    "general price level ratio based on PPP and exchange rate"
   ],
   "SE.PRE.ENRR": [
-    "preprimary school enrollment rate",
-    "gross enrollment in preprimary education",
-    "total preprimary enrollment percentage",
+    "preprimary school gross enrollment rate",
+    "total preprimary enrollment as a percentage",
     "preprimary education enrollment ratio",
+    "gross enrollment in early childhood education",
     "percentage of children enrolled in preprimary school"
   ],
   "SE.PRM.ENRR": [
-    "primary school enrollment rate",
+    "primary school gross enrollment rate",
+    "total primary enrollment as percentage of official age group",
+    "overall primary school enrollment ratio",
     "gross enrollment in primary education",
-    "total primary school enrollment percentage",
-    "primary education enrollment ratio",
-    "overall primary school attendance rate"
+    "total primary student enrollment rate"
   ],
   "SE.PRM.NENR": [
     "primary school enrollment rate",
     "net enrollment in primary education",
     "percentage of children enrolled in primary school",
     "primary education net enrollment",
-    "proportion of official-age children in primary school"
+    "share of official-age children in primary school"
   ],
   "SE.PRM.UNER.FE": [
-    "number of primary school-age girls not enrolled in school",
-    "count of girls out of primary school",
-    "girls of primary school age not attending school",
-    "number of female children missing primary education",
-    "primary school-age girls not in school"
+    "primary school-age girls not enrolled",
+    "girls out of primary school",
+    "female children missing primary education",
+    "primary-age girls out of school",
+    "girls not attending primary school"
   ],
   "SE.PRM.UNER.MA": [
-    "Number of primary school-age boys not enrolled in school",
-    "Count of boys out of primary school",
-    "Boys of primary school age not attending school",
-    "Primary-age male children not in school",
-    "Number of boys missing primary education"
+    "primary-age boys not in school",
+    "boys of primary school age out of school",
+    "male children missing primary education",
+    "primary school-age boys not enrolled",
+    "boys not attending primary school"
   ],
   "SE.SEC.ENRR": [
     "secondary school enrollment rate",
     "gross enrollment in secondary education",
-    "total secondary education enrollment percentage",
-    "overall secondary school attendance rate",
-    "secondary level gross enrollment ratio"
+    "total secondary school enrollment percentage",
+    "secondary education enrollment ratio",
+    "overall secondary school enrollment share"
   ],
   "SE.SEC.NENR": [
     "secondary school enrollment rate",
-    "percentage of children enrolled in secondary school",
     "net enrollment in secondary education",
-    "proportion of official-age students in secondary school",
-    "secondary education enrollment percentage"
+    "percentage of children enrolled in secondary school",
+    "secondary education net enrollment",
+    "proportion of official-age students in secondary school"
   ],
   "SE.TER.ENRR": [
     "tertiary school enrollment rate",
     "gross enrollment in higher education",
-    "percentage of population enrolled in tertiary education",
-    "total enrollment ratio for tertiary schools",
-    "overall participation in higher education"
+    "percentage enrolled in tertiary education",
+    "total tertiary enrollment ratio",
+    "higher education enrollment percentage"
   ],
   "SG.TIM.UWRK.FE": [
-    "percentage of daily time women spend on unpaid domestic and care work",
-    "share of a day women dedicate to unpaid household and care tasks",
-    "proportion of a 24-hour day women spend on unpaid home and caregiving activities",
-    "fraction of daily time women allocate to unpaid domestic and care duties",
-    "amount of a day women use for unpaid household and caregiving work"
+    "proportion of daily time women spend on unpaid domestic work",
+    "share of a day women devote to unpaid household and care tasks",
+    "percentage of daily hours women spend on unpaid home and care duties",
+    "fraction of a 24-hour day women allocate to unpaid domestic and caregiving work",
+    "amount of daily time women use for unpaid household and care activities"
   ],
   "SG.TIM.UWRK.MA": [
-    "Percentage of daily time men spend on unpaid household and care work",
-    "Share of a day men devote to unpaid domestic and caregiving tasks",
-    "Proportion of a 24-hour day men allocate to unpaid home and care duties",
-    "Amount of daily time men spend on unpaid domestic chores and caregiving",
-    "Percentage of a day men use for unpaid household and care activities"
+    "male time spent on unpaid domestic and care work",
+    "proportion of day men spend on household chores",
+    "percentage of daily time men do unpaid care work",
+    "share of 24-hour day men spend on domestic tasks",
+    "fraction of daily time men spend on unpaid household work"
   ],
   "SH.DYN.MORT": [
-    "under-five child mortality rate per thousand live births",
-    "probability of dying before age five per 1,000 births",
-    "number of deaths of children under five per 1,000 live births",
-    "mortality rate for children under five per thousand births",
-    "likelihood of a newborn dying before age five per 1,000 live births"
+    "under-five child mortality rate",
+    "deaths of children under five per 1,000 births",
+    "mortality rate for children below age five",
+    "probability of dying before age five per 1,000",
+    "under-5 death rate per 1,000 live births"
   ],
   "SH.DYN.NMRT": [
-    "neonatal death rate per thousand live births",
-    "number of newborn deaths per 1,000 live births",
-    "deaths of babies under 28 days per 1,000 births",
-    "infant mortality rate within first 28 days per 1,000 births",
-    "rate of newborn deaths per thousand live births"
+    "neonatal deaths per 1,000 live births",
+    "deaths of newborns under 28 days per 1,000 births",
+    "newborn mortality rate per 1,000 live births",
+    "infant deaths within first 28 days per 1,000 births",
+    "mortality rate of babies under 28 days per 1,000 live births"
   ],
   "SH.IMM.IDPT": [
     "percentage of children vaccinated with DPT",
-    "share of 12-23 month olds immunized against DPT",
-    "proportion of toddlers receiving DPT vaccine",
-    "rate of DPT immunization among young children",
-    "coverage of DPT vaccination in children aged 12 to 23 months"
+    "share of toddlers immunized against DPT",
+    "proportion of 12-23 month olds with DPT shots",
+    "rate of DPT immunization in young children",
+    "coverage of DPT vaccine among infants"
   ],
   "SH.IMM.MEAS": [
-    "percentage of children vaccinated against measles",
+    "percentage of children vaccinated for measles",
     "measles immunization rate for toddlers",
-    "share of 12-23 month olds vaccinated for measles",
+    "share of 12-23 month olds immunized against measles",
     "proportion of young children with measles vaccine",
-    "measles vaccination coverage among infants"
+    "measles vaccine coverage among infants"
   ],
   "SH.STA.MMRT": [
     "maternal deaths per 100,000 live births",
-    "pregnancy-related death rate per 100,000 births",
-    "number of maternal deaths for every 100,000 live births",
-    "maternal mortality rate per 100,000 births",
-    "deaths of mothers per 100,000 live births"
+    "pregnancy-related death rate",
+    "maternal mortality rate per live births",
+    "deaths of mothers per 100,000 births",
+    "pregnancy-associated maternal death ratio"
   ],
   "SH.TBS.INCD": [
-    "rate of new tuberculosis cases per 100,000 people",
-    "number of tuberculosis cases per 100,000 population",
-    "tuberculosis incidence rate per 100,000 individuals",
-    "new and relapse TB cases per 100,000 people",
-    "tuberculosis cases occurring annually per 100,000 population"
+    "tuberculosis cases per 100,000 people",
+    "new and relapse tuberculosis rate",
+    "annual tuberculosis incidence rate",
+    "tuberculosis infection rate per 100,000",
+    "yearly tuberculosis case rate"
   ],
   "SI.DST.02ND.20": [
-    "income share of the second 20 percent of the population",
-    "income portion held by the second quintile",
-    "share of total income earned by the second fifth of people",
-    "percentage of income received by the second 20 percent group",
-    "income distribution for the second quintile of the population"
+    "income share of the second 20 percent",
+    "income portion of the second quintile",
+    "share of income held by the second fifth",
+    "income percentage of the second income group",
+    "earnings share of the second 20 percent"
   ],
   "SI.DST.03RD.20": [
-    "Income share of the third 20 percent of the population",
-    "Income percentage held by the middle quintile",
-    "Share of total income earned by the third quintile",
-    "Income portion of the third fifth of the population",
-    "Percentage of income received by the third 20 percent group"
+    "income share of the third 20 percent",
+    "income portion of the middle quintile",
+    "share of income held by the third quintile",
+    "income percentage of the third fifth of population",
+    "income distribution for the third 20 percent"
   ],
   "SI.DST.04TH.20": [
-    "Income share of the fourth quintile",
-    "Income percentage of the fourth 20 percent",
-    "Share of income held by the fourth 20 percent",
-    "Income portion of the fourth quintile",
-    "Percentage of income for the fourth 20 percent of the population"
+    "income share of the fourth 20 percent",
+    "income portion of the fourth quintile",
+    "share of income held by the fourth fifth",
+    "income percentage of the fourth income group",
+    "earnings share of the fourth quintile"
   ],
   "SI.DST.05TH.20": [
-    "Income share of the top 20 percent",
-    "Portion of income held by the richest fifth",
-    "Share of total income earned by highest quintile",
-    "Income percentage of the wealthiest 20 percent",
-    "Earnings share of the top one-fifth of the population"
+    "income share of top 20 percent",
+    "income held by highest quintile",
+    "share of income for richest 20 percent",
+    "income portion of top fifth",
+    "income percentage of highest 20 percent"
   ],
   "SI.DST.10TH.10": [
-    "Income share of the top 10 percent",
-    "Percentage of income held by the richest 10 percent",
-    "Share of total income earned by highest 10 percent",
-    "Income portion of the top decile",
-    "Earnings concentration among the top 10 percent"
+    "income share of top 10 percent",
+    "share of income held by highest 10 percent",
+    "income portion of richest 10 percent",
+    "top 10 percent income share",
+    "income percentage of highest 10 percent"
   ],
   "SI.DST.FRST.10": [
-    "income share of the bottom 10 percent",
-    "income portion held by the lowest tenth",
-    "share of total income earned by the poorest 10 percent",
-    "percentage of income going to the lowest 10 percent",
-    "income distribution for the bottom 10 percent"
+    "income share of bottom 10 percent",
+    "share of income held by lowest 10 percent",
+    "income portion of poorest 10 percent",
+    "earnings share of bottom decile",
+    "income percentage of lowest decile"
   ],
   "SI.DST.FRST.20": [
-    "income share of the bottom 20 percent",
-    "share of total income earned by the lowest fifth",
-    "portion of income held by the poorest 20 percent",
-    "percentage of income received by the bottom quintile",
-    "income distribution for the lowest 20 percent"
+    "income share of the poorest 20%",
+    "share of income held by bottom fifth",
+    "income portion of lowest quintile",
+    "earnings share of bottom 20 percent",
+    "income distribution for lowest 20 percent"
   ],
   "SI.POV.DDAY": [
-    "percentage of people living on less than $2.15 a day",
-    "share of population below $2.15 daily income",
-    "proportion of people under $2.15 a day poverty line",
-    "poverty rate at $2.15 a day in 2017 PPP",
-    "percentage of population living in extreme poverty at $2.15 a day"
+    "percentage of population living under $2.15 a day",
+    "share of people below $2.15 daily income",
+    "proportion of population in extreme poverty at $2.15",
+    "poverty rate at $2.15 a day adjusted for purchasing power",
+    "percent of people living on less than $2.15 daily income"
   ],
   "SI.POV.GAPS": [
-    "average income shortfall below $2.15 a day as a percentage of the poverty line",
-    "mean poverty gap at $2.15 daily income in 2017 PPP",
-    "depth of poverty measured by shortfall from $2.15 a day",
-    "percentage gap from $2.15 daily poverty threshold",
-    "average consumption shortfall relative to $2.15 a day poverty line"
+    "poverty gap at two dollars fifteen a day",
+    "average income shortfall below two dollars fifteen",
+    "depth of poverty at two dollars fifteen a day",
+    "mean poverty gap as percentage of two dollars fifteen line",
+    "income shortfall from two dollars fifteen poverty threshold"
   ],
   "SI.POV.GINI": [
     "income inequality index",
-    "measure of income distribution inequality",
-    "income disparity score",
-    "income inequality coefficient",
-    "Gini coefficient for income distribution"
+    "income distribution inequality",
+    "income gap measure",
+    "inequality of income distribution",
+    "income disparity index"
   ],
   "SI.POV.NAHC": [
-    "percentage of people living below the national poverty line",
-    "share of the population under the country's poverty threshold",
-    "proportion of residents classified as poor nationally",
-    "national poverty rate as a percentage of the population",
-    "fraction of people living in poverty according to national standards"
+    "percentage of people below national poverty line",
+    "share of population in poverty nationally",
+    "proportion of people under national poverty threshold",
+    "national poverty rate as percent of population",
+    "percent of population living in poverty nationally"
   ],
   "SI.SPR.PC40": [
-    "average daily income or consumption per person for the poorest 40%",
-    "mean daily earnings or spending per capita among the bottom 40%",
-    "typical daily income or consumption per person in the lowest 40% income group",
-    "average per person daily income or consumption for the bottom 40% of the population",
-    "mean daily consumption or income per capita for the lowest 40%"
+    "average daily income per person for bottom 40%",
+    "mean daily consumption per capita of lowest 40%",
+    "daily income per capita of poorest 40%",
+    "average daily earnings per person in bottom 40%",
+    "mean daily spending per capita for lowest 40%"
   ],
   "SI.SPR.PC40.ZG": [
-    "annual growth rate of income or consumption for the poorest 40 percent",
-    "yearly increase in average real income or consumption among the bottom 40 percent",
-    "annualized growth in per person real income or consumption for the lowest 40 percent of the population",
-    "average yearly growth rate of real consumption or income per capita for the bottom 40 percent",
-    "yearly growth rate in real per capita income or consumption for the poorest 40 percent"
+    "annual growth rate of income for bottom 40%",
+    "yearly increase in consumption for lowest 40%",
+    "average annual income growth for poorest 40%",
+    "yearly growth in real income for bottom 40%",
+    "annualized growth of consumption for lowest 40%"
   ],
   "SI.SPR.PCAP": [
-    "average daily consumption or income per person in 2017 PPP dollars",
-    "mean daily income or consumption per capita adjusted for 2017 purchasing power parity",
-    "daily per capita consumption or income in 2017 PPP dollars",
-    "average daily income or consumption per person using 2017 PPP",
-    "mean daily per person consumption or income in 2017 PPP dollars"
+    "average daily income per person in 2017 PPP dollars",
+    "mean daily consumption per capita in 2017 PPP dollars",
+    "daily income or consumption per person in 2017 PPP",
+    "average per capita daily income in 2017 PPP dollars",
+    "mean daily spending or income per person in 2017 PPP"
   ],
   "SI.SPR.PCAP.ZG": [
     "annual growth rate of average real income per person",
     "yearly increase in average real consumption per capita",
-    "annualized growth in per capita real income",
-    "average yearly growth rate of real per person consumption",
-    "yearly growth rate of mean real income per capita"
+    "average annual growth in per capita real income",
+    "yearly growth rate of mean real income per person",
+    "annualized growth of average real consumption per capita"
   ],
   "SL.GDP.PCAP.EM.KD": [
     "GDP per worker in constant 2021 international dollars",
-    "output per employed person in 2021 PPP dollars",
-    "economic value produced per employed individual in constant 2021 dollars",
-    "GDP per employed person measured in 2021 purchasing power parity dollars",
-    "average GDP generated by each worker in 2021 PPP dollars"
+    "output per employed person adjusted for purchasing power",
+    "average GDP per employed individual in 2021 PPP dollars",
+    "economic output per worker in constant 2021 dollars",
+    "GDP per employed person measured in 2021 PPP dollars"
   ],
   "SL.TLF.TOTL.IN": [
     "total labor force",
     "total working-age labor supply",
-    "total employed and unemployed labor force",
-    "total labor force aged 15 and older",
-    "total active labor force participants"
+    "total employed and unemployed workers",
+    "total job-seeking population",
+    "total labor market participants"
   ],
   "SM.POP.NETM": [
+    "net migration rate",
     "net number of migrants",
+    "migration balance",
     "net migration flow",
-    "difference between immigrants and emigrants",
-    "net migration total",
-    "net migration count"
+    "net migration total"
   ],
   "SM.POP.TOTL": [
     "total number of international migrants",
     "total foreign-born population",
-    "total number of people born abroad",
+    "total number of migrants living abroad",
     "total international migrant population",
     "total number of foreign-born residents"
   ],
   "SP.ADO.TFRT": [
-    "teenage birth rate",
-    "births per thousand teenage girls",
+    "births per 1,000 teenage girls",
+    "adolescent birth rate",
     "fertility rate among girls aged 15 to 19",
-    "number of births per 1,000 adolescent females",
-    "adolescent birth rate per thousand women"
+    "number of births to teenagers per 1,000",
+    "births per 1,000 women aged 15-19"
   ],
   "SP.DYN.CBRT.IN": [
     "number of live births per 1,000 people",
-    "crude birth rate per thousand population",
-    "annual births per 1,000 residents",
-    "live birth rate per 1,000 individuals",
-    "yearly births per thousand people"
+    "annual births per 1,000 population",
+    "crude birth rate per 1,000",
+    "yearly live birth rate per 1,000 people",
+    "births per 1,000 population per year"
   ],
   "SP.DYN.CDRT.IN": [
-    "crude death rate per thousand people",
-    "number of deaths per 1,000 population",
-    "annual deaths per thousand residents",
-    "yearly death rate per 1,000 individuals",
-    "deaths per 1,000 people per year"
+    "crude death rate per 1,000 people",
+    "annual deaths per 1,000 population",
+    "yearly death rate per 1,000",
+    "number of deaths per 1,000 people annually",
+    "deaths per 1,000 population each year"
   ],
   "SP.DYN.IMRT.IN": [
-    "infant death rate per thousand live births",
+    "infant deaths per 1,000 live births",
     "number of infant deaths per 1,000 births",
     "infant mortality per thousand live births",
-    "deaths of infants under one year per 1,000 births",
-    "infant death rate for every 1,000 live births"
+    "deaths of infants under one per 1,000 births",
+    "infant death rate per 1,000 live births"
   ],
   "SP.DYN.LE00.FE.IN": [
     "female life expectancy at birth in years",
-    "number of years a newborn girl is expected to live",
-    "average lifespan of female newborns",
-    "expected years of life for baby girls",
-    "life expectancy for females at birth"
+    "average lifespan of newborn girls",
+    "expected years of life for female newborns",
+    "newborn female life expectancy",
+    "typical lifespan for girls at birth"
   ],
   "SP.DYN.LE00.IN": [
-    "average lifespan at birth in years",
-    "expected years of life for a newborn",
-    "total life expectancy at birth",
-    "number of years a newborn is expected to live",
-    "life expectancy for newborns in years"
+    "average lifespan at birth",
+    "expected years of life at birth",
+    "newborn life expectancy in years",
+    "total years lived from birth",
+    "life expectancy for newborns"
   ],
   "SP.DYN.LE00.MA.IN": [
-    "average lifespan of newborn boys in years",
-    "expected years of life at birth for males",
-    "male life expectancy at birth in years",
-    "typical lifespan of a newborn male",
-    "years a newborn boy is expected to live"
+    "male life expectancy at birth",
+    "average lifespan of newborn males",
+    "expected years of life for newborn boys",
+    "newborn male life span estimate",
+    "life expectancy for male infants"
   ],
   "SP.DYN.TFRT.IN": [
     "average number of children per woman",
     "total births per woman",
-    "number of children born to a woman",
     "fertility rate per woman",
-    "average lifetime births per woman"
+    "average children born to a woman",
+    "number of births per woman"
   ],
   "SP.POP.DPND": [
+    "age dependency ratio",
     "ratio of dependents to working-age population",
-    "number of dependents per 100 working-age people",
-    "age dependency percentage of working-age group",
-    "proportion of young and elderly dependents to working-age population",
-    "dependent population share relative to working-age adults"
+    "proportion of dependents per 100 working-age people",
+    "number of dependents per working-age population",
+    "dependent population share compared to working-age group"
   ],
   "SP.POP.GROW": [
     "annual population growth rate",
-    "yearly increase in population percentage",
-    "population growth percentage per year",
-    "yearly population change rate",
+    "yearly population increase percentage",
+    "population growth per year",
+    "yearly change in population size",
     "annual percentage change in population"
   ],
   "SP.POP.TOTL": [
+    "total population",
+    "overall number of residents",
     "total number of people",
-    "overall population size",
-    "total population count",
-    "number of residents",
+    "population size",
     "total inhabitants"
   ],
   "SP.RUR.TOTL": [
-    "number of people living in rural areas",
-    "rural area population count",
-    "population residing in the countryside",
-    "total rural inhabitants",
-    "number of residents in rural regions"
+    "people living in rural areas",
+    "rural residents",
+    "population in rural regions",
+    "number of rural inhabitants",
+    "rural area population"
   ],
   "SP.URB.TOTL": [
-    "number of people living in cities",
-    "population living in urban areas",
+    "people living in urban areas",
+    "number of city residents",
     "urban area population count",
-    "city population size",
-    "total urban residents"
+    "population in cities and towns",
+    "total urban inhabitants"
   ],
   "SP.UWT.TFRT": [
     "percentage of married women needing contraception",
-    "proportion of married women lacking contraception",
-    "share of married women with unmet contraception needs",
-    "percentage of married women not using contraception but wanting to avoid pregnancy",
-    "rate of married women needing but not using contraception"
-  ],
-  "TM.VAL.MRCH.CD.WT": [
-    "value of imported goods in current US dollars",
-    "total merchandise imports in current US dollars",
-    "cost of goods imported in current US dollars",
-    "merchandise import value in current US dollars",
-    "total value of goods brought in from abroad in current US dollars"
-  ],
-  "TT.PRI.MRCH.XD.WD": [
-    "net barter terms of trade index with 2015 base",
-    "ratio of export to import prices indexed to 2015",
-    "trade price index relative to 2015",
-    "export-import price ratio with 2015 as base year",
-    "net barter terms of trade measured against 2015"
-  ],
-  "TX.MNF.TECH.ZS.UN": [
-    "share of medium and high-tech exports in total manufactured exports",
-    "proportion of medium and high-tech products in manufactured exports",
-    "percentage of medium and high-tech goods within manufactured exports",
-    "medium and high-tech exports as part of total manufactured exports",
-    "ratio of medium and high-tech manufactured exports to all manufactured exports"
-  ],
-  "TX.VAL.FUEL.ZS.UN": [
-    "fuel exports as a share of total merchandise exports",
-    "proportion of merchandise exports from fuel products",
-    "percentage of exports made up by fuels",
-    "share of mineral fuel exports in total merchandise exports",
-    "fuel commodities export percentage of total goods exports"
-  ],
-  "TX.VAL.MMTL.ZS.UN": [
-    "share of ores and metals in total merchandise exports",
-    "percentage of exports made up by ores and metals",
-    "proportion of merchandise exports from ores and metals",
-    "ores and metals export value as a percentage of total exports",
-    "fraction of merchandise exports consisting of ores and metals"
-  ],
-  "TX.VAL.MRCH.CD.WT": [
-    "value of merchandise exports in current US dollars",
-    "total goods exports measured in current US dollars",
-    "merchandise export earnings in current US dollars",
-    "value of exported goods in current US dollars",
-    "total merchandise exports expressed in current US dollars"
-  ],
-  "TX.VAL.TECH.CD": [
-    "high-tech export value in current US dollars",
-    "value of high-technology product exports",
-    "exports of high-tech goods in current US dollars",
-    "current US dollar value of high-tech exports",
-    "high-technology export earnings in current US dollars"
+    "married women with unmet contraception needs",
+    "married women not using contraception but wanting to avoid pregnancy",
+    "unmet contraception demand among married women",
+    "married women of reproductive age lacking contraception use"
   ]
 }

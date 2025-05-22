@@ -14,9 +14,27 @@ class TopNTotal(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a TopNTotal question."""
-        self.template = 'Which {n} countries in {subject_set} had the {operator} {property} in {time}?'
-        allowed_values = {'property': Property, 'n': Number, 'subject_set': SubjectSet, 'operator': NaryOperator, 'time': Time}
+        """Initialize a TopNTotal question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            'Which {n} countries in {subject_set} had the {operator} {property} in {time}?',
+            'In {subject_set}, which {n} countries had the {operator} {property} in {time}?',
+            'In {time}, which {n} countries in {subject_set} had the {operator} {property}?',
+        )
+
+        allowed_values = {
+            'property': Property,
+            'n': Number,
+            'subject_set': SubjectSet,
+            'operator': NaryOperator,
+            'time': Time,
+        }
 
         super().__init__(slot_values, allowed_values)
 
@@ -41,42 +59,30 @@ class TopNTotal(FranklinQuestion):
         property_values = []
         for country in countries:
             action = FranklinAction(
-                'get_country_code_from_name',
-                country_name=self.c2n[country],
-            )
-            action.execute()
-            self.actions.append(action.to_dict())
-            country_code = action.result
-
-            action = FranklinAction(
                 'retrieve_value',
-                country_code=country_code,
+                country_code=country,
                 indicator_code=indicator_code,
                 year=self.time,
             )
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
+            property_values.append((country, value))
 
-            if value is not None:
-                property_values.append((country_code, value))
-            else:
-                self.metadata['data_availability'] = 'partial'
+        print(property_values)
 
         # Check if all values are missing
         if all(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'missing'
-
+            self.metadata['answerable'] = False
             return
 
         # Check if any values are missing
         if any(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'partial'
 
-            return
-
         # Use maximum or minimum tool to find the top `n` values
-        values = [float(v[1]) for v in property_values]
+        values = [float(v[1]) for v in property_values if v[1] is not None]
         action = FranklinAction('sort', values=values)
         if self.operator == 'highest':
             action.execute()
@@ -102,25 +108,7 @@ class TopNTotal(FranklinQuestion):
         self.actions.append(action.to_dict())
         self.answer = action.result
 
-        self.metadata['data_availability'] = 'full'
-
-    def validate_combination(self, combination: dict) -> bool:
-        """Validate the combination of slot values.
-
-        For this question type, no specific constraints are required.
-
-        Parameters
-        ----------
-        combination: dict
-            A combination of slot values.
-
-        Returns
-        -------
-        bool
-            True if the combination is valid, False otherwise.
-
-        """
-        return True
+        return self.answer
 
 
 if __name__ == '__main__':

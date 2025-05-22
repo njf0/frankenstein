@@ -14,14 +14,27 @@ class FactorIncreaseComparison(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a factor increase comparison question."""
+        """Initialize a factor increase comparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
         self.templates = (
             'What was the change in the {property} of {subject} between {time_a} and {time_b}?',
             'By how much did the {property} of {subject} change between {time_a} and {time_b}?',
             'What was the difference in the {property} of {subject} between {time_a} and {time_b}?',
             'Between {time_a} and {time_b}, what was the change in the {property} of {subject}?',
         )
-        allowed_values = {'subject': Subject, 'property': Property, 'time_a': Time, 'time_b': Time}
+
+        allowed_values = {
+            'subject': Subject,
+            'property': Property,
+            'time_a': Time,
+            'time_b': Time,
+        }
 
         super().__init__(slot_values, allowed_values)
 
@@ -87,20 +100,22 @@ class FactorIncreaseComparison(FranklinQuestion):
         # Set data availability to 'missing' if all values are missing
         if value_a is None and value_b is None:
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
 
-            return None
+            return
 
         # Set data availability to 'partial' if there is at least one missing value
         if value_a is None or value_b is None:
             self.metadata['data_availability'] = 'partial'
+            self.metadata['answerable'] = False
 
             return
 
         # Compute the increase
         action = FranklinAction(
             'subtract',
-            a=value_b,
-            b=value_a,
+            value_a=value_b,
+            value_b=value_a,
         )
         action.execute()
         self.actions.append(action.to_dict())

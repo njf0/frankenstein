@@ -14,8 +14,20 @@ class RegionRangeComparison(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a region range comparison question."""
-        self.template = 'Did {region_a} have a {operator} range of values for {property} than {region_b} in {time}?'
+        """Initialize a region range comparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            'Did {region_a} have a {operator} range of values for {property} than {region_b} in {time}?',
+            'In {time}, did {region_a} have a {operator} range of values for {property} than {region_b}?',
+            'In {region_a}, was the range of values for {property} {operator} than that of {region_b} in {time}?',
+        )
+
         allowed_values = {
             'region_a': SubjectSet,
             'region_b': SubjectSet,
@@ -23,6 +35,7 @@ class RegionRangeComparison(FranklinQuestion):
             'property': Property,
             'time': Time,
         }
+
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(self, combination: dict) -> bool:
@@ -63,8 +76,7 @@ class RegionRangeComparison(FranklinQuestion):
                 action.execute()
                 self.actions.append(action.to_dict())
                 value = action.result
-                if value is not None:
-                    values.append(value)
+                values.append(value)
 
             # Check for missing data
             if any(v is None for v in values):
@@ -72,6 +84,7 @@ class RegionRangeComparison(FranklinQuestion):
 
             if all(v is None for v in values):
                 self.metadata['data_availability'] = 'missing'
+                self.metadata['answerable'] = False
                 return
 
             # Compute the range (max - min)

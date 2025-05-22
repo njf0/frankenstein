@@ -38,11 +38,11 @@ def add(values: list[float]) -> float:
     """
     if isinstance(values, str):
         values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
+        values = [float(value.strip()) for value in values.split(',') if pd.notna(value)]
     else:
-        values = [float(value) for value in values]
+        values = [float(value) for value in values if pd.notna(value)]
 
-    return sum(float(value) for value in values)
+    return sum(float(value) for value in values if pd.notna(value))
 
 
 def subtract(value_a: float, value_b: float) -> float:
@@ -139,7 +139,7 @@ def mean(values: list[float]) -> float:
         values = values.strip('[]\'"')
         values = [float(value.strip()) for value in values.split(',')]
     else:
-        values = [float(value) for value in values]
+        values = [float(value) for value in values if pd.notna(value)]
 
     return sum(values) / len(values)
 
@@ -198,9 +198,9 @@ def maximum(values: list[float]) -> float:
     """
     if isinstance(values, str):
         values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
+        values = [float(value.strip()) for value in values.split(',') if pd.notna(value)]
     else:
-        values = [float(value) for value in values]
+        values = [float(value) for value in values if pd.notna(value)]
 
     return max(values)
 
@@ -217,9 +217,9 @@ def minimum(values: list[float]) -> float:
     """
     if isinstance(values, str):
         values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
+        values = [float(value.strip()) for value in values.split(',') if pd.notna(value)]
     else:
-        values = [float(value) for value in values]
+        values = [float(value) for value in values if pd.notna(value)]
 
     return min(values)
 
@@ -254,9 +254,14 @@ def sort(values: list[float]) -> list[float]:
         The sorted list of numbers.
 
     """
-    if isinstance(values[0], str):
-        values = [value.strip("[]'") for value in values]
-        values = [float(value) for value in values[0].split(',')]
+    if isinstance(values, str):
+        values = values.strip('[]\'"')
+        values = [float(value.strip()) for value in values.split(',')]
+    else:
+        values = [float(value) for value in values]
+
+    # Remove NaN values
+    values = [float(value) for value in values if pd.notna(value)]
 
     return sorted(values)
 

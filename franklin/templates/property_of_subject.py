@@ -20,12 +20,18 @@ class PropertyOfSubject(FranklinQuestion):
         ----------
         slot_values: dict[str, str]
             Slot values for the question.
-        data_manager: DataManager
-            Instance of DataManager with preloaded datasets.
 
         """
-        self.template = 'What was the {property} of {subject} in {time}?'
-        allowed_values = {'property': Property, 'subject': Subject, 'time': Time}
+        self.templates = (
+            'What was the {property} of {subject} in {time}?',
+            'In {time}, what was the {property} of {subject}?',
+        )
+
+        allowed_values = {
+            'property': Property,
+            'subject': Subject,
+            'time': Time,
+        }
 
         super().__init__(slot_values, allowed_values)
 
@@ -61,6 +67,7 @@ class PropertyOfSubject(FranklinQuestion):
 
         if value is None:
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
 
             return None
 

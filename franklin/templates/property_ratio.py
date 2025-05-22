@@ -4,7 +4,7 @@ import argparse
 
 from franklin.action import FranklinAction
 from franklin.franklin_question import FranklinQuestion
-from franklin.slot_values import Property, SubjectSet, Time  # Add Time
+from franklin.slot_values import Property, SubjectSet, Time
 
 
 class PropertyRatio(FranklinQuestion):
@@ -14,11 +14,26 @@ class PropertyRatio(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a property ratio question."""
-        self.template = (
-            'For the countries in {subject_set}, what was the ratio of the highest value of {property} to the lowest in {time}?'
+        """Initialize a property ratio question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            'What was the ratio of the highest value to the lowest for the {property} of {subject_set} in {time}?',
+            'In {subject_set}, what was the ratio of the highest value of {property} to the lowest in {time}?',
+            'In {time}, what was the ratio of the highest value of {property} to the lowest for {subject_set}?',
         )
-        allowed_values = {'subject_set': SubjectSet, 'property': Property, 'time': Time}  # Add time
+
+        allowed_values = {
+            'subject_set': SubjectSet,
+            'property': Property,
+            'time': Time,
+        }
+
         super().__init__(slot_values, allowed_values)
 
     def compute_actions(self):
@@ -47,21 +62,15 @@ class PropertyRatio(FranklinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            if value is not None:
-                property_values.append(value)
-            else:
-                self.metadata['data_availability'] = 'partial'
-
-        # Check if all values are missing
-        if not property_values or all(v is None for v in property_values):
-            self.metadata['data_availability'] = 'missing'
-
-            return
+            property_values.append(value)
 
         # Check if any values are missing
-        if any(v is None for v in property_values):
+        if any(value is None for value in property_values):
             self.metadata['data_availability'] = 'partial'
 
+        if all(value is None for value in property_values):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Find the highest and lowest values
@@ -92,7 +101,6 @@ class PropertyRatio(FranklinQuestion):
         self.actions.append(action.to_dict())
         self.answer = action.result
 
-        self.metadata['data_availability'] = 'full'
         return self.answer
 
 

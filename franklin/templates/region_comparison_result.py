@@ -20,21 +20,20 @@ class RegionComparisonResult(FranklinQuestion):
         ----------
         slot_values: dict
             Slot values for the question.
-        data_manager: DataManager
-            Instance of DataManager with preloaded datasets.
 
         """
-        self.template = 'For the country in {subject_set} that had the {operator} {property_2} in {time_2}, and what was its value in {time_1}?'
+        self.templates = (
+            'For the country in {subject_set} that had the {operator} {property} in {time_2}, and what was its value in {time_1}?',
+            'In {time_1}, what was the {property} for the country in {subject_set} that had the {operator} value for that indicator in {time_2}?',
+        )
+
         allowed_values = {
             'time_1': Time,
-            'property_1': Property,
+            'property': Property,
             'subject_set': SubjectSet,
             'operator': NaryOperator,
-            'property_2': Property,
             'time_2': Time,
         }
-
-        self.answer_format = 'tuple(str, float)'
 
         super().__init__(slot_values, allowed_values)
 
@@ -64,20 +63,14 @@ class RegionComparisonResult(FranklinQuestion):
         self.actions.append(action.to_dict())
         countries = action.result
 
-        # # Get the indicator code for property_1
-        # action = FranklinAction('get_indicator_code_from_name', indicator_name=self.i2n[self.property_1])
-        # action.execute()
-        # self.actions.append(action.to_dict())
-        # indicator_code_1 = action.result
-
-        # Get the indicator code for property_2
-        action = FranklinAction('get_indicator_code_from_name', indicator_name=self.i2n[self.property_2])
+        # Get the indicator code for property
+        action = FranklinAction('get_indicator_code_from_name', indicator_name=self.i2n[self.property])
         action.execute()
         self.actions.append(action.to_dict())
-        indicator_code_2 = action.result
+        indicator_code = action.result
 
-        # Retrieve the property_2 values for the countries
-        property_2_values = []
+        # Retrieve the property values for the countries in time_2
+        property_values = []
         for country in countries:
             action = FranklinAction('get_country_code_from_name', country_name=self.c2n[country])
             action.execute()
@@ -85,28 +78,25 @@ class RegionComparisonResult(FranklinQuestion):
             country_code = action.result
 
             action = FranklinAction(
-                'retrieve_value', country_code=country_code, indicator_code=indicator_code_2, year=self.time_2
+                'retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.time_2
             )
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-
-            property_2_values.append((country_code, value))
-
-        # Check if all values are missing
-        if all(v[1] is None for v in property_2_values):
-            self.metadata['data_availability'] = 'missing'
-
-            return
+            property_values.append((country_code, value))
 
         # Check if any values are missing
-        if any(v[1] is None for v in property_2_values):
+        if any(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'partial'
 
+        # Check if all values are missing
+        if all(v[1] is None for v in property_values):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Use maximum or minimum tool to find the target value
-        values = [v[1] for v in property_2_values if v[1] is not None]
+        values = [v[1] for v in property_values if v[1] is not None]
         if self.operator == 'highest':
             action = FranklinAction('maximum', values=values)
         elif self.operator == 'lowest':
@@ -115,29 +105,25 @@ class RegionComparisonResult(FranklinQuestion):
         self.actions.append(action.to_dict())
         target_value = action.result
 
-        target_country = next((c for c, v in property_2_values if v == target_value), None)
+        target_country = next((c for c, v in property_values if v == target_value), None)
 
-        # Retrieve the property_1 value for the target country
-        action = FranklinAction(
-            'retrieve_value', country_code=target_country, indicator_code=indicator_code_2, year=self.time_1
-        )
+        # Retrieve the property value for the target country in time_1
+        action = FranklinAction('retrieve_value', country_code=target_country, indicator_code=indicator_code, year=self.time_1)
         action.execute()
         self.actions.append(action.to_dict())
-        property_1_value = action.result
+        property_value_time_1 = action.result
 
         # Check if the required value is missing
-        if property_1_value is None:
+        if property_value_time_1 is None:
             self.metadata['data_availability'] = 'missing'
-
+            self.metadata['answerable'] = False
             return
 
         # Set the final answer
-        action = FranklinAction('final_answer', answer=property_1_value)
+        action = FranklinAction('final_answer', answer=property_value_time_1)
         action.execute()
         self.actions.append(action.to_dict())
         self.answer = action.result
-
-        self.metadata['data_availability'] = 'full'
 
         return self.answer
 

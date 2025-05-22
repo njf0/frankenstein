@@ -14,19 +14,28 @@ class AverageChange(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize an average yearly change question."""
+        """Initialize an average yearly change question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
         self.templates = (
             'What was the average yearly change in the {property} in {subject} for each year between {time_a} and {time_b}?',
             'For each year between {time_a} and {time_b}, what was the average yearly change in the {property} in {subject}?',
             "What was the average yearly change in {subject}'s {property} for each year between {time_a} and {time_b}?",
             "For each year between {time_a} and {time_b}, what was the average yearly change in {subject}'s {property}?",
         )
+
         allowed_values = {
             'property': Property,
             'subject': Subject,
             'time_a': Time,
             'time_b': Time,
         }
+
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(
@@ -96,6 +105,7 @@ class AverageChange(FranklinQuestion):
 
         if all(v is None for v in yearly_values):
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Compute yearly changes
@@ -118,8 +128,6 @@ class AverageChange(FranklinQuestion):
         action.execute()
         self.actions.append(action.to_dict())
         self.answer = action.result
-
-        self.metadata['data_availability'] = 'full'
 
         return self.answer
 

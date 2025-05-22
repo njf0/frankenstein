@@ -14,7 +14,14 @@ class AveragePropertyComparison(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize an average property comparison question."""
+        """Initialize an average property comparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
         self.templates = (
             'Was the {property} of {subject} {operator} than the average value for {subject_set} in {time}?',
             'In {time}, was the {property} of {subject} {operator} than the average value for {subject_set}?',
@@ -29,6 +36,7 @@ class AveragePropertyComparison(FranklinQuestion):
             'subject_set': SubjectSet,
             'time': Time,
         }
+
         super().__init__(slot_values, allowed_values)
 
     def compute_actions(self):
@@ -65,6 +73,7 @@ class AveragePropertyComparison(FranklinQuestion):
         # Check for missing data
         if subject_value is None:
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Get the countries in the subject_set
@@ -88,8 +97,7 @@ class AveragePropertyComparison(FranklinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            if value is not None:
-                region_values.append(value)
+            region_values.append(value)
 
         # Check for missing data
         if any(value is None for value in region_values):
@@ -97,6 +105,7 @@ class AveragePropertyComparison(FranklinQuestion):
 
         if all(v is None for v in region_values):
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
 
             return
 

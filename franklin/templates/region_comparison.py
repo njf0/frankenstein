@@ -14,9 +14,26 @@ class RegionComparison(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a subject_set comparison question."""
-        self.template = 'Which country in the region of {subject_set} had the {operator} {property} in {time}?'
-        allowed_values = {'subject_set': SubjectSet, 'operator': NaryOperator, 'property': Property, 'time': Time}
+        """Initialize a subject_set comparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            'Which country in the region of {subject_set} had the {operator} {property} in {time}?',
+            'In {subject_set}, which country had the {operator} {property} in {time}?',
+            'For the countries in {subject_set}, which had the {operator} {property} in {time}?',
+        )
+
+        allowed_values = {
+            'subject_set': SubjectSet,
+            'operator': NaryOperator,
+            'property': Property,
+            'time': Time,
+        }
 
         super().__init__(slot_values, allowed_values)
 
@@ -52,14 +69,12 @@ class RegionComparison(FranklinQuestion):
         # Check if all values are missing
         if all(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'missing'
-
+            self.metadata['answerable'] = False
             return
 
         # Check if any values are missing
         if any(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'partial'
-
-            return
 
         # Use maximum or minimum tool to find the target value
         values = [v[1] for v in property_values if v[1] is not None]
@@ -76,7 +91,7 @@ class RegionComparison(FranklinQuestion):
         # Check if the required value is missing
         if target_country is None:
             self.metadata['data_availability'] = 'missing'
-
+            self.metadata['answerable'] = False
             return
 
         # Set the final answer
@@ -88,24 +103,6 @@ class RegionComparison(FranklinQuestion):
         self.metadata['data_availability'] = 'full'
 
         return self.answer
-
-    def validate_combination(self, combination: dict) -> bool:
-        """Validate the combination of slot values.
-
-        For this question type, no specific constraints are required.
-
-        Parameters
-        ----------
-        combination: dict
-            A combination of slot values.
-
-        Returns
-        -------
-        bool
-            True if the combination is valid, False otherwise.
-
-        """
-        return True
 
 
 if __name__ == '__main__':

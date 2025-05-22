@@ -14,9 +14,25 @@ class TotalProperty(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a total property value question."""
-        self.template = 'What was the total {property} of the countries in the region of {subject_set} in {time}?'
-        allowed_values = {'subject_set': SubjectSet, 'property': Property, 'time': Time}
+        """Initialize a total property value question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            'What was the total {property} of the countries in the region of {subject_set} in {time}?',
+            'In {time}, what was the total {property} of the countries in the region of {subject_set}?',
+            'For the countries in the region of {subject_set}, what was the total {property} in {time}?',
+        )
+
+        allowed_values = {
+            'subject_set': SubjectSet,
+            'property': Property,
+            'time': Time,
+        }
 
         super().__init__(slot_values, allowed_values)
 
@@ -37,33 +53,26 @@ class TotalProperty(FranklinQuestion):
         # Retrieve the property values for the countries
         property_values = []
         for country in countries:
-            action = FranklinAction('get_country_code_from_name', country_name=self.c2n[country])
-            action.execute()
-            self.actions.append(action.to_dict())
-            country_code = action.result
-
-            action = FranklinAction('retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.time)
+            action = FranklinAction(
+                'retrieve_value',
+                country_code=country,
+                indicator_code=indicator_code,
+                year=self.time,
+            )
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-
-            # if value is not None:
             property_values.append(value)
-            # else:
-            #     self.metadata['data_availability'] = 'partial'
-            #
 
         # Check if all values are missing
         if all(v is None for v in property_values):
             self.metadata['data_availability'] = 'missing'
-
+            self.metadata['answerable'] = False
             return
 
         # Check if any values are missing
         if any(v is None for v in property_values):
             self.metadata['data_availability'] = 'partial'
-
-            return
 
         # Compute the total property value
         action = FranklinAction('add', values=property_values)
@@ -80,24 +89,6 @@ class TotalProperty(FranklinQuestion):
         self.metadata['data_availability'] = 'full'
 
         return self.answer
-
-    def validate_combination(self, combination: dict) -> bool:
-        """Validate the combination of slot values.
-
-        For this question type, no specific constraints are required.
-
-        Parameters
-        ----------
-        combination: dict
-            A combination of slot values.
-
-        Returns
-        -------
-        bool
-            True if the combination is valid, False otherwise.
-
-        """
-        return True
 
 
 if __name__ == '__main__':

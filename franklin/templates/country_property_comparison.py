@@ -14,7 +14,14 @@ class CountryPropertyComparison(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a CountryPropertyComparison question."""
+        """Initialize a CountryPropertyComparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
         self.templates = (
             'Did {subject_a} have a {operator} {property} in {time_a} than {subject_b} had in {time_b}?',
             'Was the {property} of {subject_a} in {time_a} {operator} than that of {subject_b} in {time_b}?',
@@ -30,6 +37,7 @@ class CountryPropertyComparison(FranklinQuestion):
             'time_a': Time,
             'time_b': Time,
         }
+
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(self, combination: dict) -> bool:
@@ -103,11 +111,13 @@ class CountryPropertyComparison(FranklinQuestion):
         # Check if values are missing
         if value_a is None and value_b is None:
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
 
             return
 
         elif value_a is None or value_b is None:
             self.metadata['data_availability'] = 'partial'
+            self.metadata['answerable'] = False
 
             return
 
@@ -115,21 +125,19 @@ class CountryPropertyComparison(FranklinQuestion):
         if self.operator == 'higher':
             action = FranklinAction(
                 'greater_than',
-                a=value_a,
-                b=value_b,
+                value_a=value_a,
+                value_b=value_b,
             )
         elif self.operator == 'lower':
             action = FranklinAction(
                 'less_than',
-                a=value_a,
-                b=value_b,
+                value_a=value_a,
+                value_b=value_b,
             )
         action.execute()
         self.actions.append(action.to_dict())
 
         self.answer = action.result
-
-        self.metadata['data_availability'] = 'full'
 
         return self.answer
 

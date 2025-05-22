@@ -59,7 +59,7 @@ class FranklinQuestion:
 
         # Metadata
         self.metadata = {
-            'answerable': None,
+            'answerable': True,
             'answer_format': None,
             'data_availability': 'full',
             'question_template': self.__class__.__name__,
@@ -208,27 +208,32 @@ class FranklinQuestion:
         self.compute_actions()
 
         # Decide if data_availability == partial is answerable or not
-        if self.metadata['data_availability'] == 'missing' or self.metadata['data_availability'] == 'partial':
-            self.metadata['answerable'] = False
-        elif self.metadata['data_availability'] == 'full':
-            self.metadata['answerable'] = True
+        # if self.metadata['data_availability'] == 'missing' or self.metadata['data_availability'] == 'partial':
+        #     self.metadata['answerable'] = False
+        # elif self.metadata['data_availability'] == 'full':
+        #     self.metadata['answerable'] = True
 
         formatted_output = self.format_output()
 
         # Create a table for the question template, slot values, and question
-        table = Table(title='Data point', show_lines=True)
+        table = Table(title=formatted_output['question'], show_lines=True, width=128)
 
-        table.add_column('Key', justify='right', style='cyan', no_wrap=True)
-        table.add_column('Value', style='magenta')
+        table.add_column('Action', justify='right', style='cyan', no_wrap=True)
+        table.add_column('Arguments', style='magenta')
+        table.add_column('Result', style='green')
 
-        table.add_row('question', formatted_output['question'])
-        table.add_row('actions', json.dumps(formatted_output['actions'], indent=2))
-        table.add_row('answer', str(self.answer))
+        for action in formatted_output['actions']:
+            table.add_row(
+                action['name'],
+                json.dumps(action['arguments']),
+                str(action['result']),
+            )
+        # table.add_row('answer', str(self.answer))
 
         console.print(table)
 
         # New table for metadata
-        metadata_table = Table(title='Metadata', show_lines=True)
+        metadata_table = Table(title='Metadata', show_lines=True, width=128)
         metadata_table.add_column('Key', justify='right', style='cyan', no_wrap=True)
         metadata_table.add_column('Value', style='magenta')
         for key, value in formatted_output['metadata'].items():

@@ -14,14 +14,28 @@ class RegionProportion(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a region proportion question."""
-        self.template = 'In {time}, what proportion of the total {property} of {subject_set} was contributed by {subject}?'
+        """Initialize a region proportion question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            'In {time}, what proportion of the total {property} of {subject_set} was contributed by {subject}?',
+            'What proportion of the total {property} of {subject_set} in {time} was contributed by {subject}?',
+            'For the countries in {subject_set}, what proportion of the total {property} was contributed by {subject} in {time}?',
+            'What proportion of the total {property} was contributed by {subject} for the countries in {subject_set} in {time}?',
+        )
+
         allowed_values = {
             'property': Property,
             'subject': Subject,
             'subject_set': SubjectSet,
             'time': Time,
         }
+
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(self, combination: dict) -> bool:
@@ -73,6 +87,7 @@ class RegionProportion(FranklinQuestion):
         # Check for missing data
         if subject_value is None:
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
 
             return
 
@@ -97,6 +112,7 @@ class RegionProportion(FranklinQuestion):
 
         if all(v is None for v in region_values):
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
 
             return
 

@@ -14,10 +14,20 @@ class RegionProportionChange(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a region proportion comparison question."""
-        self.template = (
-            "Was {subject}'s share of the total {property} in {subject_set} {operator} in {time_a} than it was in {time_b}?"
+        """Initialize a region proportion comparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            "Was {subject}'s share of the total {property} in {subject_set} {operator} in {time_a} than it was in {time_b}?",
+            "In {time_a}, was {subject}'s share of the total {property} in {subject_set} {operator} than it was in {time_b}?",
+            "Compared to {subject_set} as a whole, was {subject}'s share of the total {property} in {time_a} {operator} than it was in {time_b}?",
         )
+
         allowed_values = {
             'property': Property,
             'subject': Subject,
@@ -77,6 +87,7 @@ class RegionProportionChange(FranklinQuestion):
         # Check for missing data
         if subject_value_a is None:
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Retrieve the property value for the subject at time_b
@@ -137,6 +148,7 @@ class RegionProportionChange(FranklinQuestion):
             self.metadata['data_availability'] = 'partial'
         if all(v is None for v in region_values_b):
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Compute the total property value for the region at time_a

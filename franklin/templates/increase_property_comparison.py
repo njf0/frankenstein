@@ -14,10 +14,21 @@ class IncreasePropertyComparison(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize an IncreasePropertyComparison question."""
-        self.template = (
-            'Which country in {subject_set} had the {operator} increase in {property} between {time_a} and {time_b}?'
+        """Initialize an IncreasePropertyComparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
+        self.templates = (
+            'Which country in {subject_set} had the {operator} increase in {property} between {time_a} and {time_b}?',
+            'Between {time_a} and {time_b}, which country in {subject_set} had the {operator} increase in {property}?',
+            'For the countries in {subject_set}, which had the {operator} increase in {property} between {time_a} and {time_b}?',
+            'In {subject_set}, which country had the {operator} increase in {property} between {time_a} and {time_b}?',
         )
+
         allowed_values = {
             'subject_set': SubjectSet,
             'operator': NaryOperator,
@@ -25,6 +36,7 @@ class IncreasePropertyComparison(FranklinQuestion):
             'time_a': Time,
             'time_b': Time,
         }
+
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(self, combination: dict) -> bool:
@@ -87,52 +99,55 @@ class IncreasePropertyComparison(FranklinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value_b = action.result
-
-            if value_a is None or value_b is None:
-                self.metadata['data_availability'] = 'partial'
-
             values.append((country, value_a, value_b))
-
-        # Check if all values are None
-        if all(value_a is None and value_b is None for _, value_a, value_b in values):
-            self.metadata['data_availability'] = 'missing'
-
-            return
 
         # Check if any values are None
         if any(value_a is None or value_b is None for _, value_a, value_b in values):
             self.metadata['data_availability'] = 'partial'
 
+        # Check if all values are None
+        if all(value_a is None and value_b is None for _, value_a, value_b in values):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Get the country with the largest increase
         deltas = []
         for country, value_a, value_b in values:
-            if value_a is None or value_b is None:
-                self.metadata['data_availability'] = 'partial'
-
-            action = FranklinAction('subtract', a=value_b, b=value_a)
+            action = FranklinAction(
+                'subtract',
+                value_a=value_b,
+                value_b=value_a,
+            )
             action.execute()
             self.actions.append(action.to_dict())
             delta = action.result
             deltas.append((country, delta))
 
         # Check if deltas is empty
-        if all(delta is None for delta in deltas):
+        if all(delta is None for _, delta in deltas):
             self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
+            return
 
         # Sort the countries by the largest increase
-        action = FranklinAction('sort', values=[d[1] for d in deltas])
-        action.execute()
-        self.actions.append(action.to_dict())
-        sorted_countries = action.result
+
+        # action = FranklinAction('sort', values=[d[1] for d in deltas])
+        # action.execute()
+        # self.actions.append(action.to_dict())
+        # sorted_countries = action.result
 
         # Get the country with the 'operator' increase
         if self.operator == 'highest':
-            action = FranklinAction('maximum', values=sorted_countries)
+            action = FranklinAction(
+                'maximum',
+                values=[d[1] for d in deltas],
+            )
         elif self.operator == 'lowest':
-            action = FranklinAction('minimum', values=sorted_countries)
-
+            action = FranklinAction(
+                'minimum',
+                values=[d[1] for d in deltas],
+            )
         action.execute()
         self.actions.append(action.to_dict())
 

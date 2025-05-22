@@ -14,14 +14,25 @@ class AverageProperty(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a property increase comparison question."""
+        """Initialize a property increase comparison question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
         self.templates = (
             'What was the mean {property} of the countries in {subject_set} in {time}?',
             'For the countries in {subject_set}, what was the mean {property} in {time}?',
             'In {time}, what was the mean {property} of the countries in {subject_set}?',
         )
 
-        allowed_values = {'subject_set': SubjectSet, 'property': Property, 'time': Time}
+        allowed_values = {
+            'subject_set': SubjectSet,
+            'property': Property,
+            'time': Time,
+        }
 
         super().__init__(slot_values, allowed_values)
 
@@ -56,22 +67,16 @@ class AverageProperty(FranklinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-
-            if value is not None:
-                indicator_values.append(value)
-            else:
-                self.metadata['data_availability'] = 'partial'
-
-        # Check if lists are empty
-        if not indicator_values:
-            self.metadata['data_availability'] = 'missing'
-
-            return
+            indicator_values.append(value)
 
         # Check if any values are missing
         if any(value is None for value in indicator_values):
             self.metadata['data_availability'] = 'partial'
 
+        # Check if all values are missing
+        if all(value is None for value in indicator_values):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
             return
 
         # Retrieve the mean value for the subject_set

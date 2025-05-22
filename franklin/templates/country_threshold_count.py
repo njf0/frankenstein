@@ -14,7 +14,14 @@ class CountryThresholdCount(FranklinQuestion):
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a CountryThresholdCount question."""
+        """Initialize a CountryThresholdCount question.
+
+        Parameters
+        ----------
+        slot_values: dict[str, str]
+            Slot values for the question.
+
+        """
         self.templates = (
             'How many countries in the region of {subject_set} had a {operator} {property} than {subject} in {time}?',
             'In {time}, how many countries in the region of {subject_set} had a {operator} {property} than {subject}?',
@@ -62,17 +69,6 @@ class CountryThresholdCount(FranklinQuestion):
         self.actions.append(action.to_dict())
         country_codes = action.result
 
-        # Get the country codes for the subjects in the subject_set
-        # country_codes = []
-        # for country in countries_in_region:
-        #     action = FranklinAction(
-        #         'get_country_code_from_name',
-        #         country_name=country,
-        #     )
-        #     action.execute()
-        #     self.actions.append(action.to_dict())
-        #     country_codes.append(action.result)
-
         # Get the country code for the threshold subject
         if self.c2n[self.subject] not in country_codes:
             action = FranklinAction(
@@ -105,13 +101,16 @@ class CountryThresholdCount(FranklinQuestion):
             )
             action.execute()
             self.actions.append(action.to_dict())
+            values.append(action.result)
 
-            if action.result is not None:
-                values.append(action.result)
-            else:
-                self.metadata['data_availability'] = 'partial'
+        # Check if any values are None
+        if any(value is None for value in values):
+            self.metadata['data_availability'] = 'partial'
 
-                return
+        if all(value is None for value in values):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
+            return
 
         # Retrieve the value for the threshold subject
         if threshold_subject_country_code is not None:
@@ -125,11 +124,6 @@ class CountryThresholdCount(FranklinQuestion):
             self.actions.append(action.to_dict())
             threshold_value = action.result
 
-            if threshold_value is None:
-                self.metadata['data_availability'] = 'missing'
-
-                return
-
         elif threshold_subject_country_code is None:
             # Country code is already in the list
             action = FranklinAction(
@@ -142,14 +136,20 @@ class CountryThresholdCount(FranklinQuestion):
             self.actions.append(action.to_dict())
             threshold_value = action.result
 
+        if threshold_value is None:
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
+
+            return
+
         # Now compare if values meet the threshold
         comparisons = []
         for value in values:
             if self.operator == 'higher':
                 action = FranklinAction(
                     'greater_than',
-                    a=value,
-                    b=threshold_value,
+                    value_a=value,
+                    value_b=threshold_value,
                 )
                 action.execute()
                 self.actions.append(action.to_dict())
@@ -157,8 +157,8 @@ class CountryThresholdCount(FranklinQuestion):
             elif self.operator == 'lower':
                 action = FranklinAction(
                     'less_than',
-                    a=value,
-                    b=threshold_value,
+                    value_a=value,
+                    value_b=threshold_value,
                 )
                 action.execute()
                 self.actions.append(action.to_dict())
@@ -166,13 +166,10 @@ class CountryThresholdCount(FranklinQuestion):
 
         # Filter out None results and set data availability accordingly
         valid_comparisons = [c for c in comparisons if c is not None]
+
         if not valid_comparisons:
             self.metadata['data_availability'] = 'missing'
-            return
-        if any(c is None for c in comparisons):
-            self.metadata['data_availability'] = 'partial'
-        else:
-            self.metadata['data_availability'] = 'full'
+            self.metadata['answerable'] = False
 
         # Get the number of countries that satisfy the condition
         self.answer = sum(valid_comparisons)

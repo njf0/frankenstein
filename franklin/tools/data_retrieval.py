@@ -136,7 +136,7 @@ def retrieve_value(country_code: str, indicator_code: str, year: str) -> float |
     if pd.isna(value):
         return None
 
-    return value
+    return float(value)
     # return {'subject': country_code, 'property': indicator_code, 'object': float(value), 'time': year}
 
 
