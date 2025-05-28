@@ -79,11 +79,13 @@ class TemplateFiller:
             'IncreasePropertyComparison': {'unanswerable_partial'},
             'PropertyOfSubject': {'unanswerable_partial', 'answerable_partial'},
             'PropertyRatio': {'unanswerable_partial'},
+            'RankPositionChange': {'answerable_partial'},
             'RegionComparisonResult': {'unanswerable_partial'},
             'RegionComparison': {'unanswerable_partial', 'answerable_partial'},
             'RegionProportionChange': {'unanswerable_partial', 'answerable_partial'},
             'RegionProportion': {'unanswerable_partial', 'answerable_partial'},
             'RegionRangeComparison': {'unanswerable_partial'},
+            'SubjectPropertyRank': {'unanswerable_partial'},
             'TopNTotal': {'unanswerable_partial'},
             'TotalProperty': {'unanswerable_partial', 'answerable_partial'},
         }
