@@ -13,20 +13,9 @@ logging.basicConfig(
 )
 
 
-def think(thought: str) -> str:
-    """Think aloud about the actions required to solve the problem.
-
-    Args:
-        thought: Your thought about the actions required to solve the problem.
-
-    Returns:
-        The thought as a string.
-
-    """
-    return str(thought)
-
-
-def add(values: list[float]) -> float:
+def add(
+    values: list[float],
+) -> float:
     """Add a list of numbers.
 
     Args:
@@ -45,7 +34,10 @@ def add(values: list[float]) -> float:
     return sum(float(value) for value in values if pd.notna(value))
 
 
-def subtract(value_a: float, value_b: float) -> float:
+def subtract(
+    value_a: float,
+    value_b: float,
+) -> float:
     """Subtract two numbers.
 
     Args:
@@ -59,7 +51,10 @@ def subtract(value_a: float, value_b: float) -> float:
     return float(value_a) - float(value_b)
 
 
-def greater_than(value_a: float, value_b: float) -> bool:
+def greater_than(
+    value_a: float,
+    value_b: float,
+) -> bool:
     """Check if value_a is greater than value_b.
 
     Args:
@@ -73,7 +68,10 @@ def greater_than(value_a: float, value_b: float) -> bool:
     return float(value_a) > float(value_b)
 
 
-def less_than(value_a: float, value_b: float) -> bool:
+def less_than(
+    value_a: float,
+    value_b: float,
+) -> bool:
     """Check if value_a is less than value_b.
 
     Args:
@@ -87,7 +85,9 @@ def less_than(value_a: float, value_b: float) -> bool:
     return float(value_a) < float(value_b)
 
 
-def multiply(values: list[float]) -> float:
+def multiply(
+    values: list[float],
+) -> float:
     """Multiply a list of numbers.
 
     Args:
@@ -109,7 +109,10 @@ def multiply(values: list[float]) -> float:
     return product
 
 
-def divide(value_a: float, value_b: float) -> float:
+def divide(
+    value_a: float,
+    value_b: float,
+) -> float:
     """Divide two numbers.
 
     Args:
@@ -125,7 +128,9 @@ def divide(value_a: float, value_b: float) -> float:
     return float(value_a) / float(value_b)
 
 
-def mean(values: list[float]) -> float:
+def mean(
+    values: list[float],
+) -> float:
     """Calculate the mean of a list of numbers.
 
     Args:
@@ -144,7 +149,9 @@ def mean(values: list[float]) -> float:
     return sum(values) / len(values)
 
 
-def mode(values: list[float]) -> float:
+def mode(
+    values: list[float],
+) -> float:
     """Calculate the mode of a list of numbers.
 
     Args:
@@ -163,7 +170,9 @@ def mode(values: list[float]) -> float:
     return max(set(values), key=values.count)
 
 
-def median(values: list[float]) -> float:
+def median(
+    values: list[float],
+) -> float:
     """Calculate the median of a list of numbers.
 
     Args:
@@ -186,7 +195,9 @@ def median(values: list[float]) -> float:
     return median_value
 
 
-def maximum(values: list[float]) -> float:
+def maximum(
+    values: list[float],
+) -> float:
     """Return the maximum of a list of numbers.
 
     Args:
@@ -205,7 +216,9 @@ def maximum(values: list[float]) -> float:
     return max(values)
 
 
-def minimum(values: list[float]) -> float:
+def minimum(
+    values: list[float],
+) -> float:
     """Return the minimum of a list of numbers.
 
     Args:
@@ -224,7 +237,9 @@ def minimum(values: list[float]) -> float:
     return min(values)
 
 
-def count(values: list[float | str]) -> int:
+def count(
+    values: list[float | str],
+) -> int:
     """Count the number of non-None elements in a list.
 
     Args:
@@ -244,7 +259,36 @@ def count(values: list[float | str]) -> int:
     return len(values)
 
 
-def sort(values: list[float]) -> list[float]:
+def rank(
+    values: list[float],
+    query_value: float,
+) -> int:
+    """Return the position of a value in a sorted list, e.g., 1 for the highest value, 3 for the third highest.
+
+    Args:
+        values: A list of numbers to rank against.
+        query_value: The value to rank.
+
+    Returns:
+        The rank of the query_value in the list of values.
+
+    """
+    if isinstance(values, str):
+        values = values.strip('[]\'"')
+        values = [float(value.strip()) for value in values.split(',')]
+    else:
+        values = [float(value) for value in values]
+
+    # Remove NaN values
+    values = [value for value in values if pd.notna(value)]
+
+    sorted_values = sorted(values, reverse=True)
+    return sorted_values.index(query_value) + 1
+
+
+def sort(
+    values: list[float],
+) -> list[float]:
     """Sort a list of numbers.
 
     Args:
@@ -266,24 +310,35 @@ def sort(values: list[float]) -> list[float]:
     return sorted(values)
 
 
-def final_answer(answer: str) -> str:
-    """Indicate that the final answer has been computed.
+def index(
+    values: list[float],
+    query_value: float,
+) -> int:
+    """Return the index of query_value in values (0-based).
 
     Args:
-        answer: The final answer to the question.
+        values: List of values.
+        query_value: Value to find.
 
     Returns:
-        The final answer as a string.
+        Index of query_value in values, or -1 if not found.
 
     """
-    return str(answer)
+    if isinstance(values, str):
+        values = values.strip('[]\'"')
+        values = [float(value.strip()) for value in values.split(',')]
+    else:
+        values = [float(value) for value in values]
+    # Remove NaN values
+    values = [value for value in values if pd.notna(value)]
+    try:
+        return values.index(query_value)
+    except ValueError:
+        return -1
 
 
 if __name__ == '__main__':
-    print('\n=== Think ===')
-    print('think("First I will check the indicator code")')
-    print('Result:', think('First I will check the indicator code'))
-
+    """Run some example calculations to demonstrate the tools."""
     print('\n=== Add ===')
     print('add([1, 2, 3])')
     print('Result:', add([1, 2, 3]))
@@ -332,6 +387,10 @@ if __name__ == '__main__':
     print('count([1, 2, 3, 4, 5])')
     print('Result:', count([1, 2, 3, 4, 5]))
 
-    print('\n=== Final Answer ===')
-    print('final_answer("42")')
-    print('Result:', final_answer('42'))
+    print('\n=== Rank ===')
+    print('rank([10, 20, 30, 40], 20)')
+    print('Result:', rank([10, 20, 30, 40], 20))
+
+    print('\n=== Index ===')
+    print('index([10, 20, 30, 40], 30)')
+    print('Result:', index([10, 20, 30, 40], 30))

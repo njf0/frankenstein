@@ -23,7 +23,9 @@ logging.basicConfig(
 )
 
 
-def search_for_indicator_codes(keywords: list[str]) -> list[str]:
+def search_for_indicator_codes(
+    keywords: list[str],
+) -> list[str]:
     """Search the database of indicators for codes and names that match the keywords.
 
     Args:
@@ -33,15 +35,24 @@ def search_for_indicator_codes(keywords: list[str]) -> list[str]:
         A list of indicator codes that match the keywords.
 
     """
-    data = pd.read_csv(Path('resources', 'wdi.csv'))
-    data['name_lower'] = data['name'].str.lower()
+    data = pd.read_json(Path('resources', 'indicator_paraphrases.json'))
+    # Store original names for later use
+    data['original_name'] = data['name']
+    # Lowercase for searching
+    data['name'] = data['name'].str.lower()
     keywords = [keyword.lower() for keyword in keywords]
+    data = data[data['name'].str.contains('|'.join(keywords))]
+    # Use original_name for output
+    data = data[['id', 'original_name']]
+    data = data.rename(columns={'original_name': 'name'})
+    # Now output into a list of dictionaries
+    data = data.to_dict(orient='records')
+    return data
 
-    filtered = data[data['name_lower'].str.contains('|'.join(keywords))]
-    return filtered[['id', 'name']].to_dict(orient='records')
 
-
-def get_country_code_from_name(country_name: str) -> str:
+def get_country_code_from_name(
+    country_name: str,
+) -> str:
     """Get the three-letter country code from a country name.
 
     Args:
@@ -58,7 +69,9 @@ def get_country_code_from_name(country_name: str) -> str:
         raise InvalidCountryNameError(country_name) from e
 
 
-def get_indicator_code_from_name(indicator_name: str) -> str:
+def get_indicator_code_from_name(
+    indicator_name: str,
+) -> str:
     """Get the indicator code from an indicator name.
 
     Args:
@@ -75,7 +88,9 @@ def get_indicator_code_from_name(indicator_name: str) -> str:
         raise InvalidIndicatorNameError(indicator_name) from e
 
 
-def get_country_codes_in_region(region_name: str) -> list[str]:
+def get_country_codes_in_region(
+    region_name: str,
+) -> list[str]:
     """Get the list of country codes in a given region.
 
     Args:
@@ -93,7 +108,11 @@ def get_country_codes_in_region(region_name: str) -> list[str]:
     return data[data['region'] == region_name]['country_code'].tolist()
 
 
-def retrieve_value(country_code: str, indicator_code: str, year: str) -> float | str | None:
+def retrieve_value(
+    country_code: str,
+    indicator_code: str,
+    year: str,
+) -> float | str | None:
     """Return the value of an indicator for a country at a given year.
 
     Args:
@@ -142,8 +161,8 @@ def retrieve_value(country_code: str, indicator_code: str, year: str) -> float |
 
 if __name__ == '__main__':
     print('\n=== Search for Indicator Codes ===')
-    print('search_for_indicator_codes(["GDP", "growth"])')
-    print('Result:', search_for_indicator_codes(['GDP', 'growth']))
+    print('search_for_indicator_codes(["water"])')
+    print('Result:', search_for_indicator_codes(['water']))
 
     print('\n=== Get Country Code from Name ===')
     print('get_country_code_from_name("Comoros")')
