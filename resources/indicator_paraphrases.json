@@ -1,660 +1,942 @@
-{
-  "AG.LND.CREL.HA": [
-    "land area used for cereal farming",
-    "hectares of land growing cereal crops",
-    "cereal crop harvested land size",
-    "land planted with cereals in hectares",
-    "area of land producing cereal grains"
-  ],
-  "AG.LND.FRST.K2": [
-    "forest land area in square kilometers",
-    "total forest coverage in square kilometers",
-    "land area covered by forests",
-    "forested land size in square kilometers",
-    "total area of forested land"
-  ],
-  "AG.LND.TOTL.K2": [
-    "total land area in square kilometers",
-    "country land size excluding water bodies",
-    "land area excluding lakes and rivers",
-    "total terrestrial area in sq km",
-    "country's land surface area"
-  ],
-  "AG.SRF.TOTL.K2": [
-    "total land and water area",
-    "country surface area in square kilometers",
-    "total area including inland water",
-    "land and inland water surface size",
-    "country's total area in sq km"
-  ],
-  "AG.YLD.CREL.KG": [
-    "cereal production per hectare",
-    "kilograms of cereal per hectare",
-    "cereal crop yield per hectare",
-    "cereal harvest weight per hectare",
-    "cereal grain yield per hectare"
-  ],
-  "CM.MKT.INDX.ZG": [
-    "annual change in global stock indices",
-    "yearly percent change in S&P equity indices",
-    "annual growth rate of global stock markets",
-    "yearly percent change in S&P global equity prices",
-    "annual variation in S&P global stock indices"
-  ],
-  "CM.MKT.LDOM.NO": [
-    "total number of listed companies",
-    "total domestic companies on stock exchange",
-    "total companies listed on local exchange",
-    "total publicly traded domestic companies",
-    "total companies listed on domestic stock market"
-  ],
-  "CM.MKT.TRNR": [
-    "domestic shares turnover ratio",
-    "turnover of domestic stock market",
-    "annual domestic stock trading ratio",
-    "domestic equity turnover rate",
-    "domestic shares trading volume ratio"
-  ],
-  "EG.USE.PCAP.KG.OE": [
-    "energy use per person in oil equivalent",
-    "per capita energy consumption in oil units",
-    "average energy use per person measured in oil",
-    "individual energy use in kilograms of oil equivalent",
-    "energy consumption per capita in oil equivalent units"
-  ],
-  "EN.ATM.PM25.MC.M3": [
-    "average annual pm2.5 exposure",
-    "mean yearly pm2.5 pollution level",
-    "population-weighted pm2.5 concentration",
-    "annual pm2.5 air pollution exposure",
-    "average pm2.5 particle exposure"
-  ],
-  "EN.BIR.THRD.NO": [
-    "number of threatened bird species",
-    "count of endangered bird species",
-    "total vulnerable bird species",
-    "bird species at risk",
-    "number of rare and endangered birds"
-  ],
-  "EN.FSH.THRD.NO": [
-    "number of threatened fish species",
-    "count of endangered fish species",
-    "fish species at risk",
-    "fish species classified as vulnerable",
-    "total fish species under threat"
-  ],
-  "EN.HPT.THRD.NO": [
-    "number of threatened native vascular plants",
-    "count of at-risk higher plant species",
-    "total endangered higher plant species",
-    "number of vulnerable native vascular plants",
-    "count of higher plants classified as threatened"
-  ],
-  "EN.MAM.THRD.NO": [
-    "number of threatened mammal species",
-    "count of endangered and vulnerable mammals",
-    "total at-risk mammal species",
-    "number of mammals facing extinction risk",
-    "count of mammal species with conservation concerns"
-  ],
-  "EN.POP.DNST": [
-    "population per square kilometer",
-    "number of people per land area",
-    "people living per square kilometer",
-    "population concentration per land area",
-    "inhabitants per square kilometer of land"
-  ],
-  "ER.H2O.FWTL.K3": [
-    "total annual freshwater withdrawals",
-    "yearly freshwater use in billion cubic meters",
-    "total water taken annually",
-    "annual freshwater extraction volume",
-    "yearly freshwater consumption total"
-  ],
-  "ER.H2O.INTR.K3": [
-    "total renewable freshwater resources",
-    "renewable internal freshwater supply",
-    "total renewable water from rivers and groundwater",
-    "internal renewable freshwater volume",
-    "renewable freshwater resources within the country"
-  ],
-  "FM.LBL.BMNY.ZG": [
-    "annual growth rate of broad money",
-    "yearly increase in broad money supply",
-    "broad money growth percentage per year",
-    "annual change in broad money stock",
-    "yearly broad money supply growth"
-  ],
-  "FP.CPI.TOTL.ZG": [
-    "annual consumer price inflation",
-    "yearly change in consumer prices",
-    "inflation rate for consumer goods",
-    "annual increase in consumer costs",
-    "yearly consumer price index change"
-  ],
-  "FR.INR.DPST": [
-    "bank deposit interest rate",
-    "interest rate on savings deposits",
-    "rate paid on bank deposits",
-    "deposit account interest rate",
-    "interest earned on bank deposits"
-  ],
-  "FR.INR.LEND": [
-    "bank lending interest rate",
-    "interest rate on loans",
-    "borrowing interest rate for private sector",
-    "loan interest rate percentage",
-    "bank loan interest rate"
-  ],
-  "FR.INR.LNDP": [
-    "difference between lending and deposit rates",
-    "gap between loan and deposit interest rates",
-    "spread between bank lending and deposit rates",
-    "difference in interest rates on loans and deposits",
-    "margin between lending and deposit rates"
-  ],
-  "FR.INR.RINR": [
-    "inflation-adjusted lending rate",
-    "lending interest rate after inflation",
-    "real borrowing cost",
-    "interest rate adjusted for inflation",
-    "inflation-corrected lending rate"
-  ],
-  "FR.INR.RISK": [
-    "lending risk premium",
-    "bank loan interest spread",
-    "loan rate minus treasury bill rate",
-    "lending rate risk margin",
-    "interest rate difference on loans"
-  ],
-  "IC.BUS.NREG": [
-    "number of new businesses registered",
-    "count of newly registered companies",
-    "new limited liability companies registered",
-    "annual new business registrations",
-    "number of new firms registered"
-  ],
-  "IP.JRN.ARTC.SC": [
-    "number of scientific journal articles",
-    "count of technical research papers",
-    "scientific and engineering article output",
-    "published science and tech papers",
-    "volume of research journal articles"
-  ],
-  "IP.PAT.NRES": [
-    "patent applications filed by nonresidents",
-    "patent filings from foreign applicants",
-    "patent requests by nonresident inventors",
-    "international patent applications by outsiders",
-    "patent submissions from nonlocal applicants"
-  ],
-  "IP.PAT.RESD": [
-    "patent applications filed by residents",
-    "resident patent filings",
-    "patents applied for by local residents",
-    "domestic patent applications",
-    "patent requests from residents"
-  ],
-  "IQ.CPA.ECON.XQ": [
-    "economic management score",
-    "macroeconomic management rating",
-    "fiscal and debt policy score",
-    "economic policy management rating",
-    "overall economic management rating"
-  ],
-  "IQ.CPA.IRAI.XQ": [
-    "IDA resource allocation score",
-    "average IDA allocation rating",
-    "IDA allocation index value",
-    "IDA country allocation score",
-    "overall IDA allocation rating"
-  ],
-  "IQ.CPA.PUBS.XQ": [
-    "public sector management quality score",
-    "public institutions performance rating",
-    "governance and management cluster average",
-    "public sector effectiveness index",
-    "quality of public administration score"
-  ],
-  "IQ.CPA.SOCI.XQ": [
-    "average score of social inclusion policies",
-    "social equity policy cluster rating",
-    "social inclusion and equity policy average",
-    "rating of policies for social inclusion and equity",
-    "average score for social inclusion and equity policies"
-  ],
-  "IQ.CPA.STRC.XQ": [
-    "average score of structural policies",
-    "structural policy rating average",
-    "average rating of trade and financial policies",
-    "business and financial policy score average",
-    "structural policy cluster score"
-  ],
-  "IS.AIR.DPRT": [
-    "number of registered airline departures worldwide",
-    "worldwide departures by registered air carriers",
-    "total takeoffs by registered airlines globally",
-    "global flights by registered carriers",
-    "registered airline takeoffs worldwide"
-  ],
-  "IS.RRS.TOTL.KM": [
-    "total length of railway routes",
-    "total railway route kilometers",
-    "length of rail lines available",
-    "total kilometers of rail routes",
-    "total railway route distance"
-  ],
-  "IS.SHP.GOOD.TU": [
-    "container port traffic in twenty-foot equivalent units",
-    "flow of containers through ports in TEUs",
-    "volume of container shipments at ports",
-    "container throughput measured in TEUs",
-    "port container handling in standard units"
-  ],
-  "LP.EXP.DURS.MD": [
-    "median export lead time in days",
-    "typical export shipment lead time",
-    "median days to export goods",
-    "average export processing time",
-    "median export shipping lead time"
-  ],
-  "LP.IMP.DURS.MD": [
-    "median import delivery time in days",
-    "typical import lead time from port",
-    "median days for import arrival",
-    "average import transit time to consignee",
-    "typical shipment lead time for imports"
-  ],
-  "LP.LPI.OVRL.XQ": [
-    "overall logistics performance score",
-    "logistics efficiency rating",
-    "country logistics quality index",
-    "logistics service performance score",
-    "logistics operations effectiveness rating"
-  ],
-  "NY.GDP.DEFL.KD.ZG": [
-    "annual GDP price inflation rate",
-    "yearly GDP deflator inflation",
-    "inflation rate from GDP deflator",
-    "annual price change in GDP",
-    "yearly GDP implicit deflator growth"
-  ],
-  "NY.GDP.MKTP.KD.ZG": [
-    "annual GDP growth rate",
-    "yearly increase in GDP",
-    "GDP growth percentage per year",
-    "annual economic growth rate",
-    "yearly GDP expansion rate"
-  ],
-  "NY.GDP.PCAP.KD.ZG": [
-    "annual growth rate of GDP per person",
-    "yearly increase in GDP per capita",
-    "GDP per capita growth rate per year",
-    "annual percent change in GDP per person",
-    "yearly GDP growth per capita"
-  ],
-  "PA.NUS.FCRF": [
-    "official exchange rate in local currency per US dollar",
-    "average annual exchange rate to the US dollar",
-    "local currency units per US dollar average",
-    "yearly average official exchange rate",
-    "official local currency to dollar exchange rate"
-  ],
-  "PA.NUS.PPP": [
-    "purchasing power parity conversion rate for GDP",
-    "PPP exchange rate for GDP",
-    "GDP purchasing power parity factor",
-    "local currency units per international dollar for GDP",
-    "GDP price level adjustment factor"
-  ],
-  "PA.NUS.PPPC.RF": [
-    "price level ratio of PPP to exchange rate",
-    "purchasing power parity price level comparison",
-    "price level difference using PPP and exchange rate",
-    "ratio of PPP conversion factor to market exchange rate",
-    "general price level ratio based on PPP and exchange rate"
-  ],
-  "SE.PRE.ENRR": [
-    "preprimary school gross enrollment rate",
-    "total preprimary enrollment as a percentage",
-    "preprimary education enrollment ratio",
-    "gross enrollment in early childhood education",
-    "percentage of children enrolled in preprimary school"
-  ],
-  "SE.PRM.ENRR": [
-    "primary school gross enrollment rate",
-    "total primary enrollment as percentage of official age group",
-    "overall primary school enrollment ratio",
-    "gross enrollment in primary education",
-    "total primary student enrollment rate"
-  ],
-  "SE.PRM.NENR": [
-    "primary school enrollment rate",
-    "net enrollment in primary education",
-    "percentage of children enrolled in primary school",
-    "primary education net enrollment",
-    "share of official-age children in primary school"
-  ],
-  "SE.PRM.UNER.FE": [
-    "primary school-age girls not enrolled",
-    "girls out of primary school",
-    "female children missing primary education",
-    "primary-age girls out of school",
-    "girls not attending primary school"
-  ],
-  "SE.PRM.UNER.MA": [
-    "primary-age boys not in school",
-    "boys of primary school age out of school",
-    "male children missing primary education",
-    "primary school-age boys not enrolled",
-    "boys not attending primary school"
-  ],
-  "SE.SEC.ENRR": [
-    "secondary school enrollment rate",
-    "gross enrollment in secondary education",
-    "total secondary school enrollment percentage",
-    "secondary education enrollment ratio",
-    "overall secondary school enrollment share"
-  ],
-  "SE.SEC.NENR": [
-    "secondary school enrollment rate",
-    "net enrollment in secondary education",
-    "percentage of children enrolled in secondary school",
-    "secondary education net enrollment",
-    "proportion of official-age students in secondary school"
-  ],
-  "SE.TER.ENRR": [
-    "tertiary school enrollment rate",
-    "gross enrollment in higher education",
-    "percentage enrolled in tertiary education",
-    "total tertiary enrollment ratio",
-    "higher education enrollment percentage"
-  ],
-  "SG.TIM.UWRK.FE": [
-    "proportion of daily time women spend on unpaid domestic work",
-    "share of a day women devote to unpaid household and care tasks",
-    "percentage of daily hours women spend on unpaid home and care duties",
-    "fraction of a 24-hour day women allocate to unpaid domestic and caregiving work",
-    "amount of daily time women use for unpaid household and care activities"
-  ],
-  "SG.TIM.UWRK.MA": [
-    "male time spent on unpaid domestic and care work",
-    "proportion of day men spend on household chores",
-    "percentage of daily time men do unpaid care work",
-    "share of 24-hour day men spend on domestic tasks",
-    "fraction of daily time men spend on unpaid household work"
-  ],
-  "SH.DYN.MORT": [
-    "under-five child mortality rate",
-    "deaths of children under five per 1,000 births",
-    "mortality rate for children below age five",
-    "probability of dying before age five per 1,000",
-    "under-5 death rate per 1,000 live births"
-  ],
-  "SH.DYN.NMRT": [
-    "neonatal deaths per 1,000 live births",
-    "deaths of newborns under 28 days per 1,000 births",
-    "newborn mortality rate per 1,000 live births",
-    "infant deaths within first 28 days per 1,000 births",
-    "mortality rate of babies under 28 days per 1,000 live births"
-  ],
-  "SH.IMM.IDPT": [
-    "percentage of children vaccinated with DPT",
-    "share of toddlers immunized against DPT",
-    "proportion of 12-23 month olds with DPT shots",
-    "rate of DPT immunization in young children",
-    "coverage of DPT vaccine among infants"
-  ],
-  "SH.IMM.MEAS": [
-    "percentage of children vaccinated for measles",
-    "measles immunization rate for toddlers",
-    "share of 12-23 month olds immunized against measles",
-    "proportion of young children with measles vaccine",
-    "measles vaccine coverage among infants"
-  ],
-  "SH.STA.MMRT": [
-    "maternal deaths per 100,000 live births",
-    "pregnancy-related death rate",
-    "maternal mortality rate per live births",
-    "deaths of mothers per 100,000 births",
-    "pregnancy-associated maternal death ratio"
-  ],
-  "SH.TBS.INCD": [
-    "tuberculosis cases per 100,000 people",
-    "new and relapse tuberculosis rate",
-    "annual tuberculosis incidence rate",
-    "tuberculosis infection rate per 100,000",
-    "yearly tuberculosis case rate"
-  ],
-  "SI.DST.02ND.20": [
-    "income share of the second 20 percent",
-    "income portion of the second quintile",
-    "share of income held by the second fifth",
-    "income percentage of the second income group",
-    "earnings share of the second 20 percent"
-  ],
-  "SI.DST.03RD.20": [
-    "income share of the third 20 percent",
-    "income portion of the middle quintile",
-    "share of income held by the third quintile",
-    "income percentage of the third fifth of population",
-    "income distribution for the third 20 percent"
-  ],
-  "SI.DST.04TH.20": [
-    "income share of the fourth 20 percent",
-    "income portion of the fourth quintile",
-    "share of income held by the fourth fifth",
-    "income percentage of the fourth income group",
-    "earnings share of the fourth quintile"
-  ],
-  "SI.DST.05TH.20": [
-    "income share of top 20 percent",
-    "income held by highest quintile",
-    "share of income for richest 20 percent",
-    "income portion of top fifth",
-    "income percentage of highest 20 percent"
-  ],
-  "SI.DST.10TH.10": [
-    "income share of top 10 percent",
-    "share of income held by highest 10 percent",
-    "income portion of richest 10 percent",
-    "top 10 percent income share",
-    "income percentage of highest 10 percent"
-  ],
-  "SI.DST.FRST.10": [
-    "income share of bottom 10 percent",
-    "share of income held by lowest 10 percent",
-    "income portion of poorest 10 percent",
-    "earnings share of bottom decile",
-    "income percentage of lowest decile"
-  ],
-  "SI.DST.FRST.20": [
-    "income share of the poorest 20%",
-    "share of income held by bottom fifth",
-    "income portion of lowest quintile",
-    "earnings share of bottom 20 percent",
-    "income distribution for lowest 20 percent"
-  ],
-  "SI.POV.DDAY": [
-    "percentage of population living under $2.15 a day",
-    "share of people below $2.15 daily income",
-    "proportion of population in extreme poverty at $2.15",
-    "poverty rate at $2.15 a day adjusted for purchasing power",
-    "percent of people living on less than $2.15 daily income"
-  ],
-  "SI.POV.GAPS": [
-    "poverty gap at two dollars fifteen a day",
-    "average income shortfall below two dollars fifteen",
-    "depth of poverty at two dollars fifteen a day",
-    "mean poverty gap as percentage of two dollars fifteen line",
-    "income shortfall from two dollars fifteen poverty threshold"
-  ],
-  "SI.POV.GINI": [
-    "income inequality index",
-    "income distribution inequality",
-    "income gap measure",
-    "inequality of income distribution",
-    "income disparity index"
-  ],
-  "SI.POV.NAHC": [
-    "percentage of people below national poverty line",
-    "share of population in poverty nationally",
-    "proportion of people under national poverty threshold",
-    "national poverty rate as percent of population",
-    "percent of population living in poverty nationally"
-  ],
-  "SI.SPR.PC40": [
-    "average daily income per person for bottom 40%",
-    "mean daily consumption per capita of lowest 40%",
-    "daily income per capita of poorest 40%",
-    "average daily earnings per person in bottom 40%",
-    "mean daily spending per capita for lowest 40%"
-  ],
-  "SI.SPR.PC40.ZG": [
-    "annual growth rate of income for bottom 40%",
-    "yearly increase in consumption for lowest 40%",
-    "average annual income growth for poorest 40%",
-    "yearly growth in real income for bottom 40%",
-    "annualized growth of consumption for lowest 40%"
-  ],
-  "SI.SPR.PCAP": [
-    "average daily income per person in 2017 PPP dollars",
-    "mean daily consumption per capita in 2017 PPP dollars",
-    "daily income or consumption per person in 2017 PPP",
-    "average per capita daily income in 2017 PPP dollars",
-    "mean daily spending or income per person in 2017 PPP"
-  ],
-  "SI.SPR.PCAP.ZG": [
-    "annual growth rate of average real income per person",
-    "yearly increase in average real consumption per capita",
-    "average annual growth in per capita real income",
-    "yearly growth rate of mean real income per person",
-    "annualized growth of average real consumption per capita"
-  ],
-  "SL.GDP.PCAP.EM.KD": [
-    "GDP per worker in constant 2021 international dollars",
-    "output per employed person adjusted for purchasing power",
-    "average GDP per employed individual in 2021 PPP dollars",
-    "economic output per worker in constant 2021 dollars",
-    "GDP per employed person measured in 2021 PPP dollars"
-  ],
-  "SL.TLF.TOTL.IN": [
-    "total labor force",
-    "total working-age labor supply",
-    "total employed and unemployed workers",
-    "total job-seeking population",
-    "total labor market participants"
-  ],
-  "SM.POP.NETM": [
-    "net migration rate",
-    "net number of migrants",
-    "migration balance",
-    "net migration flow",
-    "net migration total"
-  ],
-  "SM.POP.TOTL": [
-    "total number of international migrants",
-    "total foreign-born population",
-    "total number of migrants living abroad",
-    "total international migrant population",
-    "total number of foreign-born residents"
-  ],
-  "SP.ADO.TFRT": [
-    "births per 1,000 teenage girls",
-    "adolescent birth rate",
-    "fertility rate among girls aged 15 to 19",
-    "number of births to teenagers per 1,000",
-    "births per 1,000 women aged 15-19"
-  ],
-  "SP.DYN.CBRT.IN": [
-    "number of live births per 1,000 people",
-    "annual births per 1,000 population",
-    "crude birth rate per 1,000",
-    "yearly live birth rate per 1,000 people",
-    "births per 1,000 population per year"
-  ],
-  "SP.DYN.CDRT.IN": [
-    "crude death rate per 1,000 people",
-    "annual deaths per 1,000 population",
-    "yearly death rate per 1,000",
-    "number of deaths per 1,000 people annually",
-    "deaths per 1,000 population each year"
-  ],
-  "SP.DYN.IMRT.IN": [
-    "infant deaths per 1,000 live births",
-    "number of infant deaths per 1,000 births",
-    "infant mortality per thousand live births",
-    "deaths of infants under one per 1,000 births",
-    "infant death rate per 1,000 live births"
-  ],
-  "SP.DYN.LE00.FE.IN": [
-    "female life expectancy at birth in years",
-    "average lifespan of newborn girls",
-    "expected years of life for female newborns",
-    "newborn female life expectancy",
-    "typical lifespan for girls at birth"
-  ],
-  "SP.DYN.LE00.IN": [
-    "average lifespan at birth",
-    "expected years of life at birth",
-    "newborn life expectancy in years",
-    "total years lived from birth",
-    "life expectancy for newborns"
-  ],
-  "SP.DYN.LE00.MA.IN": [
-    "male life expectancy at birth",
-    "average lifespan of newborn males",
-    "expected years of life for newborn boys",
-    "newborn male life span estimate",
-    "life expectancy for male infants"
-  ],
-  "SP.DYN.TFRT.IN": [
-    "average number of children per woman",
-    "total births per woman",
-    "fertility rate per woman",
-    "average children born to a woman",
-    "number of births per woman"
-  ],
-  "SP.POP.DPND": [
-    "age dependency ratio",
-    "ratio of dependents to working-age population",
-    "proportion of dependents per 100 working-age people",
-    "number of dependents per working-age population",
-    "dependent population share compared to working-age group"
-  ],
-  "SP.POP.GROW": [
-    "annual population growth rate",
-    "yearly population increase percentage",
-    "population growth per year",
-    "yearly change in population size",
-    "annual percentage change in population"
-  ],
-  "SP.POP.TOTL": [
-    "total population",
-    "overall number of residents",
-    "total number of people",
-    "population size",
-    "total inhabitants"
-  ],
-  "SP.RUR.TOTL": [
-    "people living in rural areas",
-    "rural residents",
-    "population in rural regions",
-    "number of rural inhabitants",
-    "rural area population"
-  ],
-  "SP.URB.TOTL": [
-    "people living in urban areas",
-    "number of city residents",
-    "urban area population count",
-    "population in cities and towns",
-    "total urban inhabitants"
-  ],
-  "SP.UWT.TFRT": [
-    "percentage of married women needing contraception",
-    "married women with unmet contraception needs",
-    "married women not using contraception but wanting to avoid pregnancy",
-    "unmet contraception demand among married women",
-    "married women of reproductive age lacking contraception use"
-  ]
-}
+[
+  {
+    "id": "AG.LND.CREL.HA",
+    "name": "Land under cereal production (hectares)",
+    "description": "Land under cereal production refers to harvested area, although some countries report only sown or cultivated area. Cereals include wheat, rice, maize, barley, oats, rye, millet, sorghum, buckwheat, and mixed grains. Production data on cereals relate to crops harvested for dry grain only. Cereal crops harvested for hay or harvested green for food, feed, or silage and those used for grazing are excluded.",
+    "paraphrase": [
+      "land used for cereal crops",
+      "area of cereal cultivation",
+      "cereal production land"
+    ]
+  },
+  {
+    "id": "AG.LND.FRST.K2",
+    "name": "Forest area (sq. km)",
+    "description": "Forest area is land under natural or planted stands of trees of at least 5 meters in situ, whether productive or not, and excludes tree stands in agricultural production systems (for example, in fruit plantations and agroforestry systems) and trees in urban parks and gardens.",
+    "paraphrase": [
+      "forest area",
+      "land area covered by forests",
+      "area of forested land"
+    ]
+  },
+  {
+    "id": "AG.LND.TOTL.K2",
+    "name": "Land area (sq. km)",
+    "description": "Land area is a country's total area, excluding area under inland water bodies, national claims to continental shelf, and exclusive economic zones. In most cases the definition of inland water bodies includes major rivers and lakes.",
+    "paraphrase": [
+      "land area",
+      "land surface area",
+      "area of land"
+    ]
+  },
+  {
+    "id": "AG.SRF.TOTL.K2",
+    "name": "Surface area (sq. km)",
+    "description": "Surface area is a country's total area, including areas under inland bodies of water and some coastal waterways.",
+    "paraphrase": [
+      "surface area",
+      "land and water area",
+      "country area size"
+    ]
+  },
+  {
+    "id": "AG.YLD.CREL.KG",
+    "name": "Cereal yield (kg per hectare)",
+    "description": "Cereal yield, measured as kilograms per hectare of harvested land, includes wheat, rice, maize, barley, oats, rye, millet, sorghum, buckwheat, and mixed grains. Production data on cereals relate to crops harvested for dry grain only. Cereal crops harvested for hay or harvested green for food, feed, or silage and those used for grazing are excluded. The FAO allocates production data to the calendar year in which the bulk of the harvest took place. Most of a crop harvested near the end of a year will be used in the following year.",
+    "paraphrase": [
+      "cereal yield per hectare",
+      "grain crop yield per hectare",
+      "harvested cereal output per hectare"
+    ]
+  },
+  {
+    "id": "CM.MKT.INDX.ZG",
+    "name": "S&P Global Equity Indices (annual % change)",
+    "description": "S&P Global Equity Indices measure the U.S. dollar price change in the stock markets covered by the S&P/IFCI and S&P/Frontier BMI country indices.",
+    "paraphrase": [
+      "S&P global equity index growth rate",
+      "annual change in S&P global equity indices",
+      "stock market price change by S&P global indices"
+    ]
+  },
+  {
+    "id": "CM.MKT.LDOM.NO",
+    "name": "Listed domestic companies, total",
+    "description": "Listed domestic companies, including foreign companies which are exclusively listed, are those which have shares listed on an exchange at the end of the year. Investment funds, unit trusts, and companies whose only business goal is to hold shares of other listed companies, such as holding companies and investment companies, regardless of their legal status, are excluded. A company with several classes of shares is counted once. Only companies admitted to listing on the exchange are included.",
+    "paraphrase": [
+      "number of listed domestic companies",
+      "count of companies listed on the stock exchange",
+      "listed domestic companies"
+    ]
+  },
+  {
+    "id": "CM.MKT.TRNR",
+    "name": "Stocks traded, turnover ratio of domestic shares (%)",
+    "description": "Turnover ratio is the value of domestic shares traded divided by their market capitalization. The value is annualized by multiplying the monthly average by 12.",
+    "paraphrase": [
+      "turnover ratio of domestic shares",
+      "percentage of domestic shares traded relative to market capitalization",
+      "domestic share trading as a percentage of market value"
+    ]
+  },
+  {
+    "id": "EG.USE.PCAP.KG.OE",
+    "name": "Energy use (kg of oil equivalent per capita)",
+    "description": "Energy use refers to use of primary energy before transformation to other end-use fuels, which is equal to indigenous production plus imports and stock changes, minus exports and fuels supplied to ships and aircraft engaged in international transport.",
+    "paraphrase": [
+      "energy use per person",
+      "per capita energy consumption",
+      "individual energy usage"
+    ]
+  },
+  {
+    "id": "EN.ATM.PM25.MC.M3",
+    "name": "PM2.5 air pollution, mean annual exposure (micrograms per cubic meter)",
+    "description": "Population-weighted exposure to ambient PM2.5 pollution is defined as the average level of exposure of a nation's population to concentrations of suspended particles measuring less than 2.5 microns in aerodynamic diameter, which are capable of penetrating deep into the respiratory tract and causing severe health damage. Exposure is calculated by weighting mean annual concentrations of PM2.5 by population in both urban and rural areas.",
+    "paraphrase": [
+      "mean annual PM2.5 exposure",
+      "population exposure to fine particulate pollution",
+      "average PM2.5 pollution level"
+    ]
+  },
+  {
+    "id": "EN.BIR.THRD.NO",
+    "name": "Bird species, threatened",
+    "description": "Birds are listed for countries included within their breeding or wintering ranges. Threatened species are the number of species classified by the IUCN as endangered, vulnerable, rare, indeterminate, out of danger, or insufficiently known.",
+    "paraphrase": [
+      "number of threatened bird species",
+      "count of endangered bird species",
+      "threatened bird species"
+    ]
+  },
+  {
+    "id": "EN.FSH.THRD.NO",
+    "name": "Fish species, threatened",
+    "description": "Fish species are based on Froese, R. and Pauly, D. (eds). 2008. Threatened species are the number of species classified by the IUCN as endangered, vulnerable, rare, indeterminate, out of danger, or insufficiently known.",
+    "paraphrase": [
+      "number of threatened fish species",
+      "count of endangered fish species",
+      "threatened fish species"
+    ]
+  },
+  {
+    "id": "EN.HPT.THRD.NO",
+    "name": "Plant species (higher), threatened",
+    "description": "Higher plants are native vascular plant species. Threatened species are the number of species classified by the IUCN as endangered, vulnerable, rare, indeterminate, out of danger, or insufficiently known.",
+    "paraphrase": [
+      "number of threatened plant species",
+      "count of endangered higher plants",
+      "threatened native vascular plant species"
+    ]
+  },
+  {
+    "id": "EN.MAM.THRD.NO",
+    "name": "Mammal species, threatened",
+    "description": "Mammal species are mammals excluding whales and porpoises. Threatened species are the number of species classified by the IUCN as endangered, vulnerable, rare, indeterminate, out of danger, or insufficiently known.",
+    "paraphrase": [
+      "number of threatened mammal species",
+      "count of endangered mammal species",
+      "threatened mammal species"
+    ]
+  },
+  {
+    "id": "EN.POP.DNST",
+    "name": "Population density (people per sq. km of land area)",
+    "description": "Population density is midyear population divided by land area in square kilometers. Population is based on the de facto definition of population, which counts all residents regardless of legal status or citizenship--except for refugees not permanently settled in the country of asylum, who are generally considered part of the population of their country of origin. Land area is a country's total area, excluding area under inland water bodies, national claims to continental shelf, and exclusive economic zones. In most cases the definition of inland water bodies includes major rivers and lakes.",
+    "paraphrase": [
+      "population density",
+      "people per square kilometer of land area",
+      "residents per unit of land area"
+    ]
+  },
+  {
+    "id": "ER.H2O.FWTL.K3",
+    "name": "Annual freshwater withdrawals, total (billion cubic meters)",
+    "description": "Annual freshwater withdrawals refer to total water withdrawals, not counting evaporation losses from storage basins. Withdrawals also include water from desalination plants in countries where they are a significant source. Withdrawals can exceed 100 percent of total renewable resources where extraction from nonrenewable aquifers or desalination plants is considerable or where there is significant water reuse. Withdrawals for agriculture and industry are total withdrawals for irrigation and livestock production and for direct industrial use (including withdrawals for cooling thermoelectric plants). Withdrawals for domestic uses include drinking water, municipal use or supply, and use for public services, commercial establishments, and homes. Data are for the most recent year available for 1987-2002.",
+    "paraphrase": [
+      "annual freshwater withdrawals",
+      "total water withdrawals",
+      "volume of freshwater used"
+    ]
+  },
+  {
+    "id": "ER.H2O.INTR.K3",
+    "name": "Renewable internal freshwater resources, total (billion cubic meters)",
+    "description": "Renewable internal freshwater resources flows refer to internal renewable resources (internal river flows and groundwater from rainfall) in the country.",
+    "paraphrase": [
+      "renewable internal freshwater resources",
+      "internal freshwater supply",
+      "internal renewable water resources"
+    ]
+  },
+  {
+    "id": "FM.LBL.BMNY.ZG",
+    "name": "Broad money growth (annual %)",
+    "description": "Broad money (IFS line 35L..ZK) is the sum of currency outside banks; demand deposits other than those of the central government; the time, savings, and foreign currency deposits of resident sectors other than the central government; bank and traveler\u2019s checks; and other securities such as certificates of deposit and commercial paper.",
+    "paraphrase": [
+      "broad money growth rate",
+      "annual increase in broad money",
+      "yearly change in broad money"
+    ]
+  },
+  {
+    "id": "FP.CPI.TOTL.ZG",
+    "name": "Inflation, consumer prices (annual %)",
+    "description": "Inflation as measured by the consumer price index reflects the annual percentage change in the cost to the average consumer of acquiring a basket of goods and services that may be fixed or changed at specified intervals, such as yearly. The Laspeyres formula is generally used.",
+    "paraphrase": [
+      "consumer price inflation rate",
+      "annual change in consumer prices",
+      "yearly inflation in consumer goods and services"
+    ]
+  },
+  {
+    "id": "FR.INR.DPST",
+    "name": "Deposit interest rate (%)",
+    "description": "Deposit interest rate is the rate paid by commercial or similar banks for demand, time, or savings deposits. The terms and conditions attached to these rates differ by country, however, limiting their comparability.",
+    "paraphrase": [
+      "deposit interest rate",
+      "interest rate on bank deposits",
+      "bank deposit rate"
+    ]
+  },
+  {
+    "id": "FR.INR.LEND",
+    "name": "Lending interest rate (%)",
+    "description": "Lending rate is the bank rate that usually meets the short- and medium-term financing needs of the private sector. This rate is normally differentiated according to creditworthiness of borrowers and objectives of financing. The terms and conditions attached to these rates differ by country, however, limiting their comparability.",
+    "paraphrase": [
+      "lending interest rate",
+      "bank lending rate",
+      "interest rate on loans"
+    ]
+  },
+  {
+    "id": "FR.INR.LNDP",
+    "name": "Interest rate spread (lending rate minus deposit rate, %)",
+    "description": "Interest rate spread is the interest rate charged by banks on loans to private sector customers minus the interest rate paid by commercial or similar banks for demand, time, or savings deposits. The terms and conditions attached to these rates differ by country, however, limiting their comparability.",
+    "paraphrase": [
+      "interest rate spread",
+      "difference between lending and deposit rates",
+      "gap between loan and deposit interest rates"
+    ]
+  },
+  {
+    "id": "FR.INR.RINR",
+    "name": "Real interest rate (%)",
+    "description": "Real interest rate is the lending interest rate adjusted for inflation as measured by the GDP deflator. The terms and conditions attached to lending rates differ by country, however, limiting their comparability.",
+    "paraphrase": [
+      "real interest rate",
+      "inflation-adjusted lending rate",
+      "lending rate as a percentage after inflation"
+    ]
+  },
+  {
+    "id": "FR.INR.RISK",
+    "name": "Risk premium on lending (lending rate minus treasury bill rate, %)",
+    "description": "Risk premium on lending is the interest rate charged by banks on loans to private sector customers minus the \"risk free\" treasury bill interest rate at which short-term government securities are issued or traded in the market. In some countries this spread may be negative, indicating that the market considers its best corporate clients to be lower risk than the government. The terms and conditions attached to lending rates differ by country, however, limiting their comparability.",
+    "paraphrase": [
+      "lending risk premium",
+      "difference between lending and treasury bill rates",
+      "loan interest rate spread over treasury bills"
+    ]
+  },
+  {
+    "id": "IC.BUS.NREG",
+    "name": "New businesses registered (number)",
+    "description": "New businesses registered are the number of new limited liability corporations (or its equivalent) registered in the calendar year.",
+    "paraphrase": [
+      "new businesses registered",
+      "number of new companies registered",
+      "count of new limited liability corporations"
+    ]
+  },
+  {
+    "id": "IP.JRN.ARTC.SC",
+    "name": "Scientific and technical journal articles",
+    "description": "Scientific and technical journal articles refer to the number of scientific and engineering articles published in the following fields: physics, biology, chemistry, mathematics, clinical medicine, biomedical research, engineering and technology, and earth and space sciences.",
+    "paraphrase": [
+      "scientific and technical journal articles",
+      "published research articles",
+      "scientific publications"
+    ]
+  },
+  {
+    "id": "IP.PAT.NRES",
+    "name": "Patent applications, nonresidents",
+    "description": "Patent applications are worldwide patent applications filed through the Patent Cooperation Treaty procedure or with a national patent office for exclusive rights for an invention--a product or process that provides a new way of doing something or offers a new technical solution to a problem. A patent provides protection for the invention to the owner of the patent for a limited period, generally 20 years.",
+    "paraphrase": [
+      "patent applications by nonresidents",
+      "nonresident patent filings",
+      "patent applications from foreign applicants"
+    ]
+  },
+  {
+    "id": "IP.PAT.RESD",
+    "name": "Patent applications, residents",
+    "description": "Patent applications are worldwide patent applications filed through the Patent Cooperation Treaty procedure or with a national patent office for exclusive rights for an invention--a product or process that provides a new way of doing something or offers a new technical solution to a problem. A patent provides protection for the invention to the owner of the patent for a limited period, generally 20 years.",
+    "paraphrase": [
+      "resident patent applications",
+      "patent filings by residents",
+      "number of patents filed by residents"
+    ]
+  },
+  {
+    "id": "IQ.CPA.ECON.XQ",
+    "name": "CPIA economic management cluster average (1=low to 6=high)",
+    "description": "The economic management cluster includes macroeconomic management, fiscal policy, and debt policy.",
+    "paraphrase": [
+      "economic management cluster score",
+      "economic management rating",
+      "economic management assessment"
+    ]
+  },
+  {
+    "id": "IQ.CPA.IRAI.XQ",
+    "name": "IDA resource allocation index (1=low to 6=high)",
+    "description": "IDA Resource Allocation Index is obtained by calculating the average score for each cluster and then by averaging those scores. For each of 16 criteria countries are rated on a scale of 1 (low) to 6 (high).",
+    "paraphrase": [
+      "IDA resource allocation index",
+      "resource allocation score",
+      "IDA allocation rating"
+    ]
+  },
+  {
+    "id": "IQ.CPA.PUBS.XQ",
+    "name": "CPIA public sector management and institutions cluster average (1=low to 6=high)",
+    "description": "The public sector management and institutions cluster includes property rights and rule-based governance, quality of budgetary and financial management, efficiency of revenue mobilization, quality of public administration, and transparency, accountability, and corruption in the public sector.",
+    "paraphrase": [
+      "public sector management score",
+      "public institutions rating",
+      "governance quality score"
+    ]
+  },
+  {
+    "id": "IQ.CPA.SOCI.XQ",
+    "name": "CPIA policies for social inclusion/equity cluster average (1=low to 6=high)",
+    "description": "The policies for social inclusion and equity cluster includes gender equality, equity of public resource use, building human resources, social protection and labor, and policies and institutions for environmental sustainability.",
+    "paraphrase": [
+      "CPIA social inclusion and equity score",
+      "social inclusion and equity policy rating",
+      "social equity policy assessment"
+    ]
+  },
+  {
+    "id": "IQ.CPA.STRC.XQ",
+    "name": "CPIA structural policies cluster average (1=low to 6=high)",
+    "description": "The structural policies cluster includes trade, financial sector, and business regulatory environment.",
+    "paraphrase": [
+      "CPIA structural policies score",
+      "structural policies rating",
+      "structural policies assessment"
+    ]
+  },
+  {
+    "id": "IS.AIR.DPRT",
+    "name": "Air transport, registered carrier departures worldwide",
+    "description": "Registered carrier departures worldwide are domestic takeoffs and takeoffs abroad of air carriers registered in the country.",
+    "paraphrase": [
+      "airline departures worldwide",
+      "number of registered carrier takeoffs",
+      "count of flights by domestic airlines"
+    ]
+  },
+  {
+    "id": "IS.RRS.TOTL.KM",
+    "name": "Rail lines (total route-km)",
+    "description": "Rail lines are the length of railway route available for train service, irrespective of the number of parallel tracks.",
+    "paraphrase": [
+      "rail line length",
+      "railway route length",
+      "length of rail lines"
+    ]
+  },
+  {
+    "id": "IS.SHP.GOOD.TU",
+    "name": "Container port traffic (TEU: 20 foot equivalent units)",
+    "description": "Port container traffic measures the flow of containers from land to sea transport modes, and vice versa, in twenty-foot equivalent units (TEUs), a standard-size container. Data refer to coastal shipping as well as international journeys. Transshipment traffic is counted as two lifts at the intermediate port (once to off-load and again as an outbound lift) and includes empty units.",
+    "paraphrase": [
+      "container port traffic",
+      "container throughput at ports",
+      "number of containers handled at ports"
+    ]
+  },
+  {
+    "id": "LP.EXP.DURS.MD",
+    "name": "Lead time to export, median case (days)",
+    "description": "Lead time to export is the median time (the value for 50 percent of shipments) from shipment point to port of loading. Data are from the Logistics Performance Index survey. Respondents provided separate values for the best case (10 percent of shipments) and the median case (50 percent of shipments). The data are exponentiated averages of the logarithm of single value responses and of midpoint values of range responses for the median case.",
+    "paraphrase": [
+      "export lead time",
+      "median export shipping time",
+      "typical time to export"
+    ]
+  },
+  {
+    "id": "LP.IMP.DURS.MD",
+    "name": "Lead time to import, median case (days)",
+    "description": "Lead time to import is the median time (the value for 50 percent of shipments) from port of discharge to arrival at the consignee. Data are from the Logistics Performance Index survey. Respondents provided separate values for the best case (10 percent of shipments) and the median case (50 percent of shipments). The data are exponentiated averages of the logarithm of single value responses and of midpoint values of range responses for the median case.",
+    "paraphrase": [
+      "import lead time in median case",
+      "median import shipment duration",
+      "median days to import goods"
+    ]
+  },
+  {
+    "id": "LP.LPI.OVRL.XQ",
+    "name": "Logistics performance index: Overall (1=low to 5=high)",
+    "description": "The Logistics Performance Index overall score reflects perceptions of a country's logistics based on the efficiency of customs clearance process, quality of trade- and transport-related infrastructure, ease of arranging competitively priced shipments, quality of logistics services, ability to track and trace consignments, and frequency with which shipments reach the consignee within the scheduled time. The index ranges from 1 to 5, with a higher score representing better performance.\nData are from the Logistics Performance Index survey conducted by the World Bank in partnership with academic and international institutions and private companies and individuals engaged in international logistics. The 2023 LPI survey was conducted from September 6 to November 5, 2022. It provided 4,090 country assessments by 652 logistics professionals in 115 countries in all World Bank regions. Respondents evaluate eight countries on six core dimensions on a scale from 1 (worst) to 5 (best). The eight countries are chosen based on the most important export and import markets of the respondent's country, random selection, and, for landlocked countries, neighboring countries that connect them with international markets.\nScores for the six areas are averaged across all respondents and aggregated to a single score using principal components analysis.\nDetails of the survey methodology and index construction methodology are included in Appendix 5 of the 2023 LPI report available at: https://lpi.worldbank.org/report.",
+    "paraphrase": [
+      "logistics performance score",
+      "logistics efficiency rating",
+      "logistics quality index"
+    ]
+  },
+  {
+    "id": "NY.GDP.DEFL.KD.ZG",
+    "name": "Inflation, GDP deflator (annual %)",
+    "description": "Inflation as measured by the annual growth rate of the GDP implicit deflator shows the rate of price change in the economy as a whole. The GDP implicit deflator is the ratio of GDP in current local currency to GDP in constant local currency.",
+    "paraphrase": [
+      "GDP deflator inflation rate",
+      "annual GDP price change",
+      "economy-wide inflation rate"
+    ]
+  },
+  {
+    "id": "NY.GDP.MKTP.KD.ZG",
+    "name": "GDP growth (annual %)",
+    "description": "Annual percentage growth rate of GDP at market prices based on constant local currency. Aggregates are based on constant 2015 prices, expressed in U.S. dollars. GDP is the sum of gross value added by all resident producers in the economy plus any product taxes and minus any subsidies not included in the value of the products. It is calculated without making deductions for depreciation of fabricated assets or for depletion and degradation of natural resources.",
+    "paraphrase": [
+      "GDP growth rate",
+      "annual GDP growth",
+      "yearly economic growth rate"
+    ]
+  },
+  {
+    "id": "NY.GDP.PCAP.KD.ZG",
+    "name": "GDP per capita growth (annual %)",
+    "description": "Annual percentage growth rate of GDP per capita based on constant local currency. GDP per capita is gross domestic product divided by midyear population. GDP at purchaser's prices is the sum of gross value added by all resident producers in the economy plus any product taxes and minus any subsidies not included in the value of the products. It is calculated without making deductions for depreciation of fabricated assets or for depletion and degradation of natural resources.",
+    "paraphrase": [
+      "GDP per capita growth rate",
+      "annual change in GDP per person",
+      "yearly increase in GDP per capita"
+    ]
+  },
+  {
+    "id": "PA.NUS.FCRF",
+    "name": "Official exchange rate (LCU per US$, period average)",
+    "description": "Official exchange rate refers to the exchange rate determined by national authorities or to the rate determined in the legally sanctioned exchange market. It is calculated as an annual average based on monthly averages (local currency units relative to the U.S. dollar).",
+    "paraphrase": [
+      "official exchange rate against the US dollar",
+      "exchange rate in local currency per US dollar",
+      "value of local currency per US dollar"
+    ]
+  },
+  {
+    "id": "PA.NUS.PPP",
+    "name": "PPP conversion factor, GDP (LCU per international $)",
+    "description": "Purchasing power parity (PPP) conversion factor is a spatial price deflator and currency converter that controls for price level differences between countries, thereby allowing volume comparisons of gross domestic product (GDP) and its expenditure components. This conversion factor is for GDP.",
+    "paraphrase": [
+      "PPP conversion factor for GDP",
+      "GDP purchasing power parity rate",
+      "GDP currency conversion factor"
+    ]
+  },
+  {
+    "id": "PA.NUS.PPPC.RF",
+    "name": "Price level ratio of PPP conversion factor (GDP) to market exchange rate",
+    "description": "Price level ratio is the ratio of a purchasing power parity (PPP) conversion factor to an exchange rate. It provides a measure of the differences in price levels between countries by indicating the number of units of the common currency needed to buy the same volume of the aggregation level in each country. At the level of GDP, they provide a measure of the differences in the general price levels of countries.",
+    "paraphrase": [
+      "price level ratio for GDP",
+      "GDP purchasing power parity to exchange rate ratio",
+      "GDP price level compared to exchange rate"
+    ]
+  },
+  {
+    "id": "SE.PRE.ENRR",
+    "name": "School enrollment, preprimary (% gross)",
+    "description": "Gross enrollment ratio is the ratio of total enrollment, regardless of age, to the population of the age group that officially corresponds to the level of education shown. Preprimary education refers to programs at the initial stage of organized instruction, designed primarily to introduce very young children to a school-type environment and to provide a bridge between home and school.",
+    "paraphrase": [
+      "preprimary school enrollment rate",
+      "gross preprimary enrollment percentage",
+      "percentage of children enrolled in preprimary education"
+    ]
+  },
+  {
+    "id": "SE.PRM.ENRR",
+    "name": "School enrollment, primary (% gross)",
+    "description": "Gross enrollment ratio is the ratio of total enrollment, regardless of age, to the population of the age group that officially corresponds to the level of education shown. Primary education provides children with basic reading, writing, and mathematics skills along with an elementary understanding of such subjects as history, geography, natural science, social science, art, and music.",
+    "paraphrase": [
+      "gross primary school enrollment rate",
+      "primary school enrollment ratio",
+      "percentage of children enrolled in primary school"
+    ]
+  },
+  {
+    "id": "SE.PRM.NENR",
+    "name": "School enrollment, primary (% net)",
+    "description": "Net enrollment rate is the ratio of children of official school age who are enrolled in school to the population of the corresponding official school age. Primary education provides children with basic reading, writing, and mathematics skills along with an elementary understanding of such subjects as history, geography, natural science, social science, art, and music.",
+    "paraphrase": [
+      "primary school net enrollment rate",
+      "percentage of children of primary school age enrolled in school",
+      "net enrollment rate in primary education"
+    ]
+  },
+  {
+    "id": "SE.PRM.UNER.FE",
+    "name": "Children out of school, primary, female",
+    "description": "Children out of school are the number of primary-school-age children not enrolled in primary or secondary school.",
+    "paraphrase": [
+      "number of primary-school-age girls not in school",
+      "count of out-of-school primary-age females",
+      "primary-age female children not enrolled in school"
+    ]
+  },
+  {
+    "id": "SE.PRM.UNER.MA",
+    "name": "Children out of school, primary, male",
+    "description": "Children out of school are the number of primary-school-age children not enrolled in primary or secondary school.",
+    "paraphrase": [
+      "number of primary-school-age boys not in school",
+      "count of out-of-school primary-age boys",
+      "primary-age male children not enrolled in school"
+    ]
+  },
+  {
+    "id": "SE.SEC.ENRR",
+    "name": "School enrollment, secondary (% gross)",
+    "description": "Gross enrollment ratio is the ratio of total enrollment, regardless of age, to the population of the age group that officially corresponds to the level of education shown. Secondary education completes the provision of basic education that began at the primary level, and aims at laying the foundations for lifelong learning and human development, by offering more subject- or skill-oriented instruction using more specialized teachers.",
+    "paraphrase": [
+      "gross secondary school enrollment rate",
+      "percentage of students enrolled in secondary school",
+      "secondary school enrollment ratio"
+    ]
+  },
+  {
+    "id": "SE.SEC.NENR",
+    "name": "School enrollment, secondary (% net)",
+    "description": "Net enrollment rate is the ratio of children of official school age who are enrolled in school to the population of the corresponding official school age. Secondary education completes the provision of basic education that began at the primary level, and aims at laying the foundations for lifelong learning and human development, by offering more subject- or skill-oriented instruction using more specialized teachers.",
+    "paraphrase": [
+      "secondary school net enrollment rate",
+      "percentage of school-age children enrolled in secondary school",
+      "net enrollment in secondary education"
+    ]
+  },
+  {
+    "id": "SE.TER.ENRR",
+    "name": "School enrollment, tertiary (% gross)",
+    "description": "Gross enrollment ratio is the ratio of total enrollment, regardless of age, to the population of the age group that officially corresponds to the level of education shown. Tertiary education, whether or not to an advanced research qualification, normally requires, as a minimum condition of admission, the successful completion of education at the secondary level.",
+    "paraphrase": [
+      "tertiary school enrollment rate",
+      "percentage of people enrolled in tertiary education",
+      "gross tertiary enrollment ratio"
+    ]
+  },
+  {
+    "id": "SG.TIM.UWRK.FE",
+    "name": "Proportion of time spent on unpaid domestic and care work, female (% of 24 hour day)",
+    "description": "The average time women spend on household provision of services for own consumption. Data are expressed as a proportion of time in a day. Domestic and care work includes food preparation, dishwashing, cleaning and upkeep of a dwelling, laundry, ironing, gardening, caring for pets, shopping, installation, servicing and repair of personal and household goods, childcare, and care of the sick, elderly or disabled household members, among others.",
+    "paraphrase": [
+      "percentage of women\u2019s day spent on unpaid domestic and care work",
+      "share of daily hours women spend on unpaid household and care tasks",
+      "proportion of women\u2019s time devoted to unpaid domestic and care activities"
+    ]
+  },
+  {
+    "id": "SG.TIM.UWRK.MA",
+    "name": "Proportion of time spent on unpaid domestic and care work, male (% of 24 hour day) ",
+    "description": "The average time men spend on household provision of services for own consumption.  Data are expressed as a proportion of time in a day. Domestic and care work includes food preparation, dishwashing, cleaning and upkeep of a dwelling, laundry, ironing, gardening, caring for pets, shopping, installation, servicing and repair of personal and household goods, childcare, and care of the sick, elderly or disabled household members, among others.",
+    "paraphrase": [
+      "percentage of men\u2019s day spent on unpaid domestic and care work",
+      "share of men\u2019s daily time on unpaid household and care tasks",
+      "proportion of men\u2019s time devoted to unpaid domestic and care activities"
+    ]
+  },
+  {
+    "id": "SH.DYN.MORT",
+    "name": "Mortality rate, under-5 (per 1,000 live births)",
+    "description": "Under-five mortality rate is the probability per 1,000 that a newborn baby will die before reaching age five, if subject to age-specific mortality rates of the specified year.",
+    "paraphrase": [
+      "under-five mortality rate",
+      "child mortality rate before age five",
+      "probability of dying before age five"
+    ]
+  },
+  {
+    "id": "SH.DYN.NMRT",
+    "name": "Mortality rate, neonatal (per 1,000 live births)",
+    "description": "Neonatal mortality rate is the number of neonates dying before reaching 28 days of age, per 1,000 live births in a given year.",
+    "paraphrase": [
+      "neonatal mortality rate",
+      "rate of newborn deaths",
+      "percentage of infants dying before 28 days"
+    ]
+  },
+  {
+    "id": "SH.IMM.IDPT",
+    "name": "Immunization, DPT (% of children ages 12-23 months)",
+    "description": "Child immunization, DPT, measures the percentage of children ages 12-23 months who received DPT vaccinations before 12 months or at any time before the survey. A child is considered adequately immunized against diphtheria, pertussis (or whooping cough), and tetanus (DPT) after receiving three doses of vaccine.",
+    "paraphrase": [
+      "percentage of children immunized against DPT",
+      "share of 12- to 23-month-olds with DPT vaccination",
+      "proportion of young children receiving DPT vaccine"
+    ]
+  },
+  {
+    "id": "SH.IMM.MEAS",
+    "name": "Immunization, measles (% of children ages 12-23 months)",
+    "description": "Child immunization, measles, measures the percentage of children ages 12-23 months who received the measles vaccination before 12 months or at any time before the survey. A child is considered adequately immunized against measles after receiving one dose of vaccine.",
+    "paraphrase": [
+      "percentage of children immunized against measles",
+      "measles vaccination rate among children ages 12-23 months",
+      "share of young children receiving measles vaccine"
+    ]
+  },
+  {
+    "id": "SH.STA.MMRT",
+    "name": "Maternal mortality ratio (modeled estimate, per 100,000 live births)",
+    "description": "Maternal mortality ratio is the number of women who die from pregnancy-related causes while pregnant or within 42 days of pregnancy termination per 100,000 live births. The data are estimated with a regression model using information on the proportion of maternal deaths among non-AIDS deaths in women ages 15-49, fertility, birth attendants, and GDP measured using purchasing power parities (PPPs).",
+    "paraphrase": [
+      "maternal mortality ratio",
+      "maternal death rate per live births",
+      "pregnancy-related mortality rate"
+    ]
+  },
+  {
+    "id": "SH.TBS.INCD",
+    "name": "Incidence of tuberculosis (per 100,000 people)",
+    "description": "Incidence of tuberculosis is the estimated number of new and relapse tuberculosis cases arising in a given year, expressed as the rate per 100,000 population. All forms of TB are included, including cases in people living with HIV. Estimates for all years are recalculated as new information becomes available and techniques are refined, so they may differ from those published previously.",
+    "paraphrase": [
+      "tuberculosis incidence rate",
+      "rate of new and relapse tuberculosis cases",
+      "number of tuberculosis cases per 100,000 people"
+    ]
+  },
+  {
+    "id": "SI.DST.02ND.20",
+    "name": "Income share held by second 20%",
+    "description": "Percentage share of income or consumption is the share that accrues to subgroups of population indicated by deciles or quintiles. Percentage shares by quintile may not sum to 100 because of rounding.",
+    "paraphrase": [
+      "income share of the second 20 percent",
+      "income held by the second quintile",
+      "share of income for the second fifth of the population"
+    ]
+  },
+  {
+    "id": "SI.DST.03RD.20",
+    "name": "Income share held by third 20%",
+    "description": "Percentage share of income or consumption is the share that accrues to subgroups of population indicated by deciles or quintiles. Percentage shares by quintile may not sum to 100 because of rounding.",
+    "paraphrase": [
+      "income share of the third 20 percent",
+      "income held by the middle quintile",
+      "share of income for the third quintile"
+    ]
+  },
+  {
+    "id": "SI.DST.04TH.20",
+    "name": "Income share held by fourth 20%",
+    "description": "Percentage share of income or consumption is the share that accrues to subgroups of population indicated by deciles or quintiles. Percentage shares by quintile may not sum to 100 because of rounding.",
+    "paraphrase": [
+      "income share of the fourth 20 percent",
+      "income held by the fourth quintile",
+      "share of income for the fourth fifth of the population"
+    ]
+  },
+  {
+    "id": "SI.DST.05TH.20",
+    "name": "Income share held by highest 20%",
+    "description": "Percentage share of income or consumption is the share that accrues to subgroups of population indicated by deciles or quintiles. Percentage shares by quintile may not sum to 100 because of rounding.",
+    "paraphrase": [
+      "income share of the richest 20 percent",
+      "income held by the top fifth",
+      "share of income for the highest quintile"
+    ]
+  },
+  {
+    "id": "SI.DST.10TH.10",
+    "name": "Income share held by highest 10%",
+    "description": "Percentage share of income or consumption is the share that accrues to subgroups of population indicated by deciles or quintiles.",
+    "paraphrase": [
+      "income share of the richest 10 percent",
+      "percentage of income held by the top 10 percent",
+      "income held by the highest 10 percent of earners"
+    ]
+  },
+  {
+    "id": "SI.DST.FRST.10",
+    "name": "Income share held by lowest 10%",
+    "description": "Percentage share of income or consumption is the share that accrues to subgroups of population indicated by deciles or quintiles.",
+    "paraphrase": [
+      "income share of the lowest 10 percent",
+      "percentage of income held by the bottom 10 percent",
+      "share of income for the poorest 10 percent"
+    ]
+  },
+  {
+    "id": "SI.DST.FRST.20",
+    "name": "Income share held by lowest 20%",
+    "description": "Percentage share of income or consumption is the share that accrues to subgroups of population indicated by deciles or quintiles. Percentage shares by quintile may not sum to 100 because of rounding.",
+    "paraphrase": [
+      "income share of the lowest 20 percent",
+      "share of income held by the poorest fifth",
+      "income percentage for the bottom quintile"
+    ]
+  },
+  {
+    "id": "SI.POV.DDAY",
+    "name": "Poverty headcount ratio at $2.15 a day (2017 PPP) (% of population)",
+    "description": "Poverty headcount ratio at $2.15 a day is the percentage of the population living on less than $2.15 a day at 2017 purchasing power adjusted prices. As a result of revisions in PPP exchange rates, poverty rates for individual countries cannot be compared with poverty rates reported in earlier editions.",
+    "paraphrase": [
+      "percentage of people living on less than $2.15 a day",
+      "share of population below the $2.15 poverty line",
+      "proportion of population in extreme poverty"
+    ]
+  },
+  {
+    "id": "SI.POV.GAPS",
+    "name": "Poverty gap at $2.15 a day (2017 PPP) (%)",
+    "description": "Poverty gap at $2.15 a day (2017 PPP) is the mean shortfall in income or consumption from the poverty line $2.15 a day (counting the nonpoor as having zero shortfall), expressed as a percentage of the poverty line. This measure reflects the depth of poverty as well as its incidence.",
+    "paraphrase": [
+      "poverty gap at the $2.15 a day line",
+      "income shortfall below the $2.15 poverty line",
+      "depth of poverty at the $2.15 threshold"
+    ]
+  },
+  {
+    "id": "SI.POV.GINI",
+    "name": "Gini index",
+    "description": "Gini index measures the extent to which the distribution of income (or, in some cases, consumption expenditure) among individuals or households within an economy deviates from a perfectly equal distribution. A Lorenz curve plots the cumulative percentages of total income received against the cumulative number of recipients, starting with the poorest individual or household. The Gini index measures the area between the Lorenz curve and a hypothetical line of absolute equality, expressed as a percentage of the maximum area under the line. Thus a Gini index of 0 represents perfect equality, while an index of 100 implies perfect inequality.",
+    "paraphrase": [
+      "Gini index",
+      "income inequality level",
+      "income distribution measure"
+    ]
+  },
+  {
+    "id": "SI.POV.NAHC",
+    "name": "Poverty headcount ratio at national poverty lines (% of population)",
+    "description": "National poverty headcount ratio is the percentage of the population living below the national poverty line(s). National estimates are based on population-weighted subgroup estimates from household surveys. For economies for which the data are from EU-SILC, the reported year is the income reference year, which is the year before the survey year.",
+    "paraphrase": [
+      "poverty rate at the national poverty line",
+      "percentage of people below the national poverty line",
+      "share of population living in national poverty"
+    ]
+  },
+  {
+    "id": "SI.SPR.PC40",
+    "name": "Survey mean consumption or income per capita, bottom 40% of population (2017 PPP $ per day)",
+    "description": "Mean consumption or income per capita (2017 PPP $ per day) of the bottom 40%, used in calculating the growth rate in the welfare aggregate of the bottom 40% of the population in the income distribution in a country.",
+    "paraphrase": [
+      "mean income per person in the bottom 40 percent",
+      "mean consumption per person in the bottom 40 percent",
+      "per capita income or consumption for the bottom 40 percent"
+    ]
+  },
+  {
+    "id": "SI.SPR.PC40.ZG",
+    "name": "Annualized average growth rate in per capita real survey mean consumption or income, bottom 40% of population (%)",
+    "description": "The growth rate in the welfare aggregate of the bottom 40% is computed as the annualized average growth rate in per capita real consumption or income of the bottom 40% of the population in  the income distribution in a country from household surveys over a roughly 5-year period. Mean per capita real consumption or income is measured at 2017 Purchasing Power Parity (PPP) using the Poverty and Inequality Platform (http://www.pip.worldbank.org). For some countries means are not reported due to grouped and/or confidential data. The annualized growth rate is computed as (Mean in final year/Mean in initial year)^(1/(Final year - Initial year)) - 1.  The reference year is the year in which the underlying household survey data was collected. In cases for which the data collection period bridged two calendar years, the first year in which data were collected is reported. The initial year refers to the nearest survey collected 5 years before the most recent survey available, only surveys collected between 3 and 7 years before the most recent survey are considered.\n\nThe coverage and quality of the 2017 PPP price data for Iraq and most other North African and Middle Eastern countries were hindered by the exceptional period of instability they faced at the time of the 2017 exercise of the International Comparison Program. See the Poverty and Inequality Platform for detailed explanations.",
+    "paraphrase": [
+      "growth rate of per capita real income for the bottom 40 percent",
+      "growth rate of per capita real consumption for the bottom 40 percent",
+      "annualized income or consumption growth for the bottom 40 percent"
+    ]
+  },
+  {
+    "id": "SI.SPR.PCAP",
+    "name": "Survey mean consumption or income per capita, total population (2017 PPP $ per day)",
+    "description": "Mean consumption or income per capita (2017 PPP $ per day) used in calculating the growth rate in the welfare aggregate of total population.",
+    "paraphrase": [
+      "mean per capita consumption or income",
+      "per person consumption or income",
+      "average income or consumption per person"
+    ]
+  },
+  {
+    "id": "SI.SPR.PCAP.ZG",
+    "name": "Annualized average growth rate in per capita real survey mean consumption or income, total population (%)",
+    "description": "The growth rate in the welfare aggregate of the total population is computed as the annualized average growth rate in per capita real consumption or income of the total population in  the income distribution in a country from household surveys over a roughly 5-year period. Mean per capita real consumption or income is measured at 2017 Purchasing Power Parity (PPP) using the Poverty and Inequality Platform (http://www.pip.worldbank.org). For some countries means are not reported due to grouped and/or confidential data. The annualized growth rate is computed as (Mean in final year/Mean in initial year)^(1/(Final year - Initial year)) - 1.  The reference year is the year in which the underlying household survey data was collected. In cases for which the data collection period bridged two calendar years, the first year in which data were collected is reported. The initial year refers to the nearest survey collected 5 years before the most recent survey available, only surveys collected between 3 and 7 years before the most recent survey are considered.\n\nThe coverage and quality of the 2017 PPP price data for Iraq and most other North African and Middle Eastern countries were hindered by the exceptional period of instability they faced at the time of the 2017 exercise of the International Comparison Program. See the Poverty and Inequality Platform for detailed explanations.",
+    "paraphrase": [
+      "growth rate of per capita real consumption or income",
+      "annual change in per person real consumption or income",
+      "per capita real income or consumption growth rate"
+    ]
+  },
+  {
+    "id": "SL.GDP.PCAP.EM.KD",
+    "name": "GDP per person employed (constant 2021 PPP $)",
+    "description": "GDP per person employed is gross domestic product (GDP) divided by total employment in the economy. Purchasing power parity (PPP) GDP is GDP converted to 2021 constant international dollars using PPP rates. An international dollar has the same purchasing power over GDP that a U.S. dollar has in the United States.",
+    "paraphrase": [
+      "GDP per worker",
+      "GDP per employed person",
+      "economic output per employed person"
+    ]
+  },
+  {
+    "id": "SL.TLF.TOTL.IN",
+    "name": "Labor force, total",
+    "description": "Labor force comprises people ages 15 and older who supply labor for the production of goods and services during a specified period. It includes people who are currently employed and people who are unemployed but seeking work as well as first-time job-seekers. Not everyone who works is included, however. Unpaid workers, family workers, and students are often omitted, and some countries do not count members of the armed forces. Labor force size tends to vary during the year as seasonal workers enter and leave.",
+    "paraphrase": [
+      "labor force size",
+      "number of people in the labor force",
+      "working-age population in the labor force"
+    ]
+  },
+  {
+    "id": "SM.POP.NETM",
+    "name": "Net migration",
+    "description": "Net migration is the net total of migrants during the period, that is, the number of immigrants minus the number of emigrants, including both citizens and noncitizens.",
+    "paraphrase": [
+      "net migration",
+      "migration balance",
+      "difference between immigrants and emigrants"
+    ]
+  },
+  {
+    "id": "SM.POP.TOTL",
+    "name": "International migrant stock, total",
+    "description": "International migrant stock is the number of people born in a country other than that in which they live. It also includes refugees. The data used to estimate the international migrant stock at a particular time are obtained mainly from population censuses. The estimates are derived from the data on foreign-born population--people who have residence in one country but were born in another country. When data on the foreign-born population are not available, data on foreign population--that is, people who are citizens of a country other than the country in which they reside--are used as estimates. After the breakup of the Soviet Union in 1991 people living in one of the newly independent countries who were born in another were classified as international migrants. Estimates of migrant stock in the newly independent states from 1990 on are based on the 1989 census of the Soviet Union. For countries with information on the international migrant stock for at least two points in time, interpolation or extrapolation was used to estimate the international migrant stock on July 1 of the reference years. For countries with only one observation, estimates for the reference years were derived using rates of change in the migrant stock in the years preceding or following the single observation available. A model was used to estimate migrants for countries that had no data.",
+    "paraphrase": [
+      "international migrant population",
+      "number of foreign-born residents",
+      "migrant stock count"
+    ]
+  },
+  {
+    "id": "SP.ADO.TFRT",
+    "name": "Adolescent fertility rate (births per 1,000 women ages 15-19)",
+    "description": "Adolescent fertility rate is the number of births per 1,000 women ages 15-19.",
+    "paraphrase": [
+      "adolescent fertility rate",
+      "birth rate among women ages 15 to 19",
+      "number of births to teenage women"
+    ]
+  },
+  {
+    "id": "SP.DYN.CBRT.IN",
+    "name": "Birth rate, crude (per 1,000 people)",
+    "description": "Crude birth rate indicates the number of live births occurring during the year, per 1,000 population estimated at midyear. Subtracting the crude death rate from the crude birth rate provides the rate of natural increase, which is equal to the rate of population change in the absence of migration.",
+    "paraphrase": [
+      "birth rate",
+      "crude birth rate",
+      "number of live births per 1,000 people"
+    ]
+  },
+  {
+    "id": "SP.DYN.CDRT.IN",
+    "name": "Death rate, crude (per 1,000 people)",
+    "description": "Crude death rate indicates the number of deaths occurring during the year, per 1,000 population estimated at midyear. Subtracting the crude death rate from the crude birth rate provides the rate of natural increase, which is equal to the rate of population change in the absence of migration.",
+    "paraphrase": [
+      "crude death rate",
+      "death rate per 1,000 people",
+      "number of deaths per 1,000 population"
+    ]
+  },
+  {
+    "id": "SP.DYN.IMRT.IN",
+    "name": "Mortality rate, infant (per 1,000 live births)",
+    "description": "Infant mortality rate is the number of infants dying before reaching one year of age, per 1,000 live births in a given year.",
+    "paraphrase": [
+      "infant mortality rate",
+      "rate of infant deaths before age one",
+      "infant death rate per 1,000 live births"
+    ]
+  },
+  {
+    "id": "SP.DYN.LE00.FE.IN",
+    "name": "Life expectancy at birth, female (years)",
+    "description": "Life expectancy at birth indicates the number of years a newborn infant would live if prevailing patterns of mortality at the time of its birth were to stay the same throughout its life.",
+    "paraphrase": [
+      "female life expectancy at birth",
+      "life expectancy for newborn girls",
+      "expected lifespan of females at birth"
+    ]
+  },
+  {
+    "id": "SP.DYN.LE00.IN",
+    "name": "Life expectancy at birth, total (years)",
+    "description": "Life expectancy at birth indicates the number of years a newborn infant would live if prevailing patterns of mortality at the time of its birth were to stay the same throughout its life.",
+    "paraphrase": [
+      "life expectancy at birth",
+      "newborn life expectancy",
+      "expected lifespan at birth"
+    ]
+  },
+  {
+    "id": "SP.DYN.LE00.MA.IN",
+    "name": "Life expectancy at birth, male (years)",
+    "description": "Life expectancy at birth indicates the number of years a newborn infant would live if prevailing patterns of mortality at the time of its birth were to stay the same throughout its life.",
+    "paraphrase": [
+      "male life expectancy at birth",
+      "life expectancy for newborn boys",
+      "expected lifespan for males at birth"
+    ]
+  },
+  {
+    "id": "SP.DYN.TFRT.IN",
+    "name": "Fertility rate, total (births per woman)",
+    "description": "Total fertility rate represents the number of children that would be born to a woman if she were to live to the end of her childbearing years and bear children in accordance with age-specific fertility rates of the specified year.",
+    "paraphrase": [
+      "fertility rate",
+      "births per woman",
+      "number of children per woman"
+    ]
+  },
+  {
+    "id": "SP.POP.DPND",
+    "name": "Age dependency ratio (% of working-age population)",
+    "description": "Age dependency ratio is the ratio of dependents--people younger than 15 or older than 64--to the working-age population--those ages 15-64. Data are shown as the proportion of dependents per 100 working-age population.",
+    "paraphrase": [
+      "age dependency ratio",
+      "proportion of dependents to working-age population",
+      "percentage of dependents among working-age people"
+    ]
+  },
+  {
+    "id": "SP.POP.GROW",
+    "name": "Population growth (annual %)",
+    "description": "Annual population growth rate for year t is the exponential rate of growth of midyear population from year t-1 to t, expressed as a percentage . Population is based on the de facto definition of population, which counts all residents regardless of legal status or citizenship.",
+    "paraphrase": [
+      "population growth rate",
+      "annual population increase percentage",
+      "yearly population growth"
+    ]
+  },
+  {
+    "id": "SP.POP.TOTL",
+    "name": "Population, total",
+    "description": "Total population is based on the de facto definition of population, which counts all residents regardless of legal status or citizenship. The values shown are midyear estimates.",
+    "paraphrase": [
+      "population",
+      "number of residents",
+      "count of people"
+    ]
+  },
+  {
+    "id": "SP.RUR.TOTL",
+    "name": "Rural population",
+    "description": "Rural population refers to people living in rural areas as defined by national statistical offices. It is calculated as the difference between total population and urban population. Aggregation of urban and rural population may not add up to total population because of different country coverages.",
+    "paraphrase": [
+      "rural population",
+      "people living in rural areas",
+      "rural residents"
+    ]
+  },
+  {
+    "id": "SP.URB.TOTL",
+    "name": "Urban population",
+    "description": "Urban population refers to people living in urban areas as defined by national statistical offices. It is calculated using World Bank population estimates and urban ratios from the United Nations World Urbanization Prospects. Aggregation of urban and rural population may not add up to total population because of different country coverages.",
+    "paraphrase": [
+      "urban population",
+      "people living in urban areas",
+      "urban residents"
+    ]
+  },
+  {
+    "id": "SP.UWT.TFRT",
+    "name": "Unmet need for contraception (% of married women ages 15-49)",
+    "description": "Unmet need for contraception is the percentage of fertile, married women of reproductive age who do not want to become pregnant and are not using contraception.",
+    "paraphrase": [
+      "percentage of married women with unmet need for contraception",
+      "proportion of married women not using contraception despite not wanting pregnancy",
+      "share of married women lacking contraception who wish to avoid pregnancy"
+    ]
+  }
+]
