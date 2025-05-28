@@ -59,8 +59,8 @@ class Property(Slot):
     ) -> list[str]:
         """Return all unique properties."""
         with open(cls.DATA_PATH / 'indicator_paraphrases.json', encoding='utf-8') as f:
-            paraphrases = json.load(f)
-        return list(paraphrases.keys())
+            indicators = json.load(f)
+        return [indicator['id'] for indicator in indicators]
 
 
 class Number(Slot):

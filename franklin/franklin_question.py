@@ -144,14 +144,16 @@ class FranklinQuestion:
 
         # Get property name from id
         if 'property' in slot_values:
-            paraphrase = random.choice(self.indicator_paraphrases[slot_values['property']])
+            paraphrase = random.choice(
+                *[i['paraphrase'] for i in self.indicator_paraphrases if i['id'] == slot_values['property']]
+            )
             formatted_slot_values['property'] = paraphrase
-        if 'property_1' in slot_values:
-            property_1_name = self.i2n[slot_values['property_1']]
-            formatted_slot_values['property_1'] = property_1_name
-        if 'property_2' in slot_values:
-            property_2_name = self.i2n[slot_values['property_2']]
-            formatted_slot_values['property_2'] = property_2_name
+        # if 'property_1' in slot_values:
+        #     property_1_name = self.i2n[slot_values['property_1']]
+        #     formatted_slot_values['property_1'] = property_1_name
+        # if 'property_2' in slot_values:
+        #     property_2_name = self.i2n[slot_values['property_2']]
+        #     formatted_slot_values['property_2'] = property_2_name
         # Get country name from code
         if 'subject' in slot_values:
             subject_name = self.c2n[slot_values['subject']]

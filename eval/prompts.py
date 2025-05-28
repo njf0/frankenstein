@@ -1,5 +1,14 @@
 """Prompts for passing to LLMs, including the base prompt, tool use prompt, and tool metadata."""
 
+import inspect
+import random
+from pathlib import Path
+
+import pandas as pd
+
+from franklin.action import FranklinAction
+from franklin.slot_values import Property, Subject, SubjectSet, Time
+from franklin.tools import arithmetic, data_retrieval
 from franklin.utils import get_tool_metadata
 
 BASE_PROMPT = """You are a helpful assistant tasked with answering questions that require multiple intermediate steps of reasoning to arrive at a final answer.
@@ -36,13 +45,107 @@ ARITHMETIC_TOOLS = f"""The tools you have access to are below:
 
 {get_tool_metadata(toolset='arithmetic')}
 
+These tools can help you perform arithmetic operations (e.g., summation, averages, differences, ratios) on numeric values. However, you must **recall or retrieve the necessary data yourself**—these tools cannot access external data sources like the World Bank.
+
+Clearly express the data you recall using the following quadruple format: {{'subject': 'subject_name', 'property': 'property_name', 'object': 'object, 'time': 'year'}}.
+
 """
 
 DATA_TOOLS = f"""The tools you have access to are below:
 
 {get_tool_metadata(toolset='data')}
 
+These tools allow you to access World Bank indicators and retrieve data for specific countries, indicators, and years. Use them to fetch relevant data to answer the question.
+
+However, you must **perform any necessary arithmetic manually**, without tool support for computation. If the answer requires calculations (e.g., summation, averages), you must compute these yourself based on the retrieved data.
+
 """
+
+
+def generate_tool_call_example(tool_name, tool_modules):
+    """Generate and execute a single tool call example for a given tool name."""
+    # Gather all available tool functions
+    tool_map = {}
+    for module in tool_modules:
+        tool_map.update(dict(inspect.getmembers(module, inspect.isfunction)))
+
+    tool_func = tool_map[tool_name]
+
+    country_codes = Subject.get_values()
+    regions = [r for r in SubjectSet.get_values() if r and isinstance(r, str)]
+    indicator_codes = Property.get_values()
+    try:
+        wdi_data = pd.read_csv(Path('resources', 'wdi.csv'))
+        indicator_names = wdi_data['name'].dropna().unique().tolist()
+    except Exception:
+        indicator_names = indicator_codes
+    try:
+        iso_data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+        country_names = iso_data['country_name'].dropna().unique().tolist()
+    except Exception:
+        country_names = country_codes
+    years = Time.get_values()
+
+    params = inspect.signature(tool_func).parameters
+    kwargs = {}
+    for pname, p in params.items():
+        if p.default is not inspect.Parameter.empty:
+            kwargs[pname] = p.default
+        elif pname == 'country_code':
+            kwargs[pname] = random.choice(country_codes)
+        elif pname == 'country_name':
+            kwargs[pname] = random.choice(country_names)
+        elif pname == 'region_name':
+            kwargs[pname] = random.choice(regions)
+        elif pname == 'indicator_name':
+            kwargs[pname] = random.choice(indicator_names)
+        elif pname == 'indicator_code':
+            kwargs[pname] = random.choice(indicator_codes)
+        elif pname == 'year':
+            kwargs[pname] = random.choice(years)
+        elif pname in {'a', 'b', 'value_a', 'value_b'}:
+            kwargs[pname] = round((random.random() - 0.5) * 10, random.randint(3, 10))
+        elif pname == 'values':
+            kwargs[pname] = [round((random.random() - 0.5) * 10, random.randint(3, 10)) for _ in range(3)]
+        elif pname == 'keywords':
+            kwargs[pname] = ['water']
+        elif pname == 'thought':
+            kwargs[pname] = 'Use this field to plan or think aloud about what actions to take.'
+        elif pname == 'answer':
+            kwargs[pname] = round((random.random() - 0.5) * 100, random.randint(0, 10))
+        else:
+            kwargs[pname] = 'test'
+
+    action = FranklinAction(tool_name, **kwargs)
+    result = action.execute()
+    tool_call = f'{tool_name}({", ".join(f"{k}={v!r}" for k, v in kwargs.items())})'
+    example = f'Example of `{tool_name}` tool call: {tool_call}\nReturns: {result}'
+    return example
+
+
+def create_n_shot_examples(n: int = 3, toolset: str = 'all') -> str:
+    """Create n random examples for each available tool, grouped by tool (DFS order), for the specified toolset."""
+    # Select modules based on toolset
+    if toolset == 'arithmetic':
+        tool_modules = [arithmetic]
+    elif toolset == 'data':
+        tool_modules = [data_retrieval]
+    else:
+        tool_modules = [arithmetic, data_retrieval]
+
+    tool_map = {}
+    for module in tool_modules:
+        tool_map.update(dict(inspect.getmembers(module, inspect.isfunction)))
+    tool_names = list(tool_map.keys())
+
+    all_examples = []
+    for tool_name in tool_names:
+        tool_examples = []
+        for _ in range(n):
+            example = generate_tool_call_example(tool_name, tool_modules)
+            tool_examples.append(example)
+        all_examples.append('\n\n'.join(tool_examples))
+    return '\n---\n'.join(all_examples)
 
 
 if __name__ == '__main__':
@@ -56,3 +159,5 @@ if __name__ == '__main__':
     print(ARITHMETIC_TOOLS)
     print('=== DATA TOOLS ===')
     print(DATA_TOOLS)
+    print('=== N SHOT EXAMPLES ===')
+    print(create_n_shot_examples(3))

@@ -5,7 +5,7 @@ from typing import Union, get_args, get_origin
 import rich.console
 import rich.table
 
-from franklin.tools import arithmetic, data_retrieval
+from franklin.tools import arithmetic, data_retrieval, utils
 
 
 def print_slot_value_table(
@@ -125,14 +125,19 @@ def get_tool_metadata(
         A list of dictionaries containing function metadata.
 
     """
+    # Always include utils tools
+    modules = []
     if toolset == 'all':
         modules = [arithmetic, data_retrieval]
     elif toolset == 'arithmetic':
         modules = [arithmetic]
     elif toolset == 'data':
         modules = [data_retrieval]
+    elif toolset == 'utils':
+        modules = []
     else:
         raise ValueError(f'Invalid toolset: {toolset}')
+    modules.append(utils)  # Always add utils
 
     metadata = []
 

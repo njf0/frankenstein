@@ -31,6 +31,7 @@ class FranklinEvaluator:
         self.num_samples = kwargs.get('num_samples', 20)
         self.template = kwargs.get('template', '')
         self.split = kwargs.get('split', '')
+        self.n_shots = kwargs.get('n_shots', 0)
 
         # Load dataset
         dataset_path = Path('dataset', self.split, self.template).with_suffix('.jsonl')
@@ -41,6 +42,7 @@ class FranklinEvaluator:
             model_name=self.model_name,
             use_tools=self.use_tools,
             debug=self.debug,
+            n_shots=self.n_shots,
         )
 
     def run(self) -> dict:
@@ -174,6 +176,12 @@ if __name__ == '__main__':
         help='Enable debug mode for the model.',
     )
     parser.add_argument(
+        '--n_shots',
+        type=int,
+        default=0,
+        help='Number of n-shot tool call examples to prepend to the prompt.',
+    )
+    parser.add_argument(
         '--load_from_batch',
         action='store_true',
         help='Load configurations from a batch file.',
@@ -211,6 +219,7 @@ if __name__ == '__main__':
             num_samples=args.num_samples,
             template=args.template,
             split=args.split,
+            n_shots=args.n_shots,
         )
 
         logging.info('Running config:')

@@ -1,12 +1,16 @@
 """Runner class to run a tool-using loop with a language model."""
 
+import argparse
 import json
 import logging
+import random
+from pathlib import Path
 
 import litellm
+import pandas as pd
 from rich.logging import RichHandler
 
-from eval.prompts import ALL_TOOLS, ARITHMETIC_TOOLS, BASE_PROMPT, DATA_TOOLS, TOOL_USE_BASE
+from eval.prompts import ALL_TOOLS, ARITHMETIC_TOOLS, BASE_PROMPT, DATA_TOOLS, TOOL_USE_BASE, create_n_shot_examples
 from franklin.action import FranklinAction
 from franklin.utils import get_tool_metadata
 
@@ -19,6 +23,7 @@ class Runner:
         model_name: str,
         toolset: str = 'all',
         debug: bool = False,
+        n_shots: int = 0,
     ) -> None:
         """Initialize the Runner class.
 
@@ -26,13 +31,16 @@ class Runner:
         ----------
         model_name : str
             The name of the model to use.
-        tools : list[dict] | None
-            A list of tools to use. If None, the default tools will be used.
+        toolset : str
+            The toolset to use.
         debug : bool
             If True, the loop will wait for user input after each message.
+        n_shots : int
+            Number of n-shot examples to prepend to the prompt.
 
         """
         self.model_name = model_name
+        self.n_shots = n_shots
 
         if toolset == 'arithmetic':
             self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + ARITHMETIC_TOOLS
@@ -44,9 +52,21 @@ class Runner:
             self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + ALL_TOOLS
             self.tools = get_tool_metadata(toolset='all')
 
+        # Add n-shot examples if requested
+        if self.n_shots > 0:
+            self.system_prompt += '\n\n' + create_n_shot_examples(self.n_shots, toolset=toolset)
+
         self.debug = debug
         self.MAX_REPEATED_TOOL_CALLS = 10
         self.tool_call_counts = {}
+
+        if self.debug:
+            # Print config
+            logging.info(f"🔧 Model: '{self.model_name}'")
+            logging.info(f"🔧 Toolset: '{toolset}'")
+            logging.info(f'🔧 Debug mode: {self.debug}')
+            logging.info(f'🔧 N-shots: {self.n_shots}')
+            logging.info(f'🔧 System prompt: {self.system_prompt}')
 
         litellm._logging._disable_debugging()
 
@@ -70,14 +90,16 @@ class Runner:
             True if stopping condition is met, False otherwise.
 
         """
-        if finish_reason == 'stop':
-            # log message content before stopping
-            logging.info(f'💬 {messages[-1].get("content")}')
-            logging.info('🛑 Model indicated a stop condition.')
-            return True
+        # if finish_reason == 'stop':
+        #     # log message content before stopping
+        #     logging.info(f'💬 {messages[-1].get("content")}')
+        #     logging.info('🛑 Model indicated a stop condition.')
+        #     # return True
 
         for message in messages:
             tool_calls = message.get('tool_calls', [])
+            if tool_calls is None:
+                continue
             for tool_call in tool_calls:
                 if tool_call.get('function', {}).get('name') == 'final_answer':
                     # Log a final answer function call as below
@@ -118,10 +140,11 @@ class Runner:
             messages=messages,
             tools=self.tools,
         )
+        output = response.choices[0]
         message = response.choices[0].message
         finish_reason = response.choices[0].finish_reason
 
-        return message, finish_reason
+        return output
 
     def loop(
         self,
@@ -145,11 +168,11 @@ class Runner:
             {'role': 'user', 'content': input_text},
         ]
 
-        if self.debug:
-            # Log the system prompt
-            logging.info(f'🧑‍💻 SYSTEM PROMPT: {self.system_prompt}')
-            # Log the user input
-            logging.info(f'🧑‍💻 USER PROMPT: {input_text}')
+        # if self.debug:
+        #     # Log the system prompt
+        #     logging.info(f'🧑‍💻 SYSTEM PROMPT: {self.system_prompt}')
+        #     # Log the user input
+        #     logging.info(f'🧑‍💻 USER PROMPT: {input_text}')
 
         logging.info(f'❓ {input_text}')
 
@@ -163,7 +186,13 @@ class Runner:
                     logging.info('🛑  Cancelled by user.')
                     break
 
-            message, finish_reason = self.generate(messages)
+            output = self.generate(messages)
+            message = output.message
+            finish_reason = output.finish_reason
+
+            # Log all messages as they are formatted in the model io
+            if self.debug:
+                logging.info(f'🤖 {output}')
 
             messages.append(
                 {
@@ -178,7 +207,9 @@ class Runner:
             if self._should_stop(messages, finish_reason=finish_reason):
                 break
 
-            for tool_call in message.tool_calls:
+            # Safely handle None tool_calls
+            tool_calls = message.tool_calls or []
+            for tool_call in tool_calls:
                 # Parse the function call
                 name = tool_call.function.name
                 arguments = tool_call.function.arguments
@@ -217,15 +248,47 @@ class Runner:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run a tool-using loop with a language model.')
+    parser.add_argument(
+        '--model_name',
+        type=str,
+        default='openai/gpt-4o-mini',
+        help='The name of the model to use.',
+    )
+    parser.add_argument(
+        '--toolset',
+        type=str,
+        default='all',
+        choices=['arithmetic', 'data', 'all'],
+        help='The toolset to use.',
+    )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='If set, the loop will wait for user input after each message.',
+    )
+    parser.add_argument(
+        '--n_shots',
+        type=int,
+        default=0,
+        help='Number of n-shot tool call examples to prepend to the prompt.',
+    )
+    args = parser.parse_args()
+
     FORMAT = '%(message)s'
     logging.basicConfig(level='NOTSET', format=FORMAT, datefmt='[%X]', handlers=[RichHandler()])
 
     runner = Runner(
-        model_name='openai/gpt-4o-mini',
-        toolset='all',
-        debug=True,
+        model_name=args.model_name,
+        toolset=args.toolset,
+        debug=args.debug,
+        n_shots=args.n_shots,
     )
 
-    runner.loop(
-        'Which country in Eastern Europe had the highest increase in proportion of GDP represented by tax revenue between 2007 and 2013?'
-    )
+    variants = Path('dataset', 'answerable_full').iterdir()
+    variant = random.choice(list(variants))
+    with variant.open('r') as f:
+        dataset = pd.read_json(f, lines=True)
+    dataset = dataset.sample(1)
+
+    runner.loop(dataset['question'].to_list()[0])

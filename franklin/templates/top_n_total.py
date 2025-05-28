@@ -69,8 +69,6 @@ class TopNTotal(FranklinQuestion):
             value = action.result
             property_values.append((country, value))
 
-        print(property_values)
-
         # Check if all values are missing
         if all(v[1] is None for v in property_values):
             self.metadata['data_availability'] = 'missing'
