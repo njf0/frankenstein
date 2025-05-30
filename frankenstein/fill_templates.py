@@ -55,7 +55,7 @@ TEMPLATES = get_templates(templates)
 class TemplateFiller:
     """Fill slot values in templates and compute answers."""
 
-    def __init__(self, templates, n):
+    def __init__(self, templates, n, overwrite=False):
         """Initialize TemplateFiller.
 
         Parameters
@@ -64,10 +64,13 @@ class TemplateFiller:
             List of templates to fill.
         n : int
             Number of examples to generate.
+        overwrite : bool, optional
+            Whether to overwrite existing dataset files, by default False
 
         """
         self.templates = templates
         self.n = n
+        self.overwrite = overwrite
         # Optional: mapping of template_name to set of categories to skip
         self.skip_categories = {
             'AverageChange': {'unanswerable_partial'},
@@ -124,6 +127,14 @@ class TemplateFiller:
             Dictionary of examples for each template and category.
 
         """
+        # Check is Path('dataset') is populated
+        outdir = Path('dataset')
+        if outdir.exists() and any(outdir.iterdir()) and not self.overwrite:
+            logging.warning(
+                'Output directory "dataset" is not empty. Use --overwrite to re-generate the dataset.',
+            )
+            return {}
+
         all_results = {}
         template_timings = []
         total_start = time.time()
@@ -311,23 +322,27 @@ class TemplateFiller:
 
                 # Save results to files, one folder per category
                 outdir = Path('dataset')
-                (outdir / 'answerable_full').mkdir(parents=True, exist_ok=True)
-                (outdir / 'answerable_partial').mkdir(parents=True, exist_ok=True)
-                (outdir / 'unanswerable_partial').mkdir(parents=True, exist_ok=True)
-                (outdir / 'unanswerable_missing').mkdir(parents=True, exist_ok=True)
 
-                with (outdir / 'answerable_full' / f'{template_name}.jsonl').open('w') as f:
-                    for example in answerable_full:
-                        f.write(json.dumps(example) + '\n')
-                with (outdir / 'answerable_partial' / f'{template_name}.jsonl').open('w') as f:
-                    for example in answerable_partial:
-                        f.write(json.dumps(example) + '\n')
-                with (outdir / 'unanswerable_partial' / f'{template_name}.jsonl').open('w') as f:
-                    for example in unanswerable_partial:
-                        f.write(json.dumps(example) + '\n')
-                with (outdir / 'unanswerable_missing' / f'{template_name}.jsonl').open('w') as f:
-                    for example in unanswerable_missing:
-                        f.write(json.dumps(example) + '\n')
+                if 'answerable_full' not in skip_set and answerable_full:
+                    (outdir / 'answerable_full').mkdir(parents=True, exist_ok=True)
+                    with (outdir / 'answerable_full' / f'{template_name}.jsonl').open('w') as f:
+                        for example in answerable_full:
+                            f.write(json.dumps(example) + '\n')
+                if 'answerable_partial' not in skip_set and answerable_partial:
+                    (outdir / 'answerable_partial').mkdir(parents=True, exist_ok=True)
+                    with (outdir / 'answerable_partial' / f'{template_name}.jsonl').open('w') as f:
+                        for example in answerable_partial:
+                            f.write(json.dumps(example) + '\n')
+                if 'unanswerable_partial' not in skip_set and unanswerable_partial:
+                    (outdir / 'unanswerable_partial').mkdir(parents=True, exist_ok=True)
+                    with (outdir / 'unanswerable_partial' / f'{template_name}.jsonl').open('w') as f:
+                        for example in unanswerable_partial:
+                            f.write(json.dumps(example) + '\n')
+                if 'unanswerable_missing' not in skip_set and unanswerable_missing:
+                    (outdir / 'unanswerable_missing').mkdir(parents=True, exist_ok=True)
+                    with (outdir / 'unanswerable_missing' / f'{template_name}.jsonl').open('w') as f:
+                        for example in unanswerable_missing:
+                            f.write(json.dumps(example) + '\n')
 
         total_end = time.time()
         total_time = total_end - total_start
@@ -395,6 +410,7 @@ if __name__ == '__main__':
         default=[t[0] for t in TEMPLATES],
     )
     parser.add_argument('--save', '-s', action='store_true')
+    parser.add_argument('--overwrite', '-o', action='store_true', help='Overwrite existing dataset files')
     args = parser.parse_args()
 
     # Set up logging
@@ -410,5 +426,5 @@ if __name__ == '__main__':
     selected_templates = [t for t in TEMPLATES if t[0] in args.templates]
 
     # Fill templates
-    filler = TemplateFiller(selected_templates, args.number)
+    filler = TemplateFiller(selected_templates, args.number, overwrite=args.overwrite)
     results = filler.run(save=False)

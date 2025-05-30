@@ -56,8 +56,6 @@ python setup.sh
 
 ## Acknowledgements
 
-- Inspired by the [FRANK](https://github.com/csinva/frank) benchmark.
 - Uses data from the [World Bank Open Data](https://data.worldbank.org/).
-- Developed by Nick Ferguson and contributors.
 
 ---
