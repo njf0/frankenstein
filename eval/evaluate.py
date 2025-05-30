@@ -11,7 +11,7 @@ from rich.logging import RichHandler
 from eval.generate import vLLMModel
 
 
-class FranklinEvaluator:
+class FrankensteinEvaluator:
     """Evaluate the performance of a transformer model on a split/portion/template of the dataset."""
 
     def __init__(self, **kwargs):
@@ -199,7 +199,7 @@ if __name__ == '__main__':
             logging.info(config)
 
             # Initialize evaluator
-            evaluator = FranklinEvaluator(**config)
+            evaluator = FrankensteinEvaluator(**config)
 
             # Run evaluation
             evaluator.run()
@@ -210,7 +210,7 @@ if __name__ == '__main__':
 
     else:
         # Single configuration mode
-        evaluator = FranklinEvaluator(
+        evaluator = FrankensteinEvaluator(
             model_name=args.model_name,
             use_tools=args.use_tools,
             debug=args.debug,

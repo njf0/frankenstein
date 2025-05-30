@@ -5,11 +5,10 @@ import random
 from pathlib import Path
 
 import pandas as pd
-
-from franklin.action import FranklinAction
-from franklin.slot_values import Property, Subject, SubjectSet, Time
-from franklin.tools import arithmetic, data_retrieval
-from franklin.utils import get_tool_metadata
+from frankenstein.action import FrankensteinAction
+from frankenstein.slot_values import Property, Subject, SubjectSet, Time
+from frankenstein.tools import arithmetic, data_retrieval
+from frankenstein.utils import get_tool_metadata
 
 BASE_PROMPT = """You are a helpful assistant tasked with answering questions that require multiple intermediate steps of reasoning to arrive at a final answer.
 
@@ -116,7 +115,7 @@ def generate_tool_call_example(tool_name, tool_modules):
         else:
             kwargs[pname] = 'test'
 
-    action = FranklinAction(tool_name, **kwargs)
+    action = FrankensteinAction(tool_name, **kwargs)
     result = action.execute()
     tool_call = f'{tool_name}({", ".join(f"{k}={v!r}" for k, v in kwargs.items())})'
     example = f'Example of `{tool_name}` tool call: {tool_call}\nReturns: {result}'

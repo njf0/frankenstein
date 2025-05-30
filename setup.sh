@@ -1,24 +1,6 @@
-code --install-extension "blake-mealey.generate-wt-scheme"
-code --install-extension "charliermarsh.ruff"
-code --install-extension "docker.docker"
-code --install-extension "gautierdag.country-flag-hover"
-code --install-extension "github.copilot"
-code --install-extension "github.copilot-chat"
-code --install-extension "github.github-vscode-theme"
-code --install-extension "james-yu.latex-workshop"
-code --install-extension "mechatroner.rainbow-csv"
-code --install-extension "ms-azuretools.vscode-docker"
-code --install-extension "ms-kubernetes-tools.vscode-kubernetes-tools"
-code --install-extension "ms-python.debugpy"
-code --install-extension "ms-python.python"
-code --install-extension "ms-python.vscode-pylance"
-code --install-extension "ms-toolsai.jupyter"
-code --install-extension "ms-toolsai.jupyter-keymap"
-code --install-extension "ms-toolsai.jupyter-renderers"
-code --install-extension "ms-toolsai.vscode-jupyter-cell-tags"
-code --install-extension "ms-toolsai.vscode-jupyter-slideshow"
-code --install-extension "pkief.material-icon-theme"
-code --install-extension "redhat.vscode-yaml"
-code --install-extension "richie5um2.vscode-sort-json"
-code --install-extension "tecosaur.latex-utilities"
-code --install-extension "valentjn.vscode-ltex"
+#!/bin/bash
+
+source .venv/bin/activate
+python resources/get_wdi_data.py --featured
+python resources/paraphrase_indicators.py
+python franklin/fill_templates.py -n 100

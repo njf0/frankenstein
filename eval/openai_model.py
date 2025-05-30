@@ -2,12 +2,12 @@ import json
 import logging
 from copy import deepcopy
 
+from frankenstein.action import FrankensteinAction
+from frankenstein.model import ToolCalls
 from openai import OpenAI
 from rich.logging import RichHandler
 
 from eval.prompts import BASE_PROMPT, FULL_TOOL_USE, SIMULATE_TOOL_USE
-from franklin.action import FranklinAction
-from franklin.model import ToolCalls
 
 
 class OpenAIModel:
@@ -53,7 +53,7 @@ class OpenAIModel:
         """Process a tool call and return the result."""
         name = tool_call.get('name')
         args = tool_call.get('arguments', {})
-        return FranklinAction(name, **args).execute(error_handling='raise')
+        return FrankensteinAction(name, **args).execute(error_handling='raise')
 
     def generate(
         self,

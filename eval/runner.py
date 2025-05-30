@@ -8,11 +8,11 @@ from pathlib import Path
 
 import litellm
 import pandas as pd
+from frankenstein.action import FrankensteinAction
+from frankenstein.utils import get_tool_metadata
 from rich.logging import RichHandler
 
 from eval.prompts import ALL_TOOLS, ARITHMETIC_TOOLS, BASE_PROMPT, DATA_TOOLS, TOOL_USE_BASE, create_n_shot_examples
-from franklin.action import FranklinAction
-from franklin.utils import get_tool_metadata
 
 
 class Runner:
@@ -106,7 +106,7 @@ class Runner:
                     parsed_args = json.loads(tool_call['function']['arguments'])
                     name = tool_call['function']['name']
                     args_string = ', '.join([f"{k} = '{v}'" for k, v in parsed_args.items()])
-                    logging.info(f'🔧 {name}({args_string})')
+                    logging.info(f'🔨 {name}({args_string})')
                     logging.info('🏁 Final answer tool called.')
                     return True
 
@@ -217,7 +217,7 @@ class Runner:
 
                 # Format and log the function call
                 args_string = ', '.join([f"{k} = '{v}'" for k, v in parsed_args.items()])
-                logging.info(f'🔧 {name}({args_string})')
+                logging.info(f'🔨 {name}({args_string})')
 
                 # Update the tool call counts
                 key = (name, json.dumps(parsed_args, sort_keys=True))
@@ -225,7 +225,7 @@ class Runner:
 
                 # Execute the function call
                 try:
-                    result = FranklinAction(action=name, **parsed_args).execute(error_handling='raise')
+                    result = FrankensteinAction(action=name, **parsed_args).execute(error_handling='raise')
                     logging.info(f'↪️  {result}')
 
                 except Exception as e:

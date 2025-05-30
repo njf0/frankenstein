@@ -17,4 +17,7 @@ dependencies = [
     "vllm ; sys_platform == 'linux'",
 ]
 
+[tool.setuptools.packages.find]
+include = ["frankenstein*"]
+
 

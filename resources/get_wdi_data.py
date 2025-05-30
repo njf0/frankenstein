@@ -1,12 +1,12 @@
 import argparse
-import logging
 import time
 from pathlib import Path
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from tqdm import tqdm
+from rich.console import Console
+from rich.progress import BarColumn, Progress, ProgressColumn, SpinnerColumn, TextColumn, TimeRemainingColumn
 
 # Constants
 YEAR_BEGIN = 2003
@@ -15,177 +15,278 @@ DATA_PATH = Path('resources')
 WDI_IND_DIR = DATA_PATH / 'wdi'
 ISO_3166_PATH = DATA_PATH / 'iso_3166.csv'
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+console = Console()
 
 
-def get_country_codes(
-    filepath: Path = ISO_3166_PATH,
-) -> list:
-    """Load ISO 3166-1 alpha-3 country codes from a CSV file."""
-    iso_3166 = pd.read_csv(filepath)
-    return iso_3166['country_code'].to_list()
+class CountColumn(ProgressColumn):
+    """Custom column to show completed/total count."""
+
+    def render(self, task):
+        return f'[yellow]{int(task.completed)}/{int(task.total)}[/yellow]'
 
 
-def get_featured_indicators() -> None:
-    """Scrape the list of featured indicators from the World Bank website and return their codes.
+class WDIDataFetcher:
+    def __init__(
+        self,
+        featured: bool = True,
+        output: str = 'wdi.csv',
+        year_start: int = YEAR_BEGIN,
+        year_end: int = YEAR_END,
+        overwrite: bool = False,
+    ):
+        self.featured = featured
+        self.output = output
+        self.year_start = year_start
+        self.year_end = year_end
+        self.overwrite = overwrite
+        self.data_path = DATA_PATH
+        self.wdi_ind_dir = WDI_IND_DIR
+        self.iso_3166_path = ISO_3166_PATH
+        self.console = console
 
-    Returns
-    -------
-    list
-        A list of featured indicator codes.
+    def get_country_codes(
+        self,
+    ) -> list:
+        """Load ISO 3166-1 alpha-3 country codes from a CSV file.
 
-    """
-    url = 'https://data.worldbank.org/indicator'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
+        Returns
+        -------
+        list
+            List of ISO 3166-1 alpha-3 country codes.
 
-    featured_indicators = []
-    for link in soup.find_all('a', href=True):
-        href = link['href']
-        if href.startswith('/indicator/') and href.count('/') == 2:
-            indicator_code = href.split('/')[-1].split('?')[0]
-            featured_indicators.append(indicator_code)
+        """
+        iso_3166 = pd.read_csv(ISO_3166_PATH)
 
-    return featured_indicators
+        return iso_3166['country_code'].to_list()
+
+    def get_featured_indicators(
+        self,
+    ) -> list:
+        """Scrape the list of featured indicators from the World Bank website and return their codes.
+
+        Returns
+        -------
+        list
+            List of featured indicator codes.
+
+        """
+        # Scrape the World Bank website to get featured indicators
+        url = 'https://data.worldbank.org/indicator'
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find all links to indicators and extract their codes
+        featured_indicators = []
+        for link in soup.find_all('a', href=True):
+            href = link['href']
+            if href.startswith('/indicator/') and href.count('/') == 2:
+                indicator_code = href.split('/')[-1].split('?')[0]
+                featured_indicators.append(indicator_code)
+
+        return featured_indicators
+
+    def get_indicators(
+        self,
+    ) -> list:
+        """Fetch all WDI indicators from the World Bank API.
+
+        Parameters
+        ----------
+        featured : bool, optional
+            If True, only return featured indicators, by default True
+
+        Returns
+        -------
+        list
+            List of dictionaries containing indicator IDs, names, and descriptions.
+
+        """
+        # Fetch the total number of indicators from the World Bank API
+        url = 'https://api.worldbank.org/v2/source/2/indicator?format=json&per_page=1'
+        response = requests.get(url)
+        data = response.json()
+        total_indicators = data[0]['total']
+
+        # Second request to get all indicators
+        url = f'https://api.worldbank.org/v2/source/2/indicator?format=json&per_page={total_indicators}'
+        response = requests.get(url)
+        data = response.json()[1:][0]
+        indicators = [{'id': i['id'], 'name': i['name'], 'description': i['sourceNote']} for i in data]
+
+        # Filter indicators based on the 'featured' flag
+        if self.featured:
+            featured_codes = self.get_featured_indicators()
+            indicators = [i for i in indicators if i['id'] in featured_codes]
+
+        return indicators
+
+    def fetch_indicator_data(
+        self,
+        indicator: str,
+        year_begin: int,
+        year_end: int,
+    ) -> list:
+        """Fetch data for a specific indicator from the World Bank API.
+
+        Parameters
+        ----------
+        indicator : str
+            The indicator code to fetch data for.
+        year_begin : int
+            The start year for the data.
+        year_end : int
+            The end year for the data.
+
+        Returns
+        -------
+        list
+            List of dictionaries containing the indicator data for the specified years.
+
+        """
+        # Fetch data for the specified indicator and years
+        params = {'format': 'json', 'date': f'{year_begin}:{year_end}', 'page': 1}
+        url = f'https://api.worldbank.org/v2/country/all/indicator/{indicator}'
+        response = requests.get(url, params=params)
+        data = response.json()
+        if response.status_code != 200 or len(data) < 2:
+            self.console.log(f'[red]Indicator {indicator} not found or error: {data}[/red]')
+            return None
+
+        total_indicators = data[0]['total']
+        params['per_page'] = total_indicators
+        response = requests.get(url, params=params)
+        data = response.json()[1:][0]
+
+        return data
+
+    def save_indicator_data(
+        self,
+        indicator_data: list,
+        country_codes: list,
+        save_path: Path,
+    ) -> None:
+        """Save the indicator_data data to a CSV file.
+
+        Parameters
+        ----------
+        indicator_data : list
+            List of dictionaries containing the indicator data.
+        country_codes : list
+            List of ISO 3166-1 alpha-3 country codes to filter the data.
+        save_path : Path
+            Path to save the CSV file.
+
+        """
+        df = pd.DataFrame(indicator_data)
+        pivot = df.pivot_table(index='countryiso3code', columns='date', values='value')
+        pivot = pivot[pivot.index.isin(country_codes)]
+        pivot.index.name = 'country_code'
+        pivot = pivot.sort_index()
+        pivot.to_csv(save_path)
+
+    def ensure_dirs(
+        self,
+    ) -> None:
+        """Ensure that the necessary directories exist."""
+        self.data_path.mkdir(parents=True, exist_ok=True)
+        self.wdi_ind_dir.mkdir(parents=True, exist_ok=True)
+
+    def run(
+        self,
+    ) -> None:
+        """Run the WDI data fetching process."""
+        self.console.rule('[bold blue]WDI Data Fetcher')
+        # Ensure necessary directories exist
+        self.ensure_dirs()
+
+        # Get indicators and country codes
+        indicators = self.get_indicators()
+        country_codes = self.get_country_codes()
+        n_indicators = len(indicators)
+
+        # Check if the output directory already contains indicator files
+        existing_files = {f.stem for f in self.wdi_ind_dir.iterdir() if f.is_file()}
+        missing_indicators = [i for i in indicators if i['id'] not in existing_files]
+        already_present = [i for i in indicators if i['id'] in existing_files]
+        available_indicators = []
+
+        output_csv_path = self.data_path / self.output
+
+        if self.overwrite:
+            self.console.log('[bold yellow]Overwrite enabled: re-fetching all indicators.[/bold yellow]')
+            missing_indicators = indicators
+            already_present = []
+            # Do not delete any files, just overwrite as we fetch
+            available_indicators = []
+        elif output_csv_path.exists() and not missing_indicators:
+            self.console.log(
+                f"[bold green]All indicator data is already present in '{self.wdi_ind_dir}'. Use --overwrite to refresh.[/bold green]"
+            )
+            return
+
+        if not missing_indicators:
+            self.console.log(
+                f"[bold green]All indicator data is already present in '{self.wdi_ind_dir}'. Use --overwrite to refresh.[/bold green]"
+            )
+            available_indicators = indicators
+        else:
+            max_code_width = max(len(i['id']) for i in missing_indicators) if missing_indicators else 12
+            with Progress(
+                SpinnerColumn(),
+                TextColumn('[progress.description]{task.description}'),
+                BarColumn(),
+                CountColumn(),
+                '[progress.percentage]{task.percentage:>3.0f}%',
+                TimeRemainingColumn(),
+                console=self.console,
+            ) as progress:
+                self.console.log('[bold cyan]Getting indicator data with configuration...[/bold cyan]')
+                self.console.log(f'[cyan]Years[/cyan]         {self.year_start} - {self.year_end}')
+                self.console.log(f'[cyan]Featured only[/cyan] {self.featured}')
+                self.console.log(f"[cyan]Output file[/cyan]   '{self.output}'")
+                self.console.log(
+                    f'[cyan]Indicators[/cyan]    {n_indicators} total ([green][bold]{len(already_present)}[/bold] already present[/green], [bold][yellow]{len(missing_indicators)}[/bold] to fetch[/yellow])'
+                )
+                task = progress.add_task('Fetching missing indicators...', total=len(missing_indicators))
+                available_indicators.extend(already_present)
+                for i in missing_indicators:
+                    padded_code = f'{i["id"]:<{max_code_width}}'
+                    short_name = (i['name'][:27] + '...') if len(i['name']) > 30 else i['name']
+                    padded_name = f'{short_name:<30}'
+                    progress.update(
+                        task,
+                        description=f'[yellow]{padded_code}[/yellow] [bold]·[/bold] [dim][yellow]{padded_name}[/yellow][/dim]',
+                    )
+                    data = self.fetch_indicator_data(i['id'], self.year_start, self.year_end)
+                    if data:
+                        self.save_indicator_data(data, country_codes, self.wdi_ind_dir / f'{i["id"]}.csv')
+                        available_indicators.append(i)
+                    time.sleep(0.1)
+                    progress.advance(task)
+
+        indicators_df = pd.DataFrame(available_indicators)
+        indicators_df.to_csv(output_csv_path, index=False)
+        self.console.log(f'[green]Saved indicator summary to {output_csv_path}.[/green]')
 
 
-def get_indicators(
-    featured: bool = True,
-    save: bool = True,
-    data_dir: Path = DATA_PATH,
-) -> dict:
-    """Fetch all WDI indicators from the World Bank API.
+def main():
+    parser = argparse.ArgumentParser(description='Fetch World Development Indicators data from the World Bank API.')
+    parser.add_argument('--featured', action='store_true', help='Fetch only featured indicators.')
+    parser.add_argument('--output', type=str, default='wdi.csv', help='Output CSV filename (default: wdi.csv)')
+    parser.add_argument('--year-start', type=int, default=2003, help='Start year (default: 2003)')
+    parser.add_argument('--year-end', type=int, default=2023, help='End year (default: 2023)')
+    parser.add_argument('--overwrite', action='store_true', help='Overwrite existing output file if present')
+    args = parser.parse_args()
 
-    Parameters
-    ----------
-    featured : bool
-        Whether to fetch only featured indicators.
-    save : bool
-        Whether to save the indicator data to a CSV file.
-    data_dir : Path
-        The path to save the indicator data.
-
-    Returns
-    -------
-    dict
-        A dictionary of indicator codes, names, and descriptions.
-
-    """
-    data_dir = Path(data_dir) if isinstance(data_dir, str) else data_dir
-
-    logging.info('Fetching WDI indicators from the World Bank API.')
-
-    # Initial request to get the total number of indicators
-    url = 'https://api.worldbank.org/v2/source/2/indicator?format=json&per_page=1'
-    response = requests.get(url)
-    data = response.json()
-    total_indicators = data[0]['total']
-
-    # Request all indicators
-    url = f'https://api.worldbank.org/v2/source/2/indicator?format=json&per_page={total_indicators}'
-    response = requests.get(url)
-    data = response.json()[1:][0]
-
-    # Need a list[dict] of indicator codes, names, and descriptions
-    indicators = [{'id': i['id'], 'name': i['name'], 'description': i['sourceNote']} for i in data]
-
-    if featured:
-        # Get the list of featured indicator codes
-        featured_codes = get_featured_indicators()
-        # Now filter the indicators to only include the featured ones
-        indicators = [i for i in indicators if i['id'] in featured_codes]
-
-    # # Save the indicator key to a CSV file
-    # indicators = pd.DataFrame(indicators)
-    # filename = 'wdi.csv' if featured else 'wdi.csv'
-
-    # if save:
-    #     indicators.to_csv(data_dir / filename, index=False)
-
-    return indicators
-
-
-def fetch_indicator_data(indicator, year_begin, year_end):
-    """Fetch data for a specific indicator from the World Bank API."""
-    params = {'format': 'json', 'date': f'{year_begin}:{year_end}', 'page': 1}
-    url = f'https://api.worldbank.org/v2/country/all/indicator/{indicator}'
-
-    response = requests.get(url, params=params)
-    data = response.json()
-    # Raise an error if the request was unsuccessful
-    if response.status_code != 200 or len(data) < 2:
-        logging.error(f'Indicator {indicator} not found: {data}')
-        return None
-
-    total_indicators = data[0]['total']
-
-    params['per_page'] = total_indicators
-    response = requests.get(url, params=params)
-    data = response.json()[1:][0]
-
-    return data
-
-
-def save_indicator_data(indicator_data: list, country_codes: list, save_path: Path) -> None:
-    """Save the indicator_data data to a CSV file."""
-    df = pd.DataFrame(indicator_data)
-    pivot = df.pivot_table(index='countryiso3code', columns='date', values='value')
-    pivot = pivot[pivot.index.isin(country_codes)]
-    pivot.index.name = 'country_code'
-    pivot = pivot.sort_index()
-    pivot.to_csv(save_path)
-
-
-def main(
-    featured: bool = True,
-) -> None:
-    """Fetch World Development Indicators data from the World Bank API.
-
-    Parameters
-    ----------
-    featured : bool
-        Whether to fetch only featured indicators.
-
-    """
-    if not DATA_PATH.exists():
-        DATA_PATH.mkdir(parents=True)
-
-    if not WDI_IND_DIR.exists():
-        WDI_IND_DIR.mkdir(parents=True)
-
-    indicators = get_indicators(featured=True)
-    country_codes = get_country_codes()
-
-    # Check which indicators have already been fetched
-    existing_files = [f.stem for f in WDI_IND_DIR.iterdir() if f.is_file()]
-
-    print(f'Processing data for {len(indicators)} remaining indicators.')
-    pbar = tqdm(indicators, desc='Indicators processed')
-
-    available_indicators = []
-
-    # Fetch and save data for each indicator
-    for i in pbar:
-        pbar.set_description(f'Processing {i["id"]}')
-        data = fetch_indicator_data(i['id'], YEAR_BEGIN, YEAR_END)
-        if data:
-            save_indicator_data(data, country_codes, WDI_IND_DIR / f'{i["id"]}.csv')
-            available_indicators.append(i)
-
-        # Sleep for 1 second to avoid hitting the API too hard
-        time.sleep(0.5)
-
-    # Save the list of available indicators to a CSV file
-    indicators = pd.DataFrame(available_indicators)
-    filename = 'wdi.csv'
-    indicators.to_csv(DATA_PATH / filename, index=False)
-    logging.info(f'Saved {len(available_indicators)} indicators to {DATA_PATH / filename}.')
+    fetcher = WDIDataFetcher(
+        featured=args.featured,
+        output=args.output,
+        year_start=args.year_start,
+        year_end=args.year_end,
+        overwrite=args.overwrite,
+    )
+    fetcher.run()
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Fetch World Development Indicators data from the World Bank API.')
-    parser.add_argument('--featured', action='store_true', help='Fetch only featured indicators.')
-    args = parser.parse_args()
-
-    main(args.featured)
+    main()

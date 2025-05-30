@@ -2,6 +2,8 @@ import json
 import logging
 from copy import deepcopy
 
+from frankenstein.action import FrankensteinAction
+from frankenstein.schema import ToolCalls
 from openai import OpenAI
 from pydantic import ValidationError
 from rich.logging import RichHandler
@@ -9,8 +11,6 @@ from vllm import LLM
 from vllm.sampling_params import GuidedDecodingParams, SamplingParams
 
 from eval.prompts import BASE_PROMPT, FULL_TOOL_USE, SIMULATE_TOOL_USE
-from franklin.action import FranklinAction
-from franklin.schema import ToolCalls
 
 
 # --- Main Model Class ---
@@ -105,7 +105,7 @@ class vLLMModel:
         name = tool_call.get('name')
         args = tool_call.get('arguments', {})
 
-        return FranklinAction(name, **args).execute(error_handling='raise')
+        return FrankensteinAction(name, **args).execute(error_handling='raise')
 
     def generate(
         self,
@@ -334,7 +334,7 @@ class OpenAIModel:
         """Process a tool call and return the result."""
         name = tool_call.get('name')
         args = tool_call.get('arguments', {})
-        return FranklinAction(name, **args).execute(error_handling='raise')
+        return FrankensteinAction(name, **args).execute(error_handling='raise')
 
     def generate(
         self,
