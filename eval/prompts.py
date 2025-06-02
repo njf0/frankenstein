@@ -16,6 +16,8 @@ The questions involve using World Bank data for various countries and indicators
 
 Create a step-by-step plan to answer the question, and then execute each step of that plan to arrive at the final answer.
 
+The conversation will only end after you call the `final_answer` tool with your final answer.
+
 """
 
 TOOL_USE_BASE = """You have access to a set of tools to help you answer the question:

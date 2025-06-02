@@ -14,6 +14,10 @@ from rich.logging import RichHandler
 
 from eval.prompts import ALL_TOOLS, ARITHMETIC_TOOLS, BASE_PROMPT, DATA_TOOLS, TOOL_USE_BASE, create_n_shot_examples
 
+SINGLE_TOOL_CALL_MODELS = {
+    'Llama-3.1',
+    'Llama-3.2',
+}
 
 class Runner:
     """A class to run a tool-using loop with a language model."""
@@ -39,7 +43,16 @@ class Runner:
             Number of n-shot examples to prepend to the prompt.
 
         """
-        self.model_name = model_name
+        if model_name.startswith('openai/'):
+            # Use the OpenAI API key from the environment variable
+            self.api_base = None
+            self.model_name = model_name
+        else:
+            # Use the local model
+            self.api_base = 'http://0.0.0.0:8000/v1'
+            self.model_name = 'hosted_vllm/' + model_name
+
+
         self.n_shots = n_shots
 
         if toolset == 'arithmetic':
@@ -66,9 +79,11 @@ class Runner:
             logging.info(f"🔧 Toolset: '{toolset}'")
             logging.info(f'🔧 Debug mode: {self.debug}')
             logging.info(f'🔧 N-shots: {self.n_shots}')
-            logging.info(f'🔧 System prompt: {self.system_prompt}')
+            # logging.info(f'🔧 System prompt: {self.system_prompt}')
+            litellm._turn_on_debug()
 
-        litellm._logging._disable_debugging()
+        else:
+            litellm._logging._disable_debugging()
 
     def _should_stop(
         self,
@@ -99,6 +114,10 @@ class Runner:
         for message in messages:
             tool_calls = message.get('tool_calls', [])
             if tool_calls is None:
+                # Check message content for 'final answer'
+                if 'final answer' in message.get('content', '').lower():
+                    logging.info('🏁 Final answer detected in message content.')
+                    return True
                 continue
             for tool_call in tool_calls:
                 if tool_call.get('function', {}).get('name') == 'final_answer':
@@ -139,6 +158,7 @@ class Runner:
             model=self.model_name,
             messages=messages,
             tools=self.tools,
+            api_base=self.api_base,
         )
         output = response.choices[0]
         message = response.choices[0].message
@@ -248,6 +268,14 @@ class Runner:
 
 
 if __name__ == '__main__':
+
+
+
+    # vLLM serve commands
+    # vllm serve --model "public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct" --serve-model-name "Llama-3.1-8B-Instruct"
+    # vllm serve --model "public/hf/models/Qwen/Qwen3-4B" --serve-model-name "Qwen3-4B"
+
+
     parser = argparse.ArgumentParser(description='Run a tool-using loop with a language model.')
     parser.add_argument(
         '--model_name',
