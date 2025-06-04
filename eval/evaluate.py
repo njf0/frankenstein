@@ -66,15 +66,17 @@ class FrankensteinEvaluator:
             logging.info(f'Processing question {i + 1}/{len(self.dataset)}')
             messages = self.model.loop(row['question'], max_loops=row['metadata']['total_actions'] * 10)
 
-            # Extract the content of the 'final_answer' tool call
-            final_answer = next(
-                (
-                    message['content']
-                    for message in messages
-                    if message.get('role') == 'tool' and message.get('name') == 'final_answer'
-                ),
-                None,
-            )
+            # --- Updated: Extract the final answer using the same logic as runner.py ---
+            final_answer = None
+            for message in messages:
+                if message.get('role') == 'assistant' and message.get('tool_calls'):
+                    for tool_call in message['tool_calls']:
+                        if tool_call.get('function', {}).get('name') == 'final_answer':
+                            parsed_args = json.loads(tool_call['function']['arguments'])
+                            final_answer = parsed_args.get('answer')
+                            break
+                if final_answer is not None:
+                    break
 
             # Log the comparison between the final answer and the expected answer
             if final_answer is not None:

@@ -10,6 +10,7 @@ class FrankensteinAction:
     def __init__(
         self,
         action: str | None = None,
+        id: str | None = None,
         **kwargs,
     ):
         """Initialize an action.
@@ -18,18 +19,18 @@ class FrankensteinAction:
         ----------
         action: str
             The action to perform.
+        id: str
+            Optional unique ID for tracking this action.
         kwargs: dict
             The arguments for the action.
 
         """
+        self.id = id
         # Collect all functions from both modules
         tool_map = {}
         for module in (arithmetic, data_retrieval, utils):
             tool_map.update(dict(inspect.getmembers(module, inspect.isfunction)))
         self.tool_map = tool_map
-
-        # if not isinstance(action, str):
-        #     raise TypeError(f'Action must be a string, got {type(action)}.')
 
         if isinstance(action, str) and action not in self.tool_map:
             raise ValueError(f'Action {action} is not supported.')
@@ -40,7 +41,7 @@ class FrankensteinAction:
 
     def __repr__(self):
         """Return the action as a string."""
-        return f'Action(action={self.action}, kwargs={self.kwargs})'
+        return f'Action(action={self.action}, kwargs={self.kwargs}, result={self.result}, id={self.id})'
 
     def set_action(
         self,
@@ -90,6 +91,7 @@ class FrankensteinAction:
             'name': self.action,
             'arguments': self.kwargs,
             'result': self.result,
+            'id': self.id,
         }
 
     def to_json(self):

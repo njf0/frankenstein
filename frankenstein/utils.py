@@ -1,10 +1,76 @@
+import ast  # <-- Add this import
 import inspect
+import json
 import re
 from typing import Union, get_args, get_origin
 
 import rich.console
 import rich.table
+
 from frankenstein.tools import arithmetic, data_retrieval, utils
+
+
+def parse_json_arguments(obj):
+    """Recursively parse JSON-formatted argument strings in tool_calls and any string that looks like a JSON list/dict."""
+    if isinstance(obj, dict):
+        # If this is a tool_call dict with a function and arguments as a string, parse it
+        if (
+            'function' in obj
+            and isinstance(obj['function'], dict)
+            and 'arguments' in obj['function']
+            and isinstance(obj['function']['arguments'], str)
+        ):
+            try:
+                obj['function']['arguments'] = json.loads(obj['function']['arguments'])
+            except Exception:
+                # Try ast.literal_eval as fallback
+                try:
+                    obj['function']['arguments'] = ast.literal_eval(obj['function']['arguments'])
+                except Exception:
+                    pass  # leave as is if not valid
+        # Recurse into all dict values
+        return {k: parse_json_arguments(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [parse_json_arguments(v) for v in obj]
+    elif isinstance(obj, str):
+        s = obj.strip()
+        if (s.startswith('[') and s.endswith(']')) or (s.startswith('{') and s.endswith('}')):
+            try:
+                return json.loads(s)
+            except Exception:
+                try:
+                    return ast.literal_eval(s)
+                except Exception:
+                    return obj
+        return obj
+    elif hasattr(obj, '__dict__'):
+        # For objects like ChatCompletionMessageToolCall, Function, etc.
+        d = vars(obj)
+        # If this is a tool_call object with a function and arguments as a string, parse it
+        if 'function' in d and hasattr(d['function'], 'arguments') and isinstance(d['function'].arguments, str):
+            try:
+                d['function'].arguments = json.loads(d['function'].arguments)
+            except Exception:
+                try:
+                    d['function'].arguments = ast.literal_eval(d['function'].arguments)
+                except Exception:
+                    pass
+        # Recurse into all attributes
+        return {k: parse_json_arguments(v) for k, v in d.items()}
+    else:
+        return obj
+
+
+def to_json_safe(obj):
+    """Recursively convert objects to JSON-serializable types."""
+    if isinstance(obj, dict):
+        return {k: to_json_safe(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [to_json_safe(v) for v in obj]
+    elif hasattr(obj, '__dict__'):
+        return to_json_safe(vars(obj))
+    else:
+        return obj
 
 
 def print_slot_value_table(

@@ -115,6 +115,22 @@ class Runner:
 
         return output
 
+    def transform_tool_calls(self, tool_calls):
+        """Convert ChatCompletionMessageToolCall objects to simple dictionaries."""
+        transformed = []
+        for call in tool_calls or []:
+            transformed.append(
+                {
+                    'function': {
+                        'name': call.function.name,
+                        'arguments': call.function.arguments,
+                    },
+                    'id': call.id,
+                    'type': call.type,
+                }
+            )
+        return transformed
+
     def loop(
         self,
         input_text: str,
@@ -152,32 +168,23 @@ class Runner:
             # Generate a response from the model
             output = self.generate(messages)
             message = output.message
+            finish_reason = output.finish_reason
 
-            # Format and log the model's response
-            tool_calls = message.tool_calls or []
-            parsed_tool_calls = []
-            for tool_call in tool_calls:
-                parsed_tool_calls.append(
-                    {
-                        'function': {
-                            'name': tool_call.function.name,
-                            'arguments': tool_call.function.arguments,
-                        },
-                        'id': tool_call.id,
-                        'type': tool_call.type,
-                    }
-                )
-
+            tool_calls_data = self.transform_tool_calls(message.tool_calls)
             messages.append(
                 {
                     'role': message.role,
                     'content': message.content,
-                    'tool_calls': parsed_tool_calls,
+                    'tool_calls': tool_calls_data,
                 }
             )
 
-            # Execute each tool call
-            for tool_call in parsed_tool_calls:
+            # Log all messages as they are formatted in the model io
+            if self.debug:
+                logging.info(f'🤖 {output}')
+
+            # Safely handle None tool_calls
+            for tool_call in tool_calls_data:
                 name = tool_call['function']['name']
                 arguments = tool_call['function']['arguments']
                 parsed_args = json.loads(arguments)
@@ -206,7 +213,7 @@ class Runner:
                 messages.append(
                     {
                         'role': 'tool',
-                        'tool_call_id': tool_call.get('id'),
+                        'tool_call_id': tool_call.id,
                         'content': str(result),
                     }
                 )
@@ -282,6 +289,7 @@ if __name__ == '__main__':
     dataset = dataset.sample(1)
 
     messages = runner.loop(dataset['question'].to_list()[0])
+    print(messages)
 
     # --- Added: Check and log correctness of the model-generated answer ---
     # Try to extract the expected answer from the dataset

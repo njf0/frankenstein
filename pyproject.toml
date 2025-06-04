@@ -11,6 +11,8 @@ dependencies = [
     "beautifulsoup4",
     "ipykernel",
     "litellm>=1.69.3",
+    "matplotlib>=3.10.3",
+    "networkx>=3.5",
     "openai",
     "pandas",
     "rich",
