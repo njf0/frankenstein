@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Subject, SubjectSet, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Time
 
 
 class AveragePropertyComparison(FrankensteinQuestion):
@@ -23,17 +23,17 @@ class AveragePropertyComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Was the {property} of {subject} {operator} than the average value for {subject_set} in {time}?',
-            'In {time}, was the {property} of {subject} {operator} than the average value for {subject_set}?',
-            "Was {subject}'s {property} {operator} than the average value for {subject_set} in {time}?",
-            "In {time}, was {subject}'s {property} {operator} than the average value for {subject_set}?",
+            'Was the {property} of {subject} {operator} than the average value for {region} in {time}?',
+            'In {time}, was the {property} of {subject} {operator} than the average value for {region}?',
+            "Was {subject}'s {property} {operator} than the average value for {region} in {time}?",
+            "In {time}, was {subject}'s {property} {operator} than the average value for {region}?",
         )
 
         allowed_values = {
             'property': Property,
             'subject': Subject,
             'operator': BinaryOperator,
-            'subject_set': SubjectSet,
+            'region': Region,
             'time': Time,
         }
 
@@ -76,10 +76,10 @@ class AveragePropertyComparison(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
-        # Get the countries in the subject_set
+        # Get the countries in the region
         action = FrankensteinAction(
             'get_country_codes_in_region',
-            region_name=self.subject_set,
+            region=self.region,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -139,18 +139,18 @@ if __name__ == '__main__':
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
     parser.add_argument('--operator', type=str, choices=BinaryOperator.get_values(), help='The operator to use for comparison.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The region to compare against.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare against.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
 
     args = parser.parse_args()
 
     q = AveragePropertyComparison()
-    if all([args.property, args.subject, args.operator, args.subject_set, args.time]):
+    if all([args.property, args.subject, args.operator, args.region, args.time]):
         comb = {
             'property': args.property,
             'subject': args.subject,
             'operator': args.operator,
-            'subject_set': args.subject_set,
+            'region': args.region,
             'time': args.time,
         }
     else:

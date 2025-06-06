@@ -5,8 +5,9 @@ import random
 from pathlib import Path
 
 import pandas as pd
+
 from frankenstein.action import FrankensteinAction
-from frankenstein.slot_values import Property, Subject, SubjectSet, Time
+from frankenstein.slot_values import Property, Region, Subject, Time
 from frankenstein.tools import arithmetic, data_retrieval
 from frankenstein.utils import get_tool_metadata
 
@@ -73,7 +74,7 @@ def generate_tool_call_example(tool_name, tool_modules):
     tool_func = tool_map[tool_name]
 
     country_codes = Subject.get_values()
-    regions = [r for r in SubjectSet.get_values() if r and isinstance(r, str)]
+    regions = [r for r in Region.get_values() if r and isinstance(r, str)]
     indicator_codes = Property.get_values()
     try:
         wdi_data = pd.read_csv(Path('resources', 'wdi.csv'))
@@ -96,7 +97,7 @@ def generate_tool_call_example(tool_name, tool_modules):
             kwargs[pname] = random.choice(country_codes)
         elif pname == 'country_name':
             kwargs[pname] = random.choice(country_names)
-        elif pname == 'region_name':
+        elif pname == 'region':
             kwargs[pname] = random.choice(regions)
         elif pname == 'indicator_name':
             kwargs[pname] = random.choice(indicator_names)

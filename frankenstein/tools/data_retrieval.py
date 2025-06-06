@@ -4,6 +4,8 @@ import logging
 from pathlib import Path
 
 import pandas as pd
+from rich.logging import RichHandler
+
 from frankenstein.exceptions import (
     InvalidCountryCodeError,
     InvalidCountryNameError,
@@ -12,7 +14,6 @@ from frankenstein.exceptions import (
     InvalidRegionNameError,
     NoDataAvailableError,
 )
-from rich.logging import RichHandler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,7 +44,7 @@ def search_for_indicator_codes(
     data = data[data['name'].str.contains('|'.join(keywords))]
     # Use original_name for output
     data = data[['id', 'original_name']]
-    data = data.rename(columns={'original_name': 'name'})
+    data = data.rename(columns={'id': 'indicator_code', 'original_name': 'indicator_name'})
     # Now output into a list of dictionaries
     data = data.to_dict(orient='records')
     return data
@@ -88,12 +89,12 @@ def get_indicator_code_from_name(
 
 
 def get_country_codes_in_region(
-    region_name: str,
+    region: str,
 ) -> list[str]:
     """Get the list of country codes in a given region.
 
     Args:
-        region_name: The region to get the countries for.
+        region: The region to get the countries for.
 
     Returns:
         A list of countries in the region as three-letter country codes.
@@ -101,10 +102,10 @@ def get_country_codes_in_region(
     """
     data = pd.read_csv(Path('resources', 'iso_3166.csv'))
 
-    if region_name not in data['region'].tolist():
-        raise InvalidRegionNameError(region_name)
+    if region not in data['region'].tolist():
+        raise InvalidRegionNameError(region)
 
-    return data[data['region'] == region_name]['country_code'].tolist()
+    return data[data['region'] == region]['country_code'].tolist()
 
 
 def retrieve_value(

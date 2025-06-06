@@ -1,10 +1,10 @@
-"""Template for subject_set comparison questions."""
+"""Template for region comparison questions."""
 
 import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Number, Property, SubjectSet, Time
+from frankenstein.slot_values import NaryOperator, Number, Property, Region, Time
 
 
 class TopNTotal(FrankensteinQuestion):
@@ -23,15 +23,15 @@ class TopNTotal(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Which {n} countries in {subject_set} had the {operator} {property} in {time}?',
-            'In {subject_set}, which {n} countries had the {operator} {property} in {time}?',
-            'In {time}, which {n} countries in {subject_set} had the {operator} {property}?',
+            'Which {n} countries in {region} had the {operator} {property} in {time}?',
+            'In {region}, which {n} countries had the {operator} {property} in {time}?',
+            'In {time}, which {n} countries in {region} had the {operator} {property}?',
         )
 
         allowed_values = {
             'property': Property,
             'n': Number,
-            'subject_set': SubjectSet,
+            'region': Region,
             'operator': NaryOperator,
             'time': Time,
         }
@@ -40,8 +40,8 @@ class TopNTotal(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get the countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get the countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result
@@ -130,10 +130,10 @@ if __name__ == '__main__':
         help='The operator to use for comparison.',
     )
     parser.add_argument(
-        '--subject_set',
+        '--region',
         type=str,
-        choices=SubjectSet.get_values(),
-        help='The subject_set to compare.',
+        choices=Region.get_values(),
+        help='The region to compare.',
     )
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
 
@@ -145,7 +145,7 @@ if __name__ == '__main__':
             args.property,
             args.n,
             args.operator,
-            args.subject_set,
+            args.region,
             args.time,
         ]
     ):
@@ -153,7 +153,7 @@ if __name__ == '__main__':
             'property': args.property,
             'n': args.n,
             'operator': args.operator,
-            'subject_set': args.subject_set,
+            'region': args.region,
             'time': args.time,
         }
 

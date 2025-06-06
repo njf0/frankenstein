@@ -1,10 +1,10 @@
-"""Template for subject_set comparison questions."""
+"""Template for region comparison questions."""
 
 import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Subject, SubjectSet, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Time
 
 
 class CountryThresholdCount(FrankensteinQuestion):
@@ -23,13 +23,13 @@ class CountryThresholdCount(FrankensteinQuestion):
 
         """
         self.templates = (
-            'How many countries in the region of {subject_set} had a {operator} {property} than {subject} in {time}?',
-            'In {time}, how many countries in the region of {subject_set} had a {operator} {property} than {subject}?',
-            'In {subject_set}, how many countries had a {operator} {property} than {subject} in {time}?',
+            'How many countries in the region of {region} had a {operator} {property} than {subject} in {time}?',
+            'In {time}, how many countries in the region of {region} had a {operator} {property} than {subject}?',
+            'In {region}, how many countries had a {operator} {property} than {subject} in {time}?',
         )
 
         allowed_values = {
-            'subject_set': SubjectSet,
+            'region': Region,
             'operator': BinaryOperator,
             'property': Property,
             'subject': Subject,
@@ -41,7 +41,7 @@ class CountryThresholdCount(FrankensteinQuestion):
     def validate_combination(self, combination: dict) -> bool:
         """Apply constraints to the combination of slot values.
 
-        For this question type, we need to ensure that the subject is not in the subject_set.
+        For this question type, we need to ensure that the subject is not in the region.
 
         Parameters
         ----------
@@ -54,7 +54,7 @@ class CountryThresholdCount(FrankensteinQuestion):
             True if the combination is valid, False otherwise.
 
         """
-        countries_in_region = FrankensteinAction('get_country_codes_in_region', region_name=combination['subject_set'])
+        countries_in_region = FrankensteinAction('get_country_codes_in_region', region=combination['region'])
         countries_in_region.execute()
 
         return combination['subject'] not in countries_in_region.result
@@ -63,8 +63,8 @@ class CountryThresholdCount(FrankensteinQuestion):
         self,
     ):
         """Compute result for the question using FrankensteinActions."""
-        # Get countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         country_codes = action.result
@@ -90,7 +90,7 @@ class CountryThresholdCount(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Retrieve the values for the subjects in the subject_set
+        # Retrieve the values for the subjects in the region
         values = []
         for country_code in country_codes:
             action = FrankensteinAction(
@@ -184,7 +184,7 @@ class CountryThresholdCount(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a CountryThresholdCount question.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The subject_set to compare.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare.')
     parser.add_argument('--operator', type=str, choices=BinaryOperator.get_values(), help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
@@ -195,7 +195,7 @@ if __name__ == '__main__':
     q = CountryThresholdCount()
     if all(
         [
-            args.subject_set,
+            args.region,
             args.operator,
             args.property,
             args.subject,
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         ]
     ):
         comb = {
-            'subject_set': args.subject_set,
+            'region': args.region,
             'operator': args.operator,
             'property': args.property,
             'subject': args.subject,

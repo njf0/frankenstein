@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Subject, SubjectSet, Time
+from frankenstein.slot_values import Property, Region, Subject, Time
 
 
 class RegionProportion(FrankensteinQuestion):
@@ -23,24 +23,24 @@ class RegionProportion(FrankensteinQuestion):
 
         """
         self.templates = (
-            'In {time}, what proportion of the total {property} of {subject_set} was contributed by {subject}?',
-            'What proportion of the total {property} of {subject_set} in {time} was contributed by {subject}?',
-            'For the countries in {subject_set}, what proportion of the total {property} was contributed by {subject} in {time}?',
-            'What proportion of the total {property} was contributed by {subject} for the countries in {subject_set} in {time}?',
+            'In {time}, what proportion of the total {property} of {region} was contributed by {subject}?',
+            'What proportion of the total {property} of {region} in {time} was contributed by {subject}?',
+            'For the countries in {region}, what proportion of the total {property} was contributed by {subject} in {time}?',
+            'What proportion of the total {property} was contributed by {subject} for the countries in {region} in {time}?',
         )
 
         allowed_values = {
             'property': Property,
             'subject': Subject,
-            'subject_set': SubjectSet,
+            'region': Region,
             'time': Time,
         }
 
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(self, combination: dict) -> bool:
-        """Ensure subject is in the subject_set."""
-        countries_in_region = FrankensteinAction('get_country_codes_in_region', region_name=combination['subject_set'])
+        """Ensure subject is in the region."""
+        countries_in_region = FrankensteinAction('get_country_codes_in_region', region=combination['region'])
         countries_in_region.execute()
         return combination['subject'] in countries_in_region.result
 
@@ -64,10 +64,10 @@ class RegionProportion(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Get the countries in the subject_set
+        # Get the countries in the region
         action = FrankensteinAction(
             'get_country_codes_in_region',
-            region_name=self.subject_set,
+            region=self.region,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -141,17 +141,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionProportion question.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The region to compare against.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare against.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
 
     args = parser.parse_args()
 
     q = RegionProportion()
-    if all([args.property, args.subject, args.subject_set, args.time]):
+    if all([args.property, args.subject, args.region, args.time]):
         comb = {
             'property': args.property,
             'subject': args.subject,
-            'subject_set': args.subject_set,
+            'region': args.region,
             'time': args.time,
         }
     else:

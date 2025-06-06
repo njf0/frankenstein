@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, SubjectSet, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Time
 
 
 class RegionRangeComparison(FrankensteinQuestion):
@@ -29,8 +29,8 @@ class RegionRangeComparison(FrankensteinQuestion):
         )
 
         allowed_values = {
-            'region_a': SubjectSet,
-            'region_b': SubjectSet,
+            'region_a': Region,
+            'region_b': Region,
             'operator': BinaryOperator,
             'property': Property,
             'time': Time,
@@ -58,7 +58,7 @@ class RegionRangeComparison(FrankensteinQuestion):
             # Get the countries in the region
             action = FrankensteinAction(
                 'get_country_codes_in_region',
-                region_name=region,
+                region=region,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -126,8 +126,8 @@ class RegionRangeComparison(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionRangeComparison question.')
-    parser.add_argument('--region_a', type=str, choices=SubjectSet.get_values(), help='The first region to compare.')
-    parser.add_argument('--region_b', type=str, choices=SubjectSet.get_values(), help='The second region to compare.')
+    parser.add_argument('--region_a', type=str, choices=Region.get_values(), help='The first region to compare.')
+    parser.add_argument('--region_b', type=str, choices=Region.get_values(), help='The second region to compare.')
     parser.add_argument('--operator', type=str, choices=['higher', 'lower'], help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')

@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, SubjectSet, Time
+from frankenstein.slot_values import Property, Region, Time
 
 
 class TotalProperty(FrankensteinQuestion):
@@ -23,13 +23,13 @@ class TotalProperty(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the total {property} of the countries in the region of {subject_set} in {time}?',
-            'In {time}, what was the total {property} of the countries in the region of {subject_set}?',
-            'For the countries in the region of {subject_set}, what was the total {property} in {time}?',
+            'What was the total {property} of the countries in the region of {region} in {time}?',
+            'In {time}, what was the total {property} of the countries in the region of {region}?',
+            'For the countries in the region of {region}, what was the total {property} in {time}?',
         )
 
         allowed_values = {
-            'subject_set': SubjectSet,
+            'region': Region,
             'property': Property,
             'time': Time,
         }
@@ -38,8 +38,8 @@ class TotalProperty(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get the countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get the countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result
@@ -93,7 +93,7 @@ class TotalProperty(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a TotalProperty question.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The subject set.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time.')
 
@@ -102,13 +102,13 @@ if __name__ == '__main__':
     q = TotalProperty()
     if all(
         [
-            args.subject_set,
+            args.region,
             args.property,
             args.time,
         ]
     ):
         comb = {
-            'subject_set': args.subject_set,
+            'region': args.region,
             'property': args.property,
             'time': args.time,
         }

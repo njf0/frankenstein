@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Number, Property, SubjectSet, Time
+from frankenstein.slot_values import NaryOperator, Number, Property, Region, Time
 
 
 class RankPositionChange(FrankensteinQuestion):
@@ -23,13 +23,13 @@ class RankPositionChange(FrankensteinQuestion):
 
         """
         self.templates = (
-            'For the countries in {subject_set}, did the country with the {n} {operator} {property} in {time_a} retain that position in {time_b}?',
-            'Did the country ranked {n} {operator} for {property} in {time_a} in {subject_set} keep the same rank in {time_b}?',
-            'In {subject_set}, did the country with the {n} {operator} {property} in {time_a} keep that position in {time_b}?',
+            'For the countries in {region}, did the country with the {n} {operator} {property} in {time_a} retain that position in {time_b}?',
+            'Did the country ranked {n} {operator} for {property} in {time_a} in {region} keep the same rank in {time_b}?',
+            'In {region}, did the country with the {n} {operator} {property} in {time_a} keep that position in {time_b}?',
         )
 
         allowed_values = {
-            'subject_set': SubjectSet,
+            'region': Region,
             'n': Number,
             'operator': NaryOperator,
             'property': Property,
@@ -45,8 +45,8 @@ class RankPositionChange(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result
@@ -145,7 +145,7 @@ class RankPositionChange(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RankPositionChange question.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The region to check.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to check.')
     parser.add_argument('--n', type=str, choices=Number.get_values(), help='The rank position to check.')
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values(), help='The operator (highest/lowest).')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to check.')
@@ -155,9 +155,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     q = RankPositionChange()
-    if all([args.subject_set, args.n, args.operator, args.property, args.time_a, args.time_b]):
+    if all([args.region, args.n, args.operator, args.property, args.time_a, args.time_b]):
         comb = {
-            'subject_set': args.subject_set,
+            'region': args.region,
             'n': args.n,
             'operator': args.operator,
             'property': args.property,

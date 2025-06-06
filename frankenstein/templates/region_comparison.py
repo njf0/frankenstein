@@ -1,20 +1,20 @@
-"""Template for subject_set comparison questions."""
+"""Template for region comparison questions."""
 
 import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Property, SubjectSet, Time
+from frankenstein.slot_values import NaryOperator, Property, Region, Time
 
 
 class RegionComparison(FrankensteinQuestion):
-    """Class representing a subject_set comparison question."""
+    """Class representing a region comparison question."""
 
     def __init__(
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a subject_set comparison question.
+        """Initialize a region comparison question.
 
         Parameters
         ----------
@@ -23,13 +23,13 @@ class RegionComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Which country in the region of {subject_set} had the {operator} {property} in {time}?',
-            'In {subject_set}, which country had the {operator} {property} in {time}?',
-            'For the countries in {subject_set}, which had the {operator} {property} in {time}?',
+            'Which country in the region of {region} had the {operator} {property} in {time}?',
+            'In {region}, which country had the {operator} {property} in {time}?',
+            'For the countries in {region}, which had the {operator} {property} in {time}?',
         )
 
         allowed_values = {
-            'subject_set': SubjectSet,
+            'region': Region,
             'operator': NaryOperator,
             'property': Property,
             'time': Time,
@@ -39,8 +39,8 @@ class RegionComparison(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get the countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get the countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result
@@ -109,7 +109,7 @@ class RegionComparison(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionComparison question.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The subject_set to compare.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare.')
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values(), help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
@@ -119,14 +119,14 @@ if __name__ == '__main__':
     q = RegionComparison()
     if all(
         [
-            args.subject_set,
+            args.region,
             args.operator,
             args.property,
             args.time,
         ]
     ):
         comb = {
-            'subject_set': args.subject_set,
+            'region': args.region,
             'operator': args.operator,
             'property': args.property,
             'time': args.time,

@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, SubjectSet, Time
+from frankenstein.slot_values import Property, Region, Time
 
 
 class AverageProperty(FrankensteinQuestion):
@@ -23,13 +23,13 @@ class AverageProperty(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the mean {property} of the countries in {subject_set} in {time}?',
-            'For the countries in {subject_set}, what was the mean {property} in {time}?',
-            'In {time}, what was the mean {property} of the countries in {subject_set}?',
+            'What was the mean {property} of the countries in {region} in {time}?',
+            'For the countries in {region}, what was the mean {property} in {time}?',
+            'In {time}, what was the mean {property} of the countries in {region}?',
         )
 
         allowed_values = {
-            'subject_set': SubjectSet,
+            'region': Region,
             'property': Property,
             'time': Time,
         }
@@ -40,8 +40,8 @@ class AverageProperty(FrankensteinQuestion):
         self,
     ):
         """Compute result for the question using FrankensteinActions."""
-        # Get countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result
@@ -79,7 +79,7 @@ class AverageProperty(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
-        # Retrieve the mean value for the subject_set
+        # Retrieve the mean value for the region
         action = FrankensteinAction('mean', values=indicator_values)
         action.execute()
         self.actions.append(action.to_dict())
@@ -97,10 +97,10 @@ class AverageProperty(FrankensteinQuestion):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate an AverageProperty question.')
     parser.add_argument(
-        '--subject_set',
+        '--region',
         type=str,
-        choices=SubjectSet.get_values(),
-        help='The subject set.',
+        choices=Region.get_values(),
+        help='The region.',
     )
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time.')
@@ -111,13 +111,13 @@ if __name__ == '__main__':
 
     if all(
         [
-            args.subject_set,
+            args.region,
             args.property,
             args.time,
         ]
     ):
         comb = {
-            'subject_set': args.subject_set,
+            'region': args.region,
             'property': args.property,
             'time': args.time,
         }

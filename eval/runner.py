@@ -215,7 +215,7 @@ class Runner:
             # Stop if 'final_answer' tool has been called once
             for (tool, args_json), count in self.tool_call_counts.items():
                 if tool == 'final_answer' and count == 1:
-                    logging.info('🏁 Final answer tool called (via tool_call_counts).')
+                    logging.info('🏁 Final answer tool called.')
                     return messages
 
             # Check repeated tool calls (already counted in self.tool_call_counts)
@@ -225,6 +225,26 @@ class Runner:
                     return messages
 
         return messages
+
+    def clean_messages(
+        self,
+        messages: list[dict],
+    ) -> str:
+        """Clean and parse messages for saving to disk.
+
+        Parameters
+        ----------
+        messages : list[dict]
+            The list of messages to clean and parse.
+
+        Returns
+        -------
+        str
+            A JSON-safe string representation of the cleaned messages.
+
+        """
+        parsed_messages = parse_json_arguments(messages)
+        return to_json_safe(parsed_messages)
 
 
 if __name__ == '__main__':
@@ -313,8 +333,8 @@ if __name__ == '__main__':
     if args.save:
         timestamp = datetime.datetime.now()
         output_path = Path('eval', 'dumps', f'{timestamp}').with_suffix('.json')
-        parsed_messages = parse_json_arguments(messages)
+        cleaned = runner.clean_messages(messages)
         with output_path.open('w') as f:
-            f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
+            f.write(json.dumps(cleaned, indent=2) + '\n')
 
         logging.info(f"💾 Saved messages to '{output_path}'")

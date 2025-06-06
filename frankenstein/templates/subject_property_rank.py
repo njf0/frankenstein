@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Subject, SubjectSet, Time
+from frankenstein.slot_values import Property, Region, Subject, Time
 
 
 class SubjectPropertyRank(FrankensteinQuestion):
@@ -23,23 +23,23 @@ class SubjectPropertyRank(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What rank did {subject} have for {property} among countries in {subject_set} in {time}?',
-            'In {time}, what was the rank of {subject} for {property} among countries in {subject_set}?',
-            'Among countries in {subject_set}, what was the rank of {subject} for {property} in {time}?',
+            'What rank did {subject} have for {property} among countries in {region} in {time}?',
+            'In {time}, what was the rank of {subject} for {property} among countries in {region}?',
+            'Among countries in {region}, what was the rank of {subject} for {property} in {time}?',
         )
 
         allowed_values = {
             'subject': Subject,
             'property': Property,
-            'subject_set': SubjectSet,
+            'region': Region,
             'time': Time,
         }
 
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(self, combination: dict) -> bool:
-        """Ensure subject is in the subject_set."""
-        countries_in_region = FrankensteinAction('get_country_codes_in_region', region_name=combination['subject_set'])
+        """Ensure subject is in the region."""
+        countries_in_region = FrankensteinAction('get_country_codes_in_region', region=combination['region'])
         countries_in_region.execute()
         return combination['subject'] in countries_in_region.result
 
@@ -63,10 +63,10 @@ class SubjectPropertyRank(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Get the countries in the subject_set
+        # Get the countries in the region
         action = FrankensteinAction(
             'get_country_codes_in_region',
-            region_name=self.subject_set,
+            region=self.region,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -133,17 +133,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a SubjectPropertyRank question.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to rank.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to rank by.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The region to rank within.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to rank within.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to rank for.')
 
     args = parser.parse_args()
 
     q = SubjectPropertyRank()
-    if all([args.subject, args.property, args.subject_set, args.time]):
+    if all([args.subject, args.property, args.region, args.time]):
         comb = {
             'subject': args.subject,
             'property': args.property,
-            'subject_set': args.subject_set,
+            'region': args.region,
             'time': args.time,
         }
     else:

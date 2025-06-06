@@ -1,10 +1,10 @@
-"""Template for subject_set comparison questions."""
+"""Template for region comparison questions."""
 
 import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Property, SubjectSet, Time
+from frankenstein.slot_values import NaryOperator, Property, Region, Time
 
 
 class IncreasePropertyComparison(FrankensteinQuestion):
@@ -23,14 +23,14 @@ class IncreasePropertyComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Which country in {subject_set} had the {operator} increase in {property} between {time_a} and {time_b}?',
-            'Between {time_a} and {time_b}, which country in {subject_set} had the {operator} increase in {property}?',
-            'For the countries in {subject_set}, which had the {operator} increase in {property} between {time_a} and {time_b}?',
-            'In {subject_set}, which country had the {operator} increase in {property} between {time_a} and {time_b}?',
+            'Which country in {region} had the {operator} increase in {property} between {time_a} and {time_b}?',
+            'Between {time_a} and {time_b}, which country in {region} had the {operator} increase in {property}?',
+            'For the countries in {region}, which had the {operator} increase in {property} between {time_a} and {time_b}?',
+            'In {region}, which country had the {operator} increase in {property} between {time_a} and {time_b}?',
         )
 
         allowed_values = {
-            'subject_set': SubjectSet,
+            'region': Region,
             'operator': NaryOperator,
             'property': Property,
             'time_a': Time,
@@ -59,10 +59,10 @@ class IncreasePropertyComparison(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute answer in terms of FrankensteinAction."""
-        # Get countries in the subject_set
+        # Get countries in the region
         action = FrankensteinAction(
             'get_country_codes_in_region',
-            region_name=self.subject_set,
+            region=self.region,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -77,7 +77,7 @@ class IncreasePropertyComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Get the values for each country in the subject_set for both time_a and time_b
+        # Get the values for each country in the region for both time_a and time_b
         values = []
         for country in countries_in_region:
             action = FrankensteinAction(
@@ -168,7 +168,7 @@ class IncreasePropertyComparison(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionComparison question.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The subject_set to compare.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare.')
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values(), help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--time_a', type=str, choices=Time.get_values(), help='The first time to compare.')
@@ -179,7 +179,7 @@ if __name__ == '__main__':
     q = IncreasePropertyComparison()
     if all(
         [
-            args.subject_set,
+            args.region,
             args.operator,
             args.property,
             args.time_a,
@@ -187,7 +187,7 @@ if __name__ == '__main__':
         ]
     ):
         comb = {
-            'subject_set': args.subject_set,
+            'region': args.region,
             'operator': args.operator,
             'property': args.property,
             'time_a': args.time_a,

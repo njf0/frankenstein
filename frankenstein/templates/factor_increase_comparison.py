@@ -1,4 +1,4 @@
-"""Template for subject_set comparison questions."""
+"""Template for region comparison questions."""
 
 import argparse
 

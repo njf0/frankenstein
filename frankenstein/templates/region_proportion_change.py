@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Subject, SubjectSet, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Time
 
 
 class RegionProportionChange(FrankensteinQuestion):
@@ -23,15 +23,15 @@ class RegionProportionChange(FrankensteinQuestion):
 
         """
         self.templates = (
-            "Was {subject}'s share of the total {property} in {subject_set} {operator} in {time_a} than it was in {time_b}?",
-            "In {time_a}, was {subject}'s share of the total {property} in {subject_set} {operator} than it was in {time_b}?",
-            "Compared to {subject_set} as a whole, was {subject}'s share of the total {property} in {time_a} {operator} than it was in {time_b}?",
+            "Was {subject}'s share of the total {property} in {region} {operator} in {time_a} than it was in {time_b}?",
+            "In {time_a}, was {subject}'s share of the total {property} in {region} {operator} than it was in {time_b}?",
+            "Compared to {region} as a whole, was {subject}'s share of the total {property} in {time_a} {operator} than it was in {time_b}?",
         )
 
         allowed_values = {
             'property': Property,
             'subject': Subject,
-            'subject_set': SubjectSet,
+            'region': Region,
             'operator': BinaryOperator,
             'time_a': Time,
             'time_b': Time,
@@ -39,8 +39,8 @@ class RegionProportionChange(FrankensteinQuestion):
         super().__init__(slot_values, allowed_values)
 
     def validate_combination(self, combination: dict) -> bool:
-        """Ensure subject is in the subject_set and times are different."""
-        countries_in_region = FrankensteinAction('get_country_codes_in_region', region_name=combination['subject_set'])
+        """Ensure subject is in the region and times are different."""
+        countries_in_region = FrankensteinAction('get_country_codes_in_region', region=combination['region'])
         countries_in_region.execute()
         return combination['subject'] in countries_in_region.result and combination['time_a'] != combination['time_b']
 
@@ -64,10 +64,10 @@ class RegionProportionChange(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Get the countries in the subject_set
+        # Get the countries in the region
         action = FrankensteinAction(
             'get_country_codes_in_region',
-            region_name=self.subject_set,
+            region=self.region,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionProportionChange question.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The region to compare against.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare against.')
     parser.add_argument('--operator', type=str, choices=['higher', 'lower'], help='The operator to use for comparison.')
     parser.add_argument('--time_a', type=str, choices=Time.get_values(), help='The first time.')
     parser.add_argument('--time_b', type=str, choices=Time.get_values(), help='The second time.')
@@ -206,11 +206,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     q = RegionProportionChange()
-    if all([args.property, args.subject, args.subject_set, args.operator, args.time_a, args.time_b]):
+    if all([args.property, args.subject, args.region, args.operator, args.time_a, args.time_b]):
         comb = {
             'property': args.property,
             'subject': args.subject,
-            'subject_set': args.subject_set,
+            'region': args.region,
             'operator': args.operator,
             'time_a': args.time_a,
             'time_b': args.time_b,

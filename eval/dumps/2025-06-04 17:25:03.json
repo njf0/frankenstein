@@ -1,0 +1,307 @@
+[
+  {
+    "role": "system",
+    "content": "You are a helpful assistant tasked with answering questions that require multiple intermediate steps of reasoning to arrive at a final answer.\n\nThe questions involve using World Bank data for various countries and indicators.\n\nCreate a step-by-step plan to answer the question, and then execute each step of that plan to arrive at the final answer.\n\nThe conversation will only end after you call the `final_answer` tool with your final answer.\n\nYou have access to a set of tools to help you answer the question:\n\nPay attention to the tool names, arguments, descriptions, and the types of outputs they return, and think carefully about how to use them to solve the problem.\n\nIf there is a tool available that can help you with the next step, you must use it rather than trying to solve the problem without it.\n\nI will execute tool calls that you provide. You can use multiple tools in one step, but make sure you follow the correct format.\n\nUse the results of each tool call to inform your next step. Passing tool calls as arguments to other tool calls is not allowed. Instead, execute each tool call separately and use the results to perform subsequent calls.\n\nIf a tool call fails, use the error message to help you debug the issue, re-plan, and try again if possible.\n\nOnly provide the answer itself (e.g., the number, list, string, or boolean value) as your answer. Do not include any additional text or explanations. Do not perform any rounding or formatting of the answer.\n\nThe tools you have access to are below:\n\n[{'type': 'function', 'function': {'name': 'add', 'description': 'Add a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to add.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'count', 'description': 'Count the number of non-None elements in a list.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'string'}, 'description': 'A list of numbers to count.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'divide', 'description': 'Divide two numbers.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'greater_than', 'description': 'Check if value_a is greater than value_b.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'index', 'description': 'Return the index of query_value in values (0-based).', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'List of values.'}, 'query_value': {'type': 'number', 'description': 'Value to find.'}}, 'required': ['values', 'query_value']}}}, {'type': 'function', 'function': {'name': 'less_than', 'description': 'Check if value_a is less than value_b.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'maximum', 'description': 'Return the maximum of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to Return the maximum for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'mean', 'description': 'Calculate the mean of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to calculate the mean for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'median', 'description': 'Calculate the median of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to calculate the median for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'minimum', 'description': 'Return the minimum of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to Return the minimum for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'mode', 'description': 'Calculate the mode of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to calculate the mode for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'multiply', 'description': 'Multiply a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to multiply.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'rank', 'description': 'Return the position of a value in a sorted list, e.g., 1 for the highest value, 3 for the third highest.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to rank against.'}, 'query_value': {'type': 'number', 'description': 'The value to rank.'}}, 'required': ['values', 'query_value']}}}, {'type': 'function', 'function': {'name': 'sort', 'description': 'Sort a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'The list of numbers to sort.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'subtract', 'description': 'Subtract two numbers.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'get_country_code_from_name', 'description': 'Get the three-letter country code from a country name.', 'parameters': {'type': 'object', 'properties': {'country_name': {'type': 'string', 'description': 'The name of the country to get the code for.'}}, 'required': ['country_name']}}}, {'type': 'function', 'function': {'name': 'get_country_codes_in_region', 'description': 'Get the list of country codes in a given region.', 'parameters': {'type': 'object', 'properties': {'region': {'type': 'string', 'description': 'The region to get the countries for.'}}, 'required': ['region']}}}, {'type': 'function', 'function': {'name': 'get_indicator_code_from_name', 'description': 'Get the indicator code from an indicator name.', 'parameters': {'type': 'object', 'properties': {'indicator_name': {'type': 'string', 'description': 'The name of the indicator to get the code for.'}}, 'required': ['indicator_name']}}}, {'type': 'function', 'function': {'name': 'retrieve_value', 'description': 'Return the value of an indicator for a country at a given year.', 'parameters': {'type': 'object', 'properties': {'country_code': {'type': 'string', 'description': 'The three-letter country code to look up the indicator for.'}, 'indicator_code': {'type': 'string', 'description': 'The indicator code to look up.'}, 'year': {'type': 'string', 'description': 'The year to look up the indicator for.'}}, 'required': ['country_code', 'indicator_code', 'year']}}}, {'type': 'function', 'function': {'name': 'search_for_indicator_codes', 'description': 'Search the database of indicators for codes and names that match the keywords.', 'parameters': {'type': 'object', 'properties': {'keywords': {'type': 'array', 'items': {'type': 'string'}, 'description': 'A list of keywords to search for.'}}, 'required': ['keywords']}}}, {'type': 'function', 'function': {'name': 'final_answer', 'description': 'Submit your final answer.', 'parameters': {'type': 'object', 'properties': {'answer': {'type': 'string', 'description': 'The answer to the question.'}}, 'required': ['answer']}}}, {'type': 'function', 'function': {'name': 'think', 'description': 'Record a thought or plan for the next step.', 'parameters': {'type': 'object', 'properties': {'thought': {'type': 'string', 'description': 'A string describing your plan or reasoning.'}}, 'required': ['thought']}}}]\n\n"
+  },
+  {
+    "role": "user",
+    "content": "In 2020, what was the neonatal mortality rate for the country in Southern Asia that had the lowest value for that indicator in 2017?"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "get_country_codes_in_region",
+          "arguments": {
+            "region": "Southern Asia"
+          }
+        },
+        "id": "call_Bq92UmrbkZR7TwxP7GNletBD",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_Bq92UmrbkZR7TwxP7GNletBD",
+    "content": [
+      "AFG",
+      "BGD",
+      "BTN",
+      "IND",
+      "IRN",
+      "MDV",
+      "NPL",
+      "PAK",
+      "LKA"
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "AFG",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_MPv2FHzQeNzmGBkuZzvxp8Ie",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "BGD",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_TxtHdhQtWfmv6R6O9y1ewyeM",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "BTN",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_uKD77VchT1MuGHAi9faPu9Da",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "IND",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_w6lJfgDivFNDFjfChg0I0bfP",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "IRN",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_55Q1xZ5s5xLucjJAq6O5l2GY",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "MDV",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_asrxoHfglzo3odK43zeUgJi5",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "NPL",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_8Ti5y1fl0Jcjg9IE9DARVhXa",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "PAK",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_gaXy1ncLpkxQBmALGN1732nd",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "LKA",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2017"
+          }
+        },
+        "id": "call_4zE1l8H79r6jJ409N15jIirv",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_MPv2FHzQeNzmGBkuZzvxp8Ie",
+    "content": "67.6"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_TxtHdhQtWfmv6R6O9y1ewyeM",
+    "content": "35.2"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_uKD77VchT1MuGHAi9faPu9Da",
+    "content": "28.5"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_w6lJfgDivFNDFjfChg0I0bfP",
+    "content": "38.7"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_55Q1xZ5s5xLucjJAq6O5l2GY",
+    "content": "14.5"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_asrxoHfglzo3odK43zeUgJi5",
+    "content": "8.6"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_8Ti5y1fl0Jcjg9IE9DARVhXa",
+    "content": "34.6"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_gaXy1ncLpkxQBmALGN1732nd",
+    "content": "71.0"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_4zE1l8H79r6jJ409N15jIirv",
+    "content": "7.9"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "minimum",
+          "arguments": {
+            "values": [
+              67.6,
+              35.2,
+              28.5,
+              38.7,
+              14.5,
+              8.6,
+              34.6,
+              71.0,
+              7.9
+            ]
+          }
+        },
+        "id": "call_VcxKoSQX3V9r1FxN6VeasRm1",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_VcxKoSQX3V9r1FxN6VeasRm1",
+    "content": "7.9"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "index",
+          "arguments": {
+            "values": [
+              67.6,
+              35.2,
+              28.5,
+              38.7,
+              14.5,
+              8.6,
+              34.6,
+              71.0,
+              7.9
+            ],
+            "query_value": 7.9
+          }
+        },
+        "id": "call_QOJC0TCQlk15VTUEZhc1JMUs",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_QOJC0TCQlk15VTUEZhc1JMUs",
+    "content": "8"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "LKA",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2020"
+          }
+        },
+        "id": "call_XlWvdyCnae8McDHOQLumcva0",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_XlWvdyCnae8McDHOQLumcva0",
+    "content": "6.9"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "final_answer",
+          "arguments": {
+            "answer": "6.9"
+          }
+        },
+        "id": "call_KtpX9RiDqcjaV7Sz4U3JAlcj",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_KtpX9RiDqcjaV7Sz4U3JAlcj",
+    "content": "6.9"
+  }
+]

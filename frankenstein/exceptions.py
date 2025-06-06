@@ -55,17 +55,17 @@ class InvalidCountryNameError(Exception):
 class InvalidRegionNameError(Exception):
     """Exception raised when an invalid region name is used."""
 
-    def __init__(self, region_name: str):
+    def __init__(self, region: str):
         """Initialize the exception with a message.
 
         Parameters
         ----------
-        region_name : str
+        region : str
             The invalid region name that caused the error.
 
         """
         super().__init__(
-            f"Error: region name '{region_name}' is not valid. Ensure you have used the correct region name from the question."
+            f"Error: region name '{region}' is not valid. Ensure you have used the correct region name from the question."
         )
 
 

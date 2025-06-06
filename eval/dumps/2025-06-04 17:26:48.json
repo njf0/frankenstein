@@ -1,0 +1,300 @@
+[
+  {
+    "role": "system",
+    "content": "You are a helpful assistant tasked with answering questions that require multiple intermediate steps of reasoning to arrive at a final answer.\n\nThe questions involve using World Bank data for various countries and indicators.\n\nCreate a step-by-step plan to answer the question, and then execute each step of that plan to arrive at the final answer.\n\nThe conversation will only end after you call the `final_answer` tool with your final answer.\n\nYou have access to a set of tools to help you answer the question:\n\nPay attention to the tool names, arguments, descriptions, and the types of outputs they return, and think carefully about how to use them to solve the problem.\n\nIf there is a tool available that can help you with the next step, you must use it rather than trying to solve the problem without it.\n\nI will execute tool calls that you provide. You can use multiple tools in one step, but make sure you follow the correct format.\n\nUse the results of each tool call to inform your next step. Passing tool calls as arguments to other tool calls is not allowed. Instead, execute each tool call separately and use the results to perform subsequent calls.\n\nIf a tool call fails, use the error message to help you debug the issue, re-plan, and try again if possible.\n\nOnly provide the answer itself (e.g., the number, list, string, or boolean value) as your answer. Do not include any additional text or explanations. Do not perform any rounding or formatting of the answer.\n\nThe tools you have access to are below:\n\n[{'type': 'function', 'function': {'name': 'add', 'description': 'Add a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to add.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'count', 'description': 'Count the number of non-None elements in a list.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'string'}, 'description': 'A list of numbers to count.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'divide', 'description': 'Divide two numbers.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'greater_than', 'description': 'Check if value_a is greater than value_b.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'index', 'description': 'Return the index of query_value in values (0-based).', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'List of values.'}, 'query_value': {'type': 'number', 'description': 'Value to find.'}}, 'required': ['values', 'query_value']}}}, {'type': 'function', 'function': {'name': 'less_than', 'description': 'Check if value_a is less than value_b.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'maximum', 'description': 'Return the maximum of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to Return the maximum for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'mean', 'description': 'Calculate the mean of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to calculate the mean for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'median', 'description': 'Calculate the median of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to calculate the median for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'minimum', 'description': 'Return the minimum of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to Return the minimum for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'mode', 'description': 'Calculate the mode of a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to calculate the mode for.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'multiply', 'description': 'Multiply a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to multiply.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'rank', 'description': 'Return the position of a value in a sorted list, e.g., 1 for the highest value, 3 for the third highest.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'A list of numbers to rank against.'}, 'query_value': {'type': 'number', 'description': 'The value to rank.'}}, 'required': ['values', 'query_value']}}}, {'type': 'function', 'function': {'name': 'sort', 'description': 'Sort a list of numbers.', 'parameters': {'type': 'object', 'properties': {'values': {'type': 'array', 'items': {'type': 'number'}, 'description': 'The list of numbers to sort.'}}, 'required': ['values']}}}, {'type': 'function', 'function': {'name': 'subtract', 'description': 'Subtract two numbers.', 'parameters': {'type': 'object', 'properties': {'value_a': {'type': 'number', 'description': 'The first number.'}, 'value_b': {'type': 'number', 'description': 'The second number.'}}, 'required': ['value_a', 'value_b']}}}, {'type': 'function', 'function': {'name': 'get_country_code_from_name', 'description': 'Get the three-letter country code from a country name.', 'parameters': {'type': 'object', 'properties': {'country_name': {'type': 'string', 'description': 'The name of the country to get the code for.'}}, 'required': ['country_name']}}}, {'type': 'function', 'function': {'name': 'get_country_codes_in_region', 'description': 'Get the list of country codes in a given region.', 'parameters': {'type': 'object', 'properties': {'region': {'type': 'string', 'description': 'The region to get the countries for.'}}, 'required': ['region']}}}, {'type': 'function', 'function': {'name': 'get_indicator_code_from_name', 'description': 'Get the indicator code from an indicator name.', 'parameters': {'type': 'object', 'properties': {'indicator_name': {'type': 'string', 'description': 'The name of the indicator to get the code for.'}}, 'required': ['indicator_name']}}}, {'type': 'function', 'function': {'name': 'retrieve_value', 'description': 'Return the value of an indicator for a country at a given year.', 'parameters': {'type': 'object', 'properties': {'country_code': {'type': 'string', 'description': 'The three-letter country code to look up the indicator for.'}, 'indicator_code': {'type': 'string', 'description': 'The indicator code to look up.'}, 'year': {'type': 'string', 'description': 'The year to look up the indicator for.'}}, 'required': ['country_code', 'indicator_code', 'year']}}}, {'type': 'function', 'function': {'name': 'search_for_indicator_codes', 'description': 'Search the database of indicators for codes and names that match the keywords.', 'parameters': {'type': 'object', 'properties': {'keywords': {'type': 'array', 'items': {'type': 'string'}, 'description': 'A list of keywords to search for.'}}, 'required': ['keywords']}}}, {'type': 'function', 'function': {'name': 'final_answer', 'description': 'Submit your final answer.', 'parameters': {'type': 'object', 'properties': {'answer': {'type': 'string', 'description': 'The answer to the question.'}}, 'required': ['answer']}}}, {'type': 'function', 'function': {'name': 'think', 'description': 'Record a thought or plan for the next step.', 'parameters': {'type': 'object', 'properties': {'thought': {'type': 'string', 'description': 'A string describing your plan or reasoning.'}}, 'required': ['thought']}}}]\n\n"
+  },
+  {
+    "role": "user",
+    "content": "Which country in the region of Micronesia had the highest percentage of infants dying before 28 days in 2016?"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "get_country_codes_in_region",
+          "arguments": {
+            "region": "Micronesia"
+          }
+        },
+        "id": "call_yH9VZMtB5PaSENXG5Ng9WO43",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_yH9VZMtB5PaSENXG5Ng9WO43",
+    "content": [
+      "GUM",
+      "KIR",
+      "MHL",
+      "FSM",
+      "NRU",
+      "MNP",
+      "PLW",
+      "UMI"
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "GUM",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_AeSs5yWxvfbgqq0YGZUndPlD",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "KIR",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_L6utPnC0Imua2bkF2daiDycR",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "MHL",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_S9rEq1QkhQ9PsCdAHygl2GIB",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "FSM",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_RT6TCWg5D7kMBvlObKeRnfCg",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "NRU",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_ukR9kcjsx1qAnX9WOkPJAbGg",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "MNP",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_flw2963C9BPZ5zktLX708ZyL",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "PLW",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_5iuJWVxE7hkN05KkRXA3kgzs",
+        "type": "function"
+      },
+      {
+        "function": {
+          "name": "retrieve_value",
+          "arguments": {
+            "country_code": "UMI",
+            "indicator_code": "SH.DYN.MORT",
+            "year": "2016"
+          }
+        },
+        "id": "call_PGIY4ziWFimOy5IXHmwgKljE",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_AeSs5yWxvfbgqq0YGZUndPlD",
+    "content": "Warning: your function call was correct, but no data is available for country code 'GUM' for indicator code 'SH.DYN.MORT' in year '2016'."
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_L6utPnC0Imua2bkF2daiDycR",
+    "content": "59.5"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_S9rEq1QkhQ9PsCdAHygl2GIB",
+    "content": "34.8"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_RT6TCWg5D7kMBvlObKeRnfCg",
+    "content": "28.8"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_ukR9kcjsx1qAnX9WOkPJAbGg",
+    "content": "16.1"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_flw2963C9BPZ5zktLX708ZyL",
+    "content": "Warning: your function call was correct, but no data is available for country code 'MNP' for indicator code 'SH.DYN.MORT' in year '2016'."
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_5iuJWVxE7hkN05KkRXA3kgzs",
+    "content": "22.1"
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_PGIY4ziWFimOy5IXHmwgKljE",
+    "content": "Warning: your function call was correct, but no data is available for country code 'UMI' for indicator code 'SH.DYN.MORT' in year '2016'."
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "think",
+          "arguments": {
+            "thought": "I need to identify the country with the highest infant mortality rate from the results I have, filtering out the warnings."
+          }
+        },
+        "id": "call_d2cPFHwKkpI828erLuC189M2",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_d2cPFHwKkpI828erLuC189M2",
+    "content": "I need to identify the country with the highest infant mortality rate from the results I have, filtering out the warnings."
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "maximum",
+          "arguments": {
+            "values": [
+              59.5,
+              34.8,
+              28.8,
+              16.1,
+              22.1
+            ]
+          }
+        },
+        "id": "call_1mDiduaSKnHhVN1TShJqJfBQ",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_1mDiduaSKnHhVN1TShJqJfBQ",
+    "content": "59.5"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "index",
+          "arguments": {
+            "values": [
+              59.5,
+              34.8,
+              28.8,
+              16.1,
+              22.1
+            ],
+            "query_value": 59.5
+          }
+        },
+        "id": "call_nN007k4cEUZT3PGmCdl8bUlc",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_nN007k4cEUZT3PGmCdl8bUlc",
+    "content": "0"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "think",
+          "arguments": {
+            "thought": "The highest infant mortality rate is 59.5. The corresponding country code based on the index 0 is 'GUM', which represents Guam. I will submit 'Guam' as the final answer."
+          }
+        },
+        "id": "call_cvfD9V9Dj6lvt8KqUEQ0D2iq",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_cvfD9V9Dj6lvt8KqUEQ0D2iq",
+    "content": "The highest infant mortality rate is 59.5. The corresponding country code based on the index 0 is 'GUM', which represents Guam. I will submit 'Guam' as the final answer."
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "function": {
+          "name": "final_answer",
+          "arguments": {
+            "answer": "Guam"
+          }
+        },
+        "id": "call_7dooCRuiEBLnikoIImM3RE2x",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_7dooCRuiEBLnikoIImM3RE2x",
+    "content": "Guam"
+  }
+]

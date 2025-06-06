@@ -1,14 +1,14 @@
-"""Template for subject_set comparison questions."""
+"""Template for region comparison questions."""
 
 import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Property, SubjectSet, Time
+from frankenstein.slot_values import NaryOperator, Property, Region, Time
 
 
 class RegionComparisonResult(FrankensteinQuestion):
-    """Template for subject_set comparison subgoal questions."""
+    """Template for region comparison subgoal questions."""
 
     def __init__(
         self,
@@ -23,14 +23,14 @@ class RegionComparisonResult(FrankensteinQuestion):
 
         """
         self.templates = (
-            'For the country in {subject_set} that had the {operator} {property} in {time_2}, and what was its value in {time_1}?',
-            'In {time_1}, what was the {property} for the country in {subject_set} that had the {operator} value for that indicator in {time_2}?',
+            'For the country in {region} that had the {operator} {property} in {time_2}, and what was its value in {time_1}?',
+            'In {time_1}, what was the {property} for the country in {region} that had the {operator} value for that indicator in {time_2}?',
         )
 
         allowed_values = {
             'time_1': Time,
             'property': Property,
-            'subject_set': SubjectSet,
+            'region': Region,
             'operator': NaryOperator,
             'time_2': Time,
         }
@@ -57,8 +57,8 @@ class RegionComparisonResult(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get the countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get the countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result
@@ -133,7 +133,7 @@ class RegionComparisonResult(FrankensteinQuestion):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionComparison question.')
     parser.add_argument('--time_1', type=str, choices=Time.get_values())
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values())
+    parser.add_argument('--region', type=str, choices=Region.get_values())
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values())
     parser.add_argument('--property_2', type=str, choices=Property.get_values())
     parser.add_argument('--time_2', type=str, choices=Time.get_values())
@@ -146,7 +146,7 @@ if __name__ == '__main__':
         [
             args.time_1,
             # args.property_1,
-            args.subject_set,
+            args.region,
             args.operator,
             args.property_2,
             args.time_2,
@@ -155,7 +155,7 @@ if __name__ == '__main__':
         comb = {
             'time_1': args.time_1,
             # 'property_1': args.property_1,
-            'subject_set': args.subject_set,
+            'region': args.region,
             'operator': args.operator,
             'property_2': args.property_2,
             'time_2': args.time_2,

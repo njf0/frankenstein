@@ -41,8 +41,8 @@ class Subject(Slot):
         return cls.read_csv_file(cls.DATA_PATH / 'iso_3166.csv', column_name='country_code')
 
 
-class SubjectSet(Slot):
-    """Class to manage subject set slot values."""
+class Region(Slot):
+    """Class to manage region slot values."""
 
     @classmethod
     def get_values(cls) -> list[str]:
@@ -121,7 +121,7 @@ class Time(Slot):
 
 if __name__ == '__main__':
     print(Subject.get_values())
-    print(SubjectSet.get_values())
+    print(Region.get_values())
     print(Property.get_values())
     print(NaryOperator.get_values())
     print(BinaryOperator.get_values())

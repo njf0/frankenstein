@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, SubjectSet, Time
+from frankenstein.slot_values import Property, Region, Time
 
 
 class PropertyRatio(FrankensteinQuestion):
@@ -23,13 +23,13 @@ class PropertyRatio(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the ratio of the highest value to the lowest for the {property} of {subject_set} in {time}?',
-            'In {subject_set}, what was the ratio of the highest value of {property} to the lowest in {time}?',
-            'In {time}, what was the ratio of the highest value of {property} to the lowest for {subject_set}?',
+            'What was the ratio of the highest value to the lowest for the {property} of {region} in {time}?',
+            'In {region}, what was the ratio of the highest value of {property} to the lowest in {time}?',
+            'In {time}, what was the ratio of the highest value of {property} to the lowest for {region}?',
         )
 
         allowed_values = {
-            'subject_set': SubjectSet,
+            'region': Region,
             'property': Property,
             'time': Time,
         }
@@ -38,8 +38,8 @@ class PropertyRatio(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get the countries in the subject_set
-        action = FrankensteinAction('get_country_codes_in_region', region_name=self.subject_set)
+        # Get the countries in the region
+        action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
         countries = action.result
@@ -106,16 +106,16 @@ class PropertyRatio(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a PropertyRatio question.')
-    parser.add_argument('--subject_set', type=str, choices=SubjectSet.get_values(), help='The region to use.')
+    parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to use.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to use.')
     parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to use.')  # Add time
 
     args = parser.parse_args()
 
     q = PropertyRatio()
-    if all([args.subject_set, args.property, args.time]):
+    if all([args.region, args.property, args.time]):
         comb = {
-            'subject_set': args.subject_set,
+            'region': args.region,
             'property': args.property,
             'time': args.time,  # Add time
         }

@@ -6,6 +6,8 @@ Currently unused in favour of existing/simpler approach in tools.py, but kept fo
 from pathlib import Path
 
 import pandas as pd
+from pydantic import BaseModel
+
 from frankenstein.exceptions import (
     InvalidCountryCodeError,
     InvalidCountryNameError,
@@ -13,7 +15,6 @@ from frankenstein.exceptions import (
     InvalidIndicatorNameError,
     InvalidRegionNameError,
 )
-from pydantic import BaseModel
 
 
 class Think(BaseModel):
@@ -134,14 +135,14 @@ class GetIndicatorCodeFromName(BaseModel):
 class GetMembership(BaseModel):
     """Get the country codes for a given region name."""
 
-    region_name: str
+    region: str
 
     def forward(self):
         data = pd.read_csv(Path('resources', 'iso_3166.csv'))
         try:
-            return data[data['region_name'] == self.region_name]['country_code'].to_list()
+            return data[data['region'] == self.region]['country_code'].to_list()
         except IndexError as e:
-            raise InvalidRegionNameError(self.region_name) from e
+            raise InvalidRegionNameError(self.region) from e
 
 
 class RetrieveValue(BaseModel):

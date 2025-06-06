@@ -6,9 +6,10 @@ import random
 from pathlib import Path
 
 import pandas as pd
-from frankenstein.slot_values import Slot
 from rich.console import Console
 from rich.table import Table
+
+from frankenstein.slot_values import Slot
 
 DATA_DIR = Path('resources')
 INDICATOR_DATA_DIR = DATA_DIR / 'wdi'

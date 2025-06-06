@@ -1,4 +1,3 @@
-# graph.py
 import json
 from typing import Any, Dict, List
 
@@ -117,8 +116,19 @@ class FrankensteinGraph(nx.DiGraph):
         def fmt(name, args=None):
             if args is None:
                 return name
-            short = ', '.join(f'{k}={str(v)[:20]}…' if len(str(v)) > 20 else f'{k}={v}' for k, v in args.items())
-            return f'{name}\n{short}'
+            short = ', '.join(f'{k}={str(v)[:17]}…' if len(str(v)) > 20 else f'{k}={v}' for k, v in args.items())
+            # also get result and display it
+            if 'result' in args:
+                result = args['result']
+                if isinstance(result, list):
+                    result = ', '.join(str(r)[:17] + '…' if len(str(r)) > 20 else str(r) for r in result)
+                elif isinstance(result, dict):
+                    result = ', '.join(f'{k}={str(v)[:17]}…' if len(str(v)) > 20 else f'{k}={v}' for k, v in result.items())
+                else:
+                    result = str(result)[:17] + '…' if len(str(result)) > 20 else str(result)
+            else:
+                result = ''
+            return f'{name}\n{short}\n{result}'
 
         labels = {}
         for n, d in self.nodes(data=True):
@@ -146,7 +156,7 @@ if __name__ == '__main__':
         trace = json.load(f)
 
     # Structured form of NLQ (your input to seed the graph)
-    question_structure = [{'region_name': 'Melanesia'}, {'year': 2004}]
+    question_structure = [{'region': 'Melanesia'}, {'year': 2004}]
 
     G = FrankensteinGraph(trace, question_structure)
     G.draw()
