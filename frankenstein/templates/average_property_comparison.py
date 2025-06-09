@@ -39,6 +39,8 @@ class AveragePropertyComparison(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'bool'
+
     def compute_actions(self):
         """Compute actions for the question."""
         # Get the country code for the subject

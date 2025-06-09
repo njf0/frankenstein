@@ -39,6 +39,8 @@ class RankPositionChange(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'bool'
+
     def validate_combination(self, combination: dict) -> bool:
         """Ensure time_a != time_b and n is valid."""
         return combination['time_a'] != combination['time_b']

@@ -39,13 +39,13 @@ Only provide the answer itself (e.g., the number, list, string, or boolean value
 
 ALL_TOOLS = f"""The tools you have access to are below:
 
-{get_tool_metadata(toolset='all')}
+{get_tool_metadata(toolbox='all')}
 
 """
 
 ARITHMETIC_TOOLS = f"""The tools you have access to are below:
 
-{get_tool_metadata(toolset='arithmetic')}
+{get_tool_metadata(toolbox='arithmetic')}
 
 These tools can help you perform arithmetic operations (e.g., summation, averages, differences, ratios) on numeric values. However, you must **recall or retrieve the necessary data yourself**—these tools cannot access external data sources like the World Bank.
 
@@ -55,7 +55,7 @@ Clearly express the data you recall using the following quadruple format: {{'sub
 
 DATA_TOOLS = f"""The tools you have access to are below:
 
-{get_tool_metadata(toolset='data')}
+{get_tool_metadata(toolbox='data')}
 
 These tools allow you to access World Bank indicators and retrieve data for specific countries, indicators, and years. Use them to fetch relevant data to answer the question.
 
@@ -125,12 +125,12 @@ def generate_tool_call_example(tool_name, tool_modules):
     return example
 
 
-def create_n_shot_examples(n: int = 3, toolset: str = 'all') -> str:
-    """Create n random examples for each available tool, grouped by tool (DFS order), for the specified toolset."""
-    # Select modules based on toolset
-    if toolset == 'arithmetic':
+def create_n_shot_examples(n: int = 3, toolbox: str = 'all') -> str:
+    """Create n random examples for each available tool, grouped by tool (DFS order), for the specified toolbox."""
+    # Select modules based on toolbox
+    if toolbox == 'arithmetic':
         tool_modules = [arithmetic]
-    elif toolset == 'data':
+    elif toolbox == 'data':
         tool_modules = [data_retrieval]
     else:
         tool_modules = [arithmetic, data_retrieval]

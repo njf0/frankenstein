@@ -38,6 +38,8 @@ class FactorIncreaseComparison(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'float'
+
     def validate_combination(self, combination: dict) -> bool:
         """Validate the combination of slot values.
 

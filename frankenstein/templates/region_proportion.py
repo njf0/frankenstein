@@ -38,6 +38,8 @@ class RegionProportion(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'float'
+
     def validate_combination(self, combination: dict) -> bool:
         """Ensure subject is in the region."""
         countries_in_region = FrankensteinAction('get_country_codes_in_region', region=combination['region'])

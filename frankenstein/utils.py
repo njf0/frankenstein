@@ -172,15 +172,15 @@ def python_type_to_openai(
 
 
 def get_tool_metadata(
-    toolset: str = 'all',
+    toolbox: str = 'all',
     schema: str = 'openai',
 ):
     """Generate function metadata in a given schema format.
 
     Parameters
     ----------
-    toolset : str
-        The toolset to use. Options are 'all', 'arithmetic', or 'data'.
+    toolbox : str
+        The toolbox to use. Options are 'all', 'arithmetic', or 'data'.
     schema : str
         The schema format to use. Options are 'openai', 'claude', or 'basic'.
 
@@ -192,16 +192,16 @@ def get_tool_metadata(
     """
     # Always include utils tools
     modules = []
-    if toolset == 'all':
+    if toolbox == 'all':
         modules = [arithmetic, data_retrieval]
-    elif toolset == 'arithmetic':
+    elif toolbox == 'arithmetic':
         modules = [arithmetic]
-    elif toolset == 'data':
+    elif toolbox == 'data':
         modules = [data_retrieval]
-    elif toolset == 'utils':
+    elif toolbox == 'utils':
         modules = []
     else:
-        raise ValueError(f'Invalid toolset: {toolset}')
+        raise ValueError(f'Invalid toolbox: {toolbox}')
     modules.append(utils)  # Always add utils
 
     metadata = []
@@ -269,6 +269,6 @@ def get_tool_metadata(
 
 if __name__ == '__main__':
     # Example usage
-    metadata = get_tool_metadata(toolset='all')
+    metadata = get_tool_metadata(toolbox='all')
     for func in metadata:
         print(func)

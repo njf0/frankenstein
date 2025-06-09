@@ -27,7 +27,7 @@ class Runner:
     def __init__(
         self,
         model_name: str,
-        toolset: str = 'all',
+        toolbox: str = 'all',
         debug: bool = False,
         n_shots: int = 0,
     ) -> None:
@@ -37,8 +37,8 @@ class Runner:
         ----------
         model_name : str
             The name of the model to use.
-        toolset : str
-            The toolset to use.
+        toolbox : str
+            The toolbox to use.
         debug : bool
             If True, the loop will wait for user input after each message.
         n_shots : int
@@ -56,19 +56,19 @@ class Runner:
 
         self.n_shots = n_shots
 
-        if toolset == 'arithmetic':
+        if toolbox == 'arithmetic':
             self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + ARITHMETIC_TOOLS
-            self.tools = get_tool_metadata(toolset='arithmetic')
-        elif toolset == 'data':
+            self.tools = get_tool_metadata(toolbox='arithmetic')
+        elif toolbox == 'data':
             self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + DATA_TOOLS
-            self.tools = get_tool_metadata(toolset='data')
-        elif toolset == 'all':
+            self.tools = get_tool_metadata(toolbox='data')
+        elif toolbox == 'all':
             self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + ALL_TOOLS
-            self.tools = get_tool_metadata(toolset='all')
+            self.tools = get_tool_metadata(toolbox='all')
 
         # Add n-shot examples if requested
         if self.n_shots > 0:
-            self.system_prompt += '\n\n' + create_n_shot_examples(self.n_shots, toolset=toolset)
+            self.system_prompt += '\n\n' + create_n_shot_examples(self.n_shots, toolbox=toolbox)
 
         self.debug = debug
         self.MAX_REPEATED_TOOL_CALLS = 10
@@ -77,7 +77,7 @@ class Runner:
         if self.debug:
             # Print config
             logging.info(f"🔧 Model: '{self.model_name}'")
-            logging.info(f"🔧 Toolset: '{toolset}'")
+            logging.info(f"🔧 toolbox: '{toolbox}'")
             logging.info(f'🔧 Debug mode: {self.debug}')
             logging.info(f'🔧 N-shots: {self.n_shots}')
             # logging.info(f'🔧 System prompt: {self.system_prompt}')
@@ -247,11 +247,11 @@ if __name__ == '__main__':
         help='The name of the model to use.',
     )
     parser.add_argument(
-        '--toolset',
+        '--toolbox',
         type=str,
         default='all',
         choices=['arithmetic', 'data', 'all'],
-        help='The toolset to use.',
+        help='The toolbox to use.',
     )
     parser.add_argument(
         '--debug',
@@ -277,7 +277,7 @@ if __name__ == '__main__':
 
     runner = Runner(
         model_name=args.model_name,
-        toolset=args.toolset,
+        toolbox=args.toolbox,
         debug=args.debug,
         n_shots=args.n_shots,
     )

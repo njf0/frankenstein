@@ -38,6 +38,8 @@ class TopNTotal(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'list[str]'
+
     def compute_actions(self):
         """Compute actions for the question."""
         # Get the countries in the region

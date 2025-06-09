@@ -4,6 +4,7 @@ import itertools
 import json
 import random
 from pathlib import Path
+from uuid import uuid4
 
 import pandas as pd
 from rich.console import Console
@@ -59,6 +60,7 @@ class FrankensteinQuestion:
 
         # Metadata
         self.metadata = {
+            'id': str(uuid4()),
             'answerable': True,
             'answer_format': None,
             'data_availability': 'full',
@@ -142,7 +144,17 @@ class FrankensteinQuestion:
         """Turn a collection of slot values in to a natural language question."""
         formatted_slot_values = slot_values.copy()
 
-        # Get property name from id
+        # --- Add original (non-paraphrased) indicator name to slot_values ---
+        # If 'property' is present, add 'property_original' to slot_values for provenance
+        if 'property' in slot_values:
+            property_id = slot_values['property']
+            # Find the original indicator name from the indicator key
+            property_original = self.i2n.get(property_id)
+            if property_original:
+                slot_values['property_original'] = property_original
+                formatted_slot_values['property_original'] = property_original
+
+        # Get property name from id (paraphrase)
         if 'property' in slot_values:
             paraphrase = random.choice(
                 *[i['paraphrase'] for i in self.indicator_paraphrases if i['id'] == slot_values['property']]
@@ -180,18 +192,20 @@ class FrankensteinQuestion:
         self,
     ) -> dict:
         """Format question, facts, etc., for output into dataset."""
+        # Ensure 'property_original' is included in metadata if present
+        metadata = {
+            'question_template': self.__class__.__name__,
+            'slot_values': self.slot_values,
+            'answerable': self.metadata['answerable'],
+            'data_availability': self.metadata['data_availability'],
+            'answer_format': self.metadata['answer_format'],
+            'total_actions': len(self.actions),
+        }
         return {
             'question': self.question,
             'actions': self.actions,
             'answer': self.answer,
-            'metadata': {
-                'question_template': self.__class__.__name__,
-                'slot_values': self.slot_values,
-                'answerable': self.metadata['answerable'],
-                'data_availability': self.metadata['data_availability'],
-                'answer_format': self.metadata['answer_format'],
-                'total_actions': len(self.actions),
-            },
+            'metadata': metadata,
         }
 
     def compute_answer(self) -> str:

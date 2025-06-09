@@ -153,7 +153,13 @@ def retrieve_value(
         ) from e
 
     if pd.isna(value):
-        return None
+        raise NoDataAvailableError(
+            {
+                'country_code': country_code,
+                'indicator_code': indicator_code,
+                'year': year,
+            }
+        )
 
     return float(value)
     # return {'subject': country_code, 'property': indicator_code, 'object': float(value), 'time': year}

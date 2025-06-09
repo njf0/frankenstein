@@ -73,24 +73,24 @@ class TemplateFiller:
         self.overwrite = overwrite
         # Optional: mapping of template_name to set of categories to skip
         self.skip_categories = {
-            'AverageChange': {'unanswerable_partial'},
-            'AverageProperty': {'unanswerable_partial'},
-            'AveragePropertyComparison': {'unanswerable_partial'},
-            'CountryPropertyComparison': {'answerable_partial'},
-            'CountryThresholdCount': {'unanswerable_partial'},
-            'FactorIncreaseComparison': {'answerable_partial'},
-            'IncreasePropertyComparison': {'unanswerable_partial'},
-            'PropertyOfSubject': {'unanswerable_partial', 'answerable_partial'},
-            'PropertyRatio': {'unanswerable_partial'},
-            'RankPositionChange': {'answerable_partial'},
-            'RegionComparisonResult': {'unanswerable_partial'},
-            'RegionComparison': {'unanswerable_partial', 'answerable_partial'},
-            'RegionProportionChange': {'unanswerable_partial', 'answerable_partial'},
-            'RegionProportion': {'unanswerable_partial', 'answerable_partial'},
-            'RegionRangeComparison': {'unanswerable_partial'},
-            'SubjectPropertyRank': {'unanswerable_partial'},
-            'TopNTotal': {'unanswerable_partial'},
-            'TotalProperty': {'unanswerable_partial', 'answerable_partial'},
+            'AverageChange': {'unanswerable-partial'},
+            'AverageProperty': {'unanswerable-partial'},
+            'AveragePropertyComparison': {'unanswerable-partial'},
+            'CountryPropertyComparison': {'answerable-partial'},
+            'CountryThresholdCount': {'unanswerable-partial'},
+            'FactorIncreaseComparison': {'answerable-partial'},
+            'IncreasePropertyComparison': {'unanswerable-partial'},
+            'PropertyOfSubject': {'unanswerable-partial', 'answerable-partial'},
+            'PropertyRatio': {'unanswerable-partial'},
+            'RankPositionChange': {'answerable-partial'},
+            'RegionComparisonResult': {'unanswerable-partial'},
+            'RegionComparison': {'unanswerable-partial', 'answerable-partial'},
+            'RegionProportionChange': {'unanswerable-partial', 'answerable-partial'},
+            'RegionProportion': {'unanswerable-partial', 'answerable-partial'},
+            'RegionRangeComparison': {'unanswerable-partial'},
+            'SubjectPropertyRank': {'unanswerable-partial'},
+            'TopNTotal': {'unanswerable-partial'},
+            'TotalProperty': {'unanswerable-partial', 'answerable-partial'},
         }
 
     def set_skip_categories(
@@ -146,16 +146,24 @@ class TemplateFiller:
             skip_set = self.skip_categories.get(template_name, set())
             total_to_fill += (4 - len(skip_set)) * self.n
 
+        # Prepare accumulators for each split
+        split_examples = {
+            'answerable-full': [],
+            'answerable-partial': [],
+            'unanswerable-partial': [],
+            'unanswerable-missing': [],
+        }
+
         with Progress() as progress:
             unified_task = progress.add_task('[cyan]All Templates', total=total_to_fill)
 
             for template_name, module, template_class in self.templates:
                 # Initialise success counts for each category
                 success_counts = {
-                    'answerable_full': 0,
-                    'answerable_partial': 0,
-                    'unanswerable_partial': 0,
-                    'unanswerable_missing': 0,
+                    'answerable-full': 0,
+                    'answerable-partial': 0,
+                    'unanswerable-partial': 0,
+                    'unanswerable-missing': 0,
                 }
 
                 def progress_desc(template_name, success_counts, skip_set):
@@ -168,10 +176,10 @@ class TemplateFiller:
 
                     return (
                         f'[cyan]Filling: [bold]{template_name}[/bold] ('
-                        f'{fmt("answerable_full", "green")} / '
-                        f'{fmt("answerable_partial", "yellow")} / '
-                        f'{fmt("unanswerable_partial", "magenta")} / '
-                        f'{fmt("unanswerable_missing", "red")})'
+                        f'{fmt("answerable-full", "green")} / '
+                        f'{fmt("answerable-partial", "yellow")} / '
+                        f'{fmt("unanswerable-partial", "magenta")} / '
+                        f'{fmt("unanswerable-missing", "red")})'
                     )
 
                 skip_set = self.skip_categories.get(template_name, set())
@@ -190,10 +198,10 @@ class TemplateFiller:
                 attempts = 0
                 max_attempts = 1000 * self.n if self.n > 0 else 1000
                 filled_attempts = {
-                    'answerable_full': None,
-                    'answerable_partial': None,
-                    'unanswerable_partial': None,
-                    'unanswerable_missing': None,
+                    'answerable-full': None,
+                    'answerable-partial': None,
+                    'unanswerable-partial': None,
+                    'unanswerable-missing': None,
                 }
 
                 while True:
@@ -213,6 +221,8 @@ class TemplateFiller:
                     t.create_question(combination)
                     t.compute_actions()
                     output = t.format_output()
+                    # Add template name to output for traceability
+                    output['template_name'] = template_name
 
                     # Determine answerability and data availability
                     answerable = output['metadata'].get('answerable', None)
@@ -220,48 +230,48 @@ class TemplateFiller:
 
                     updated_any = False
                     if (
-                        'answerable_full' not in skip_set
+                        'answerable-full' not in skip_set
                         and answerable is True
                         and data_availability == 'full'
                         and len(answerable_full) < self.n
                     ):
                         answerable_full.append(output)
-                        success_counts['answerable_full'] += 1
-                        if len(answerable_full) == self.n and filled_attempts['answerable_full'] is None:
-                            filled_attempts['answerable_full'] = attempts
+                        success_counts['answerable-full'] += 1
+                        if len(answerable_full) == self.n and filled_attempts['answerable-full'] is None:
+                            filled_attempts['answerable-full'] = attempts
                         updated_any = True
                     elif (
-                        'answerable_partial' not in skip_set
+                        'answerable-partial' not in skip_set
                         and answerable is True
                         and data_availability == 'partial'
                         and len(answerable_partial) < self.n
                     ):
                         answerable_partial.append(output)
-                        success_counts['answerable_partial'] += 1
-                        if len(answerable_partial) == self.n and filled_attempts['answerable_partial'] is None:
-                            filled_attempts['answerable_partial'] = attempts
+                        success_counts['answerable-partial'] += 1
+                        if len(answerable_partial) == self.n and filled_attempts['answerable-partial'] is None:
+                            filled_attempts['answerable-partial'] = attempts
                         updated_any = True
                     elif (
-                        'unanswerable_partial' not in skip_set
+                        'unanswerable-partial' not in skip_set
                         and answerable is False
                         and data_availability == 'partial'
                         and len(unanswerable_partial) < self.n
                     ):
                         unanswerable_partial.append(output)
-                        success_counts['unanswerable_partial'] += 1
-                        if len(unanswerable_partial) == self.n and filled_attempts['unanswerable_partial'] is None:
-                            filled_attempts['unanswerable_partial'] = attempts
+                        success_counts['unanswerable-partial'] += 1
+                        if len(unanswerable_partial) == self.n and filled_attempts['unanswerable-partial'] is None:
+                            filled_attempts['unanswerable-partial'] = attempts
                         updated_any = True
                     elif (
-                        'unanswerable_missing' not in skip_set
+                        'unanswerable-missing' not in skip_set
                         and answerable is False
                         and data_availability == 'missing'
                         and len(unanswerable_missing) < self.n
                     ):
                         unanswerable_missing.append(output)
-                        success_counts['unanswerable_missing'] += 1
-                        if len(unanswerable_missing) == self.n and filled_attempts['unanswerable_missing'] is None:
-                            filled_attempts['unanswerable_missing'] = attempts
+                        success_counts['unanswerable-missing'] += 1
+                        if len(unanswerable_missing) == self.n and filled_attempts['unanswerable-missing'] is None:
+                            filled_attempts['unanswerable-missing'] = attempts
                         updated_any = True
 
                     # Unified progress bar: advance for every successful fill
@@ -275,13 +285,13 @@ class TemplateFiller:
 
                     # Check if we have enough examples for all non-skipped categories
                     enough = True
-                    if 'answerable_full' not in skip_set and len(answerable_full) < self.n:
+                    if 'answerable-full' not in skip_set and len(answerable_full) < self.n:
                         enough = False
-                    if 'answerable_partial' not in skip_set and len(answerable_partial) < self.n:
+                    if 'answerable-partial' not in skip_set and len(answerable_partial) < self.n:
                         enough = False
-                    if 'unanswerable_partial' not in skip_set and len(unanswerable_partial) < self.n:
+                    if 'unanswerable-partial' not in skip_set and len(unanswerable_partial) < self.n:
                         enough = False
-                    if 'unanswerable_missing' not in skip_set and len(unanswerable_missing) < self.n:
+                    if 'unanswerable-missing' not in skip_set and len(unanswerable_missing) < self.n:
                         enough = False
                     if enough:
                         break
@@ -298,15 +308,15 @@ class TemplateFiller:
                 template_timings.append(
                     {
                         'template': template_name,
-                        'answerable_full': filled_attempts['answerable_full'] if 'answerable_full' not in skip_set else None,
-                        'answerable_partial': filled_attempts['answerable_partial']
-                        if 'answerable_partial' not in skip_set
+                        'answerable-full': filled_attempts['answerable-full'] if 'answerable-full' not in skip_set else None,
+                        'answerable-partial': filled_attempts['answerable-partial']
+                        if 'answerable-partial' not in skip_set
                         else None,
-                        'unanswerable_partial': filled_attempts['unanswerable_partial']
-                        if 'unanswerable_partial' not in skip_set
+                        'unanswerable-partial': filled_attempts['unanswerable-partial']
+                        if 'unanswerable-partial' not in skip_set
                         else None,
-                        'unanswerable_missing': filled_attempts['unanswerable_missing']
-                        if 'unanswerable_missing' not in skip_set
+                        'unanswerable-missing': filled_attempts['unanswerable-missing']
+                        if 'unanswerable-missing' not in skip_set
                         else None,
                         'total_time': elapsed,
                         'time_per_attempt': time_per_attempt,
@@ -314,34 +324,30 @@ class TemplateFiller:
                 )
 
                 all_results[template_name] = {
-                    'answerable_full': answerable_full,
-                    'answerable_partial': answerable_partial,
-                    'unanswerable_partial': unanswerable_partial,
-                    'unanswerable_missing': unanswerable_missing,
+                    'answerable-full': answerable_full,
+                    'answerable-partial': answerable_partial,
+                    'unanswerable-partial': unanswerable_partial,
+                    'unanswerable-missing': unanswerable_missing,
                 }
 
-                # Save results to files, one folder per category
-                outdir = Path('dataset')
+                # Instead of saving per-template, accumulate for each split
+                if 'answerable-full' not in skip_set and answerable_full:
+                    split_examples['answerable-full'].extend(answerable_full)
+                if 'answerable-partial' not in skip_set and answerable_partial:
+                    split_examples['answerable-partial'].extend(answerable_partial)
+                if 'unanswerable-partial' not in skip_set and unanswerable_partial:
+                    split_examples['unanswerable-partial'].extend(unanswerable_partial)
+                if 'unanswerable-missing' not in skip_set and unanswerable_missing:
+                    split_examples['unanswerable-missing'].extend(unanswerable_missing)
 
-                if 'answerable_full' not in skip_set and answerable_full:
-                    (outdir / 'answerable_full').mkdir(parents=True, exist_ok=True)
-                    with (outdir / 'answerable_full' / f'{template_name}.jsonl').open('w') as f:
-                        for example in answerable_full:
-                            f.write(json.dumps(example) + '\n')
-                if 'answerable_partial' not in skip_set and answerable_partial:
-                    (outdir / 'answerable_partial').mkdir(parents=True, exist_ok=True)
-                    with (outdir / 'answerable_partial' / f'{template_name}.jsonl').open('w') as f:
-                        for example in answerable_partial:
-                            f.write(json.dumps(example) + '\n')
-                if 'unanswerable_partial' not in skip_set and unanswerable_partial:
-                    (outdir / 'unanswerable_partial').mkdir(parents=True, exist_ok=True)
-                    with (outdir / 'unanswerable_partial' / f'{template_name}.jsonl').open('w') as f:
-                        for example in unanswerable_partial:
-                            f.write(json.dumps(example) + '\n')
-                if 'unanswerable_missing' not in skip_set and unanswerable_missing:
-                    (outdir / 'unanswerable_missing').mkdir(parents=True, exist_ok=True)
-                    with (outdir / 'unanswerable_missing' / f'{template_name}.jsonl').open('w') as f:
-                        for example in unanswerable_missing:
+        # Save results to files, one file per split (if save is True)
+        outdir = Path('dataset')
+        if save:
+            outdir.mkdir(parents=True, exist_ok=True)
+            for split, examples in split_examples.items():
+                if examples:
+                    with (outdir / f'{split}.jsonl').open('w') as f:
+                        for example in examples:
                             f.write(json.dumps(example) + '\n')
 
         total_end = time.time()
@@ -365,10 +371,10 @@ class TemplateFiller:
 
             table.add_row(
                 entry['template'],
-                fmt(entry['answerable_full']),
-                fmt(entry['answerable_partial']),
-                fmt(entry['unanswerable_partial']),
-                fmt(entry['unanswerable_missing']),
+                fmt(entry['answerable-full']),
+                fmt(entry['answerable-partial']),
+                fmt(entry['unanswerable-partial']),
+                fmt(entry['unanswerable-missing']),
                 f'{entry["total_time"]:.2f}',
                 f'{entry["time_per_attempt"]:.3f}',
             )
@@ -378,7 +384,7 @@ class TemplateFiller:
         total_categories_filled = sum(
             1
             for entry in template_timings
-            for k in ['answerable_full', 'answerable_partial', 'unanswerable_partial', 'unanswerable_missing']
+            for k in ['answerable-full', 'answerable-partial', 'unanswerable-partial', 'unanswerable-missing']
             if entry[k] is not None
         )
         avg_time_per_attempt = (
@@ -427,4 +433,4 @@ if __name__ == '__main__':
 
     # Fill templates
     filler = TemplateFiller(selected_templates, args.number, overwrite=args.overwrite)
-    results = filler.run(save=False)
+    results = filler.run(save=args.save)

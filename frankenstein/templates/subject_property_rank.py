@@ -37,6 +37,8 @@ class SubjectPropertyRank(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'int'
+
     def validate_combination(self, combination: dict) -> bool:
         """Ensure subject is in the region."""
         countries_in_region = FrankensteinAction('get_country_codes_in_region', region=combination['region'])
@@ -103,7 +105,6 @@ class SubjectPropertyRank(FrankensteinQuestion):
             return
 
         values_list = [v for _, v in valid_values]
-        # Use FrankensteinAction to compute rank of the subject's value
         subject_value = next((v for c, v in valid_values if c == subject_code), None)
         if subject_value is None:
             self.metadata['data_availability'] = 'missing'

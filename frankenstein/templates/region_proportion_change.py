@@ -36,7 +36,10 @@ class RegionProportionChange(FrankensteinQuestion):
             'time_a': Time,
             'time_b': Time,
         }
+
         super().__init__(slot_values, allowed_values)
+
+        self.metadata['answer_format'] = 'bool'
 
     def validate_combination(self, combination: dict) -> bool:
         """Ensure subject is in the region and times are different."""

@@ -1,5 +1,6 @@
 """Library of tools to be provided to the model and provide the basis for solutions."""
 
+import ast
 import logging
 
 import pandas as pd
@@ -26,11 +27,8 @@ def add(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',') if pd.notna(value)]
-    else:
-        values = [float(value) for value in values if pd.notna(value)]
-
+        values = ast.literal_eval(values)
+    values = [float(value) for value in values if pd.notna(value)]
     return sum(float(value) for value in values if pd.notna(value))
 
 
@@ -98,13 +96,10 @@ def multiply(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values]
-
+        values = ast.literal_eval(values)
+    values = [float(value) for value in values]
     product = 1
-    for number in [float(i) for i in values]:
+    for number in values:
         product *= number
     return product
 
@@ -141,11 +136,10 @@ def mean(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values if pd.notna(value)]
-
+        values = ast.literal_eval(values)
+    values = [float(value) for value in values if pd.notna(value)]
+    if not values:
+        raise ValueError('No valid (non-NaN) values provided to mean()')
     return sum(values) / len(values)
 
 
@@ -162,11 +156,10 @@ def mode(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values]
-
+        values = ast.literal_eval(values)
+    values = [float(value) for value in values if pd.notna(value)]
+    if not values:
+        raise ValueError('No valid (non-NaN) values provided to mode()')
     return max(set(values), key=values.count)
 
 
@@ -183,15 +176,13 @@ def median(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values]
-
+        values = ast.literal_eval(values)
+    values = [float(value) for value in values if pd.notna(value)]
+    if not values:
+        raise ValueError('No valid (non-NaN) values provided to median()')
     sorted_values = sorted(values)
     n = len(sorted_values)
     median_value = (sorted_values[n // 2 - 1] + sorted_values[n // 2]) / 2 if n % 2 == 0 else sorted_values[n // 2]
-
     return median_value
 
 
@@ -208,11 +199,11 @@ def maximum(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',') if pd.notna(value)]
-    else:
-        values = [float(value) for value in values if pd.notna(value)]
-
+        values = ast.literal_eval(values)
+    # Filter out None/NaN values
+    values = [float(value) for value in values if pd.notna(value)]
+    if not values:
+        raise ValueError('No valid (non-NaN) values provided to maximum()')
     return max(values)
 
 
@@ -229,11 +220,11 @@ def minimum(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',') if pd.notna(value)]
-    else:
-        values = [float(value) for value in values if pd.notna(value)]
-
+        values = ast.literal_eval(values)
+    # Filter out None/NaN values
+    values = [float(value) for value in values if pd.notna(value)]
+    if not values:
+        raise ValueError('No valid (non-NaN) values provided to minimum()')
     return min(values)
 
 
@@ -243,19 +234,16 @@ def count(
     """Count the number of non-None elements in a list.
 
     Args:
-        values: A list of numbers to count.
+        values: A list of values to count.
 
     Returns:
         The number of elements in the list.
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values]
-    # Remove NaN values
-    values = [value for value in values if pd.notna(value)]
+        values = ast.literal_eval(values)
+    # Only filter out NaN (for numbers), keep bools/strings
+    values = [v for v in values if pd.notna(v)]
     return len(values)
 
 
@@ -274,16 +262,13 @@ def rank(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values]
-
-    # Remove NaN values
-    values = [value for value in values if pd.notna(value)]
-
+        values = ast.literal_eval(values)
+    values = [float(value) for value in values if pd.notna(value)]
     sorted_values = sorted(values, reverse=True)
-    return sorted_values.index(query_value) + 1
+    try:
+        return sorted_values.index(query_value) + 1
+    except ValueError:
+        return -1
 
 
 def sort(
@@ -299,14 +284,8 @@ def sort(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values]
-
-    # Remove NaN values
+        values = ast.literal_eval(values)
     values = [float(value) for value in values if pd.notna(value)]
-
     return sorted(values)
 
 
@@ -325,12 +304,8 @@ def index(
 
     """
     if isinstance(values, str):
-        values = values.strip('[]\'"')
-        values = [float(value.strip()) for value in values.split(',')]
-    else:
-        values = [float(value) for value in values]
-    # Remove NaN values
-    values = [value for value in values if pd.notna(value)]
+        values = ast.literal_eval(values)
+    values = [float(value) for value in values if pd.notna(value)]
     try:
         return values.index(query_value)
     except ValueError:
@@ -341,7 +316,7 @@ if __name__ == '__main__':
     """Run some example calculations to demonstrate the tools."""
     print('\n=== Add ===')
     print('add([1, 2, 3])')
-    print('Result:', add([1, 2, 3]))
+    print('Result:', add('["1", 2, 3]'))
 
     print('\n=== Subtract ===')
     print('subtract(10, 4)')

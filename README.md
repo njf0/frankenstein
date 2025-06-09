@@ -14,7 +14,7 @@ FRANK-inspired object-level reasoning with an LLM-based meta-level reasoner.
 - **Meta-Level LLM Reasoner:** Uses LLMs to plan, decompose, and solve multi-step questions.
 - **World Bank Data Integration:** Access to a range of global development indicators.
 - **Tool-Use Evaluation:** Tracks and analyzes tool calls and reasoning steps.
-- **Flexible Prompting:** Configurable prompts and toolsets for different evaluation settings.
+- **Flexible Prompting:** Configurable prompts and toolboxs for different evaluation settings.
 - **Extensible Architecture:** Designed for adding new tools, datasets, and evaluation templates.
 - **Logging & Visualization:** Provides logs and output tables for evaluation and debugging.
 

@@ -38,6 +38,8 @@ class RegionRangeComparison(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'bool'
+
     def validate_combination(self, combination: dict) -> bool:
         """Ensure region_a and region_b are different."""
         return combination['region_a'] != combination['region_b']

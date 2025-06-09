@@ -38,6 +38,8 @@ class CountryThresholdCount(FrankensteinQuestion):
 
         super().__init__(slot_values, allowed_values)
 
+        self.metadata['answer_format'] = 'int'
+
     def validate_combination(self, combination: dict) -> bool:
         """Apply constraints to the combination of slot values.
 
