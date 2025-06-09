@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Subject, Time
+from frankenstein.slot_values import BinaryOperator, Property, Subject, Year
 
 
 class CountryPropertyComparison(FrankensteinQuestion):
@@ -23,10 +23,10 @@ class CountryPropertyComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Did {subject_a} have a {operator} {property} in {time_a} than {subject_b} had in {time_b}?',
-            'Was the {property} of {subject_a} in {time_a} {operator} than that of {subject_b} in {time_b}?',
-            'In {time_a}, was the {property} of {subject_a} {operator} than that of {subject_b} in {time_b}?',
-            "In {time_a}, was {subject_a}'s {property} {operator} than {subject_b}'s in {time_b}?",
+            'Did {subject_a} have a {operator} {property} in {year_a} than {subject_b} had in {year_b}?',
+            'Was the {property} of {subject_a} in {year_a} {operator} than that of {subject_b} in {year_b}?',
+            'In {year_a}, was the {property} of {subject_a} {operator} than that of {subject_b} in {year_b}?',
+            "In {year_a}, was {subject_a}'s {property} {operator} than {subject_b}'s in {year_b}?",
         )
 
         allowed_values = {
@@ -34,8 +34,8 @@ class CountryPropertyComparison(FrankensteinQuestion):
             'property': Property,
             'operator': BinaryOperator,
             'subject_b': Subject,
-            'time_a': Time,
-            'time_b': Time,
+            'year_a': Year,
+            'year_b': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -45,7 +45,7 @@ class CountryPropertyComparison(FrankensteinQuestion):
     def validate_combination(self, combination: dict) -> bool:
         """Validate the combination of slot values.
 
-        Ensure subject_a != subject_b and time_a != time_b.
+        Ensure subject_a != subject_b and year_a != year_b.
 
         Parameters
         ----------
@@ -58,7 +58,7 @@ class CountryPropertyComparison(FrankensteinQuestion):
             True if the combination is valid, False otherwise.
 
         """
-        return combination['subject_a'] != combination['subject_b'] and combination['time_a'] != combination['time_b']
+        return combination['subject_a'] != combination['subject_b'] and combination['year_a'] != combination['year_b']
 
     def compute_actions(self):
         """Compute result for the question using FrankensteinActions."""
@@ -89,12 +89,12 @@ class CountryPropertyComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Retrieve the values for the subjects at the given times
+        # Retrieve the values for the subjects at the given years
         action = FrankensteinAction(
             'retrieve_value',
             country_code=country_a,
             indicator_code=indicator_code,
-            year=self.time_a,
+            year=self.year_a,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -104,7 +104,7 @@ class CountryPropertyComparison(FrankensteinQuestion):
             'retrieve_value',
             country_code=country_b,
             indicator_code=indicator_code,
-            year=self.time_b,
+            year=self.year_b,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -171,16 +171,16 @@ if __name__ == '__main__':
         help='The second subject to retrieve the property for.',
     )
     parser.add_argument(
-        '--time_a',
+        '--year_a',
         type=str,
-        choices=Time.get_values(),
-        help='The time at which to retrieve the property.',
+        choices=Year.get_values(),
+        help='The year at which to retrieve the property.',
     )
     parser.add_argument(
-        '--time_b',
+        '--year_b',
         type=str,
-        choices=Time.get_values(),
-        help='The time at which to retrieve the property.',
+        choices=Year.get_values(),
+        help='The year at which to retrieve the property.',
     )
 
     args = parser.parse_args()
@@ -192,8 +192,8 @@ if __name__ == '__main__':
             args.operator,
             args.property,
             args.subject_b,
-            args.time_a,
-            args.time_b,
+            args.year_a,
+            args.year_b,
         ]
     ):
         comb = {
@@ -201,8 +201,8 @@ if __name__ == '__main__':
             'operator': args.operator,
             'property': args.property,
             'subject_b': args.subject_b,
-            'time_a': args.time_a,
-            'time_b': args.time_b,
+            'year_a': args.year_a,
+            'year_b': args.year_b,
         }
     else:
         comb = q.get_random_combination()

@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Property, Region, Time
+from frankenstein.slot_values import NaryOperator, Property, Region, Year
 
 
 class RegionComparisonResult(FrankensteinQuestion):
@@ -23,16 +23,16 @@ class RegionComparisonResult(FrankensteinQuestion):
 
         """
         self.templates = (
-            'For the country in {region} that had the {operator} {property} in {time_2}, and what was its value in {time_1}?',
-            'In {time_1}, what was the {property} for the country in {region} that had the {operator} value for that indicator in {time_2}?',
+            'For the country in {region} that had the {operator} {property} in {year_2}, and what was its value in {year_1}?',
+            'In {year_1}, what was the {property} for the country in {region} that had the {operator} value for that indicator in {year_2}?',
         )
 
         allowed_values = {
-            'time_1': Time,
+            'year_1': Year,
             'property': Property,
             'region': Region,
             'operator': NaryOperator,
-            'time_2': Time,
+            'year_2': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -42,7 +42,7 @@ class RegionComparisonResult(FrankensteinQuestion):
     def validate_combination(self, combination: dict) -> bool:
         """Apply constraints to the combination of slot values.
 
-        For this template, the constraints are that property_1 and property_2 must be different, and time_1 and time_2 must be different.
+        For this template, the constraints are that property_1 and property_2 must be different, and year_1 and year_2 must be different.
 
         Parameters
         ----------
@@ -55,7 +55,7 @@ class RegionComparisonResult(FrankensteinQuestion):
             True if the combination is valid, False otherwise.
 
         """
-        return combination['time_1'] != combination['time_2']
+        return combination['year_1'] != combination['year_2']
 
     def compute_actions(self):
         """Compute actions for the question."""
@@ -71,7 +71,7 @@ class RegionComparisonResult(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Retrieve the property values for the countries in time_2
+        # Retrieve the property values for the countries in year_2
         property_values = []
         for country in countries:
             action = FrankensteinAction('get_country_code_from_name', country_name=self.c2n[country])
@@ -80,7 +80,7 @@ class RegionComparisonResult(FrankensteinQuestion):
             country_code = action.result
 
             action = FrankensteinAction(
-                'retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.time_2
+                'retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.year_2
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -109,22 +109,22 @@ class RegionComparisonResult(FrankensteinQuestion):
 
         target_country = next((c for c, v in property_values if v == target_value), None)
 
-        # Retrieve the property value for the target country in time_1
+        # Retrieve the property value for the target country in year_1
         action = FrankensteinAction(
-            'retrieve_value', country_code=target_country, indicator_code=indicator_code, year=self.time_1
+            'retrieve_value', country_code=target_country, indicator_code=indicator_code, year=self.year_1
         )
         action.execute()
         self.actions.append(action.to_dict())
-        property_value_time_1 = action.result
+        property_value_year_1 = action.result
 
         # Check if the required value is missing
-        if property_value_time_1 is None:
+        if property_value_year_1 is None:
             self.metadata['data_availability'] = 'missing'
             self.metadata['answerable'] = False
             return
 
         # Set the final answer
-        action = FrankensteinAction('final_answer', answer=property_value_time_1)
+        action = FrankensteinAction('final_answer', answer=property_value_year_1)
         action.execute()
         self.actions.append(action.to_dict())
         self.answer = action.result
@@ -134,11 +134,11 @@ class RegionComparisonResult(FrankensteinQuestion):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a RegionComparison question.')
-    parser.add_argument('--time_1', type=str, choices=Time.get_values())
+    parser.add_argument('--year_1', type=str, choices=Year.get_values())
     parser.add_argument('--region', type=str, choices=Region.get_values())
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values())
     parser.add_argument('--property_2', type=str, choices=Property.get_values())
-    parser.add_argument('--time_2', type=str, choices=Time.get_values())
+    parser.add_argument('--year_2', type=str, choices=Year.get_values())
 
     args = parser.parse_args()
 
@@ -146,21 +146,21 @@ if __name__ == '__main__':
 
     if all(
         [
-            args.time_1,
+            args.year_1,
             # args.property_1,
             args.region,
             args.operator,
             args.property_2,
-            args.time_2,
+            args.year_2,
         ]
     ):
         comb = {
-            'time_1': args.time_1,
+            'year_1': args.year_1,
             # 'property_1': args.property_1,
             'region': args.region,
             'operator': args.operator,
             'property_2': args.property_2,
-            'time_2': args.time_2,
+            'year_2': args.year_2,
         }
 
     else:

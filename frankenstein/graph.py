@@ -199,19 +199,29 @@ class FrankensteinGraph(nx.DiGraph):
                     # 1️⃣ origin node match
                     if (arg_key, val) in self.origin_values:
                         self.add_edge(self.origin_node_id, tgt_id, label=f'{arg_key}={val}')
-                        logging.info(f'🌱 Structured NLQ({self.origin_node_id}) --[{arg_key}="{val}"]--> {tgt_label}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[{arg_key}="{val}"]--> {tgt_label}')
                         continue
 
                     # 1b️⃣ slot_values original indicator name match for get_indicator_code_from_name
-                    # If the argument to get_indicator_code_from_name matches the original indicator name in slot_values, add an edge
                     if (
                         action.action == 'get_indicator_code_from_name'
                         and arg_key == 'indicator_name'
                         and 'property_original' in self.origin_values
-                        and val == list(self.origin_values)[0][1]  # property_original value
+                        and val == list(self.origin_values)[0][1]
                     ):
                         self.add_edge(self.origin_node_id, tgt_id, label=f'property_original={val}')
-                        logging.info(f'🌱 Structured NLQ({self.origin_node_id}) --[property_original="{val}"]--> {tgt_label}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[property_original="{val}"]--> {tgt_label}')
+                        continue
+
+                    # 1c️⃣ slot_values subject_name match for get_country_code_from_name
+                    if (
+                        action.action == 'get_country_code_from_name'
+                        and arg_key == 'country_name'
+                        and 'subject_name' in self.origin_values
+                        and val == list(self.origin_values)[0][1]
+                    ):
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'subject_name={val}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[subject_name="{val}"]--> {tgt_label}')
                         continue
 
                     # 2️⃣ produced value match (general)
@@ -223,25 +233,45 @@ class FrankensteinGraph(nx.DiGraph):
                             self.add_edge(src_id, tgt_id, label=f'{arg_key}={val}')
                             break
 
-            # 3️⃣ Heuristic: NLQ word in search_for_indicator_codes argument
-            if (
-                self.question
-                and action.action in ('search_for_indicator_codes', 'get_indicator_code_from_name')
-                and 'keywords' in action.kwargs
-            ):
-                keywords = action.kwargs['keywords']
-                if isinstance(keywords, str):
-                    keywords = [keywords]
-                keyword_words = set()
-                for kw in keywords:
-                    kw_clean = str(kw).lower().translate(str.maketrans('', '', string.punctuation))
-                    keyword_words.update(kw_clean.split())
-                overlap = question_words & keyword_words
-                if overlap:
-                    self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→keywords: {"/".join(sorted(overlap))}')
-                    logging.info(
-                        f'💡 Structured NLQ({self.origin_node_id}) --[NLQ→keywords: {"/".join(sorted(overlap))}]--> {tgt_label}'
+            # 3️⃣ Heuristic: NLQ phrase/word in search_for_indicator_codes or get_indicator_code_from_name argument
+            if self.question:
+                # For search_for_indicator_codes: check keywords
+                if action.action == 'search_for_indicator_codes' and 'keywords' in action.kwargs:
+                    keywords = action.kwargs['keywords']
+                    if isinstance(keywords, str):
+                        keywords = [keywords]
+                    keyword_words = set()
+                    for kw in keywords:
+                        kw_clean = str(kw).lower().translate(str.maketrans('', '', string.punctuation))
+                        keyword_words.update(kw_clean.split())
+                    overlap = question_words & keyword_words
+                    if overlap:
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→keywords: {"/".join(sorted(overlap))}')
+                        logging.info(
+                            f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
+                        )
+                # For get_indicator_code_from_name: check indicator_name for phrases from NLQ
+                if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
+                    indicator_name = (
+                        str(action.kwargs['indicator_name']).lower().translate(str.maketrans('', '', string.punctuation))
                     )
+                    # Check for overlap of any word or phrase from the NLQ in the indicator_name argument
+                    overlap = set()
+                    # Check for word overlap
+                    indicator_words = set(indicator_name.split())
+                    overlap |= question_words & indicator_words
+                    # Also check for any NLQ phrase (of length >=2) in indicator_name
+                    q_tokens = self.question.lower().translate(str.maketrans('', '', string.punctuation)).split()
+                    for n in range(2, min(6, len(q_tokens) + 1)):
+                        for i in range(len(q_tokens) - n + 1):
+                            phrase = ' '.join(q_tokens[i : i + n])
+                            if phrase in indicator_name:
+                                overlap.add(phrase)
+                    if overlap:
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→indicator_name: {"/".join(sorted(overlap))}')
+                        logging.info(
+                            f'💡 Question({self.origin_node_id}) --[NLQ→indicator_name: {"/".join(sorted(overlap))}]--> {tgt_label}'
+                        )
 
             # 4️⃣ Heuristic: get_indicator_code_from_name argument matches indicator_name from search_for_indicator_codes
             if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:

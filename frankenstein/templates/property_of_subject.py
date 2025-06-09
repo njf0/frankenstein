@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Subject, Time
+from frankenstein.slot_values import Property, Subject, Year
 
 
 class PropertyOfSubject(FrankensteinQuestion):
@@ -23,14 +23,14 @@ class PropertyOfSubject(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the {property} of {subject} in {time}?',
-            'In {time}, what was the {property} of {subject}?',
+            'What was the {property} of {subject} in {year}?',
+            'In {year}, what was the {property} of {subject}?',
         )
 
         allowed_values = {
             'property': Property,
             'subject': Subject,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -59,7 +59,7 @@ class PropertyOfSubject(FrankensteinQuestion):
             'retrieve_value',
             country_code=country,
             indicator_code=indicator_code,
-            year=self.time,
+            year=self.year,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a PropertyOfSubject question.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to retrieve the property for.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to retrieve.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time at which to retrieve the property.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year at which to retrieve the property.')
 
     args = parser.parse_args()
 
@@ -94,13 +94,13 @@ if __name__ == '__main__':
         [
             args.subject,
             args.property,
-            args.time,
+            args.year,
         ]
     ):
         comb = {
             'subject': args.subject,
             'property': args.property,
-            'time': args.time,
+            'year': args.year,
         }
 
     else:

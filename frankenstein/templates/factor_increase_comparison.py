@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Subject, Time
+from frankenstein.slot_values import Property, Subject, Year
 
 
 class FactorIncreaseComparison(FrankensteinQuestion):
@@ -23,17 +23,17 @@ class FactorIncreaseComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the change in the {property} of {subject} between {time_a} and {time_b}?',
-            'By how much did the {property} of {subject} change between {time_a} and {time_b}?',
-            'What was the difference in the {property} of {subject} between {time_a} and {time_b}?',
-            'Between {time_a} and {time_b}, what was the change in the {property} of {subject}?',
+            'What was the change in the {property} of {subject} between {year_a} and {year_b}?',
+            'By how much did the {property} of {subject} change between {year_a} and {year_b}?',
+            'What was the difference in the {property} of {subject} between {year_a} and {year_b}?',
+            'Between {year_a} and {year_b}, what was the change in the {property} of {subject}?',
         )
 
         allowed_values = {
             'subject': Subject,
             'property': Property,
-            'time_a': Time,
-            'time_b': Time,
+            'year_a': Year,
+            'year_b': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -54,8 +54,8 @@ class FactorIncreaseComparison(FrankensteinQuestion):
             True if the combination is valid, False otherwise.
 
         """
-        # Ensure time_a != time_b and time_a < time_b
-        return combination['time_a'] != combination['time_b'] and combination['time_a'] < combination['time_b']
+        # Ensure year_a != year_b and year_a < year_b
+        return combination['year_a'] != combination['year_b'] and combination['year_a'] < combination['year_b']
 
     def compute_actions(self):
         """Compute actions for the question."""
@@ -77,23 +77,23 @@ class FactorIncreaseComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Get the values for the property for the subject for both times
+        # Get the values for the property for the subject for both years
         action = FrankensteinAction(
             'retrieve_value',
             country_code=country_code,
             indicator_code=indicator_code,
-            year=self.time_a,
+            year=self.year_a,
         )
         action.execute()
         self.actions.append(action.to_dict())
         value_a = action.result
 
-        # Get the value for the property for the subject for the second time
+        # Get the value for the property for the subject for the second year
         action = FrankensteinAction(
             'retrieve_value',
             country_code=country_code,
             indicator_code=indicator_code,
-            year=self.time_b,
+            year=self.year_b,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -139,8 +139,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a FactorIncreaseComparison question.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to get the property value for.')
-    parser.add_argument('--time_a', type=str, choices=Time.get_values(), help='The first time to compare.')
-    parser.add_argument('--time_b', type=str, choices=Time.get_values(), help='The second time to compare.')
+    parser.add_argument('--year_a', type=str, choices=Year.get_values(), help='The first year to compare.')
+    parser.add_argument('--year_b', type=str, choices=Year.get_values(), help='The second year to compare.')
 
     args = parser.parse_args()
 
@@ -149,15 +149,15 @@ if __name__ == '__main__':
         [
             args.property,
             args.subject,
-            args.time_a,
-            args.time_b,
+            args.year_a,
+            args.year_b,
         ]
     ):
         comb = {
             'property': args.property,
             'subject': args.subject,
-            'time_a': args.time_a,
-            'time_b': args.time_b,
+            'year_a': args.year_a,
+            'year_b': args.year_b,
         }
 
     else:

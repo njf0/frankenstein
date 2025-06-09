@@ -104,7 +104,7 @@ class AggregationOperator(Slot):
         return ['total', 'mean', 'median']
 
 
-class Time(Slot):
+class Year(Slot):
     """Class to manage time slot values."""
 
     @staticmethod
@@ -126,5 +126,5 @@ if __name__ == '__main__':
     print(NaryOperator.get_values())
     print(BinaryOperator.get_values())
     print(AggregationOperator.get_values())
-    print(Time.get_current_year())
-    print(Time.get_values())
+    print(Year.get_current_year())
+    print(Year.get_values())

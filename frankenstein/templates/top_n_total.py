@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Number, Property, Region, Time
+from frankenstein.slot_values import NaryOperator, Number, Property, Region, Year
 
 
 class TopNTotal(FrankensteinQuestion):
@@ -23,9 +23,9 @@ class TopNTotal(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Which {n} countries in {region} had the {operator} {property} in {time}?',
-            'In {region}, which {n} countries had the {operator} {property} in {time}?',
-            'In {time}, which {n} countries in {region} had the {operator} {property}?',
+            'Which {n} countries in {region} had the {operator} {property} in {year}?',
+            'In {region}, which {n} countries had the {operator} {property} in {year}?',
+            'In {year}, which {n} countries in {region} had the {operator} {property}?',
         )
 
         allowed_values = {
@@ -33,7 +33,7 @@ class TopNTotal(FrankensteinQuestion):
             'n': Number,
             'region': Region,
             'operator': NaryOperator,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -64,7 +64,7 @@ class TopNTotal(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time,
+                year=self.year,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         choices=Region.get_values(),
         help='The region to compare.',
     )
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year to compare.')
 
     args = parser.parse_args()
 
@@ -148,7 +148,7 @@ if __name__ == '__main__':
             args.n,
             args.operator,
             args.region,
-            args.time,
+            args.year,
         ]
     ):
         comb = {
@@ -156,7 +156,7 @@ if __name__ == '__main__':
             'n': args.n,
             'operator': args.operator,
             'region': args.region,
-            'time': args.time,
+            'year': args.year,
         }
 
     else:

@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Year
 
 
 class RegionProportionChange(FrankensteinQuestion):
@@ -23,9 +23,9 @@ class RegionProportionChange(FrankensteinQuestion):
 
         """
         self.templates = (
-            "Was {subject}'s share of the total {property} in {region} {operator} in {time_a} than it was in {time_b}?",
-            "In {time_a}, was {subject}'s share of the total {property} in {region} {operator} than it was in {time_b}?",
-            "Compared to {region} as a whole, was {subject}'s share of the total {property} in {time_a} {operator} than it was in {time_b}?",
+            "Was {subject}'s share of the total {property} in {region} {operator} in {year_a} than it was in {year_b}?",
+            "In {year_a}, was {subject}'s share of the total {property} in {region} {operator} than it was in {year_b}?",
+            "Compared to {region} as a whole, was {subject}'s share of the total {property} in {year_a} {operator} than it was in {year_b}?",
         )
 
         allowed_values = {
@@ -33,8 +33,8 @@ class RegionProportionChange(FrankensteinQuestion):
             'subject': Subject,
             'region': Region,
             'operator': BinaryOperator,
-            'time_a': Time,
-            'time_b': Time,
+            'year_a': Year,
+            'year_b': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -42,10 +42,10 @@ class RegionProportionChange(FrankensteinQuestion):
         self.metadata['answer_format'] = 'bool'
 
     def validate_combination(self, combination: dict) -> bool:
-        """Ensure subject is in the region and times are different."""
+        """Ensure subject is in the region and years are different."""
         countries_in_region = FrankensteinAction('get_country_codes_in_region', region=combination['region'])
         countries_in_region.execute()
-        return combination['subject'] in countries_in_region.result and combination['time_a'] != combination['time_b']
+        return combination['subject'] in countries_in_region.result and combination['year_a'] != combination['year_b']
 
     def compute_actions(self):
         """Compute actions for the question."""
@@ -76,12 +76,12 @@ class RegionProportionChange(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         region_countries = action.result
 
-        # Retrieve the property value for the subject at time_a
+        # Retrieve the property value for the subject at year_a
         action = FrankensteinAction(
             'retrieve_value',
             country_code=subject_code,
             indicator_code=indicator_code,
-            year=self.time_a,
+            year=self.year_a,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -93,12 +93,12 @@ class RegionProportionChange(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
-        # Retrieve the property value for the subject at time_b
+        # Retrieve the property value for the subject at year_b
         action = FrankensteinAction(
             'retrieve_value',
             country_code=subject_code,
             indicator_code=indicator_code,
-            year=self.time_b,
+            year=self.year_b,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -109,14 +109,14 @@ class RegionProportionChange(FrankensteinQuestion):
             self.metadata['data_availability'] = 'missing'
             return
 
-        # Retrieve the property values for the region at time_a
+        # Retrieve the property values for the region at year_a
         region_values_a = []
         for country in region_countries:
             action = FrankensteinAction(
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time_a,
+                year=self.year_a,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -131,14 +131,14 @@ class RegionProportionChange(FrankensteinQuestion):
             self.metadata['data_availability'] = 'missing'
             return
 
-        # Retrieve the property values for the region at time_b
+        # Retrieve the property values for the region at year_b
         region_values_b = []
         for country in region_countries:
             action = FrankensteinAction(
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time_b,
+                year=self.year_b,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -154,25 +154,25 @@ class RegionProportionChange(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
-        # Compute the total property value for the region at time_a
+        # Compute the total property value for the region at year_a
         action = FrankensteinAction('add', values=region_values_a)
         action.execute()
         self.actions.append(action.to_dict())
         region_total_a = action.result
 
-        # Compute the total property value for the region at time_b
+        # Compute the total property value for the region at year_b
         action = FrankensteinAction('add', values=region_values_b)
         action.execute()
         self.actions.append(action.to_dict())
         region_total_b = action.result
 
-        # Compute the proportion for subject at time_a
+        # Compute the proportion for subject at year_a
         action = FrankensteinAction('divide', value_a=subject_value_a, value_b=region_total_a)
         action.execute()
         self.actions.append(action.to_dict())
         proportion_a = action.result
 
-        # Compute the proportion for subject at time_b
+        # Compute the proportion for subject at year_b
         action = FrankensteinAction('divide', value_a=subject_value_b, value_b=region_total_b)
         action.execute()
         self.actions.append(action.to_dict())
@@ -203,20 +203,20 @@ if __name__ == '__main__':
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
     parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare against.')
     parser.add_argument('--operator', type=str, choices=['higher', 'lower'], help='The operator to use for comparison.')
-    parser.add_argument('--time_a', type=str, choices=Time.get_values(), help='The first time.')
-    parser.add_argument('--time_b', type=str, choices=Time.get_values(), help='The second time.')
+    parser.add_argument('--year_a', type=str, choices=Year.get_values(), help='The first year.')
+    parser.add_argument('--year_b', type=str, choices=Year.get_values(), help='The second year.')
 
     args = parser.parse_args()
 
     q = RegionProportionChange()
-    if all([args.property, args.subject, args.region, args.operator, args.time_a, args.time_b]):
+    if all([args.property, args.subject, args.region, args.operator, args.year_a, args.year_b]):
         comb = {
             'property': args.property,
             'subject': args.subject,
             'region': args.region,
             'operator': args.operator,
-            'time_a': args.time_a,
-            'time_b': args.time_b,
+            'year_a': args.year_a,
+            'year_b': args.year_b,
         }
     else:
         comb = q.get_random_combination()

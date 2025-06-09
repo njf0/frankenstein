@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Region, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Year
 
 
 class RegionRangeComparison(FrankensteinQuestion):
@@ -23,9 +23,9 @@ class RegionRangeComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Did {region_a} have a {operator} range of values for {property} than {region_b} in {time}?',
-            'In {time}, did {region_a} have a {operator} range of values for {property} than {region_b}?',
-            'In {region_a}, was the range of values for {property} {operator} than that of {region_b} in {time}?',
+            'Did {region_a} have a {operator} range of values for {property} than {region_b} in {year}?',
+            'In {year}, did {region_a} have a {operator} range of values for {property} than {region_b}?',
+            'In {region_a}, was the range of values for {property} {operator} than that of {region_b} in {year}?',
         )
 
         allowed_values = {
@@ -33,7 +33,7 @@ class RegionRangeComparison(FrankensteinQuestion):
             'region_b': Region,
             'operator': BinaryOperator,
             'property': Property,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -73,7 +73,7 @@ class RegionRangeComparison(FrankensteinQuestion):
                     'retrieve_value',
                     country_code=country,
                     indicator_code=indicator_code,
-                    year=self.time,
+                    year=self.year,
                 )
                 action.execute()
                 self.actions.append(action.to_dict())
@@ -132,18 +132,18 @@ if __name__ == '__main__':
     parser.add_argument('--region_b', type=str, choices=Region.get_values(), help='The second region to compare.')
     parser.add_argument('--operator', type=str, choices=['higher', 'lower'], help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year to compare.')
 
     args = parser.parse_args()
 
     q = RegionRangeComparison()
-    if all([args.region_a, args.region_b, args.operator, args.property, args.time]):
+    if all([args.region_a, args.region_b, args.operator, args.property, args.year]):
         comb = {
             'region_a': args.region_a,
             'region_b': args.region_b,
             'operator': args.operator,
             'property': args.property,
-            'time': args.time,
+            'year': args.year,
         }
     else:
         comb = q.get_random_combination()

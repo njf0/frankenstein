@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Region, Subject, Time
+from frankenstein.slot_values import Property, Region, Subject, Year
 
 
 class RegionProportion(FrankensteinQuestion):
@@ -23,17 +23,17 @@ class RegionProportion(FrankensteinQuestion):
 
         """
         self.templates = (
-            'In {time}, what proportion of the total {property} of {region} was contributed by {subject}?',
-            'What proportion of the total {property} of {region} in {time} was contributed by {subject}?',
-            'For the countries in {region}, what proportion of the total {property} was contributed by {subject} in {time}?',
-            'What proportion of the total {property} was contributed by {subject} for the countries in {region} in {time}?',
+            'In {year}, what proportion of the total {property} of {region} was contributed by {subject}?',
+            'What proportion of the total {property} of {region} in {year} was contributed by {subject}?',
+            'For the countries in {region}, what proportion of the total {property} was contributed by {subject} in {year}?',
+            'What proportion of the total {property} was contributed by {subject} for the countries in {region} in {year}?',
         )
 
         allowed_values = {
             'property': Property,
             'subject': Subject,
             'region': Region,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -80,7 +80,7 @@ class RegionProportion(FrankensteinQuestion):
             'retrieve_value',
             country_code=subject_code,
             indicator_code=indicator_code,
-            year=self.time,
+            year=self.year,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -100,7 +100,7 @@ class RegionProportion(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time,
+                year=self.year,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -144,17 +144,17 @@ if __name__ == '__main__':
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
     parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare against.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year to compare.')
 
     args = parser.parse_args()
 
     q = RegionProportion()
-    if all([args.property, args.subject, args.region, args.time]):
+    if all([args.property, args.subject, args.region, args.year]):
         comb = {
             'property': args.property,
             'subject': args.subject,
             'region': args.region,
-            'time': args.time,
+            'year': args.year,
         }
     else:
         comb = q.get_random_combination()

@@ -361,8 +361,8 @@ class TemplateFiller:
         table.add_column('Ans-Part', justify='right', style='yellow')
         table.add_column('Unans-Part', justify='right', style='magenta')
         table.add_column('Unans-Miss', justify='right', style='red')
-        table.add_column('Total Time (s)', justify='right', style='cyan')
-        table.add_column('Time/Attempt (s)', justify='right', style='cyan')
+        table.add_column('Total Year (s)', justify='right', style='cyan')
+        table.add_column('Year/Attempt (s)', justify='right', style='cyan')
 
         for entry in template_timings:
 

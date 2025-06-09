@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Subject, Time
+from frankenstein.slot_values import Property, Subject, Year
 
 
 class AverageChange(FrankensteinQuestion):
@@ -23,17 +23,17 @@ class AverageChange(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the average yearly change in the {property} in {subject} for each year between {time_a} and {time_b}?',
-            'For each year between {time_a} and {time_b}, what was the average yearly change in the {property} in {subject}?',
-            "What was the average yearly change in {subject}'s {property} for each year between {time_a} and {time_b}?",
-            "For each year between {time_a} and {time_b}, what was the average yearly change in {subject}'s {property}?",
+            'What was the average yearly change in the {property} in {subject} for each year between {year_a} and {year_b}?',
+            'For each year between {year_a} and {year_b}, what was the average yearly change in the {property} in {subject}?',
+            "What was the average yearly change in {subject}'s {property} for each year between {year_a} and {year_b}?",
+            "For each year between {year_a} and {year_b}, what was the average yearly change in {subject}'s {property}?",
         )
 
         allowed_values = {
             'property': Property,
             'subject': Subject,
-            'time_a': Time,
-            'time_b': Time,
+            'year_a': Year,
+            'year_b': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -44,7 +44,7 @@ class AverageChange(FrankensteinQuestion):
         self,
         combination: dict,
     ) -> bool:
-        """Ensure time_a != time_b and time_a < time_b and at least 2 years apart.
+        """Ensure year_a != year_b and year_a < year_b and at least 2 years apart.
 
         Parameters
         ----------
@@ -58,9 +58,9 @@ class AverageChange(FrankensteinQuestion):
 
         """
         return (
-            combination['time_a'] != combination['time_b']
-            and combination['time_a'] < combination['time_b']
-            and (int(combination['time_b']) - int(combination['time_a'])) >= 3
+            combination['year_a'] != combination['year_b']
+            and combination['year_a'] < combination['year_b']
+            and (int(combination['year_b']) - int(combination['year_a'])) >= 3
         )
 
     def compute_actions(
@@ -85,8 +85,8 @@ class AverageChange(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Collect all yearly values for the subject between time_a and time_b (inclusive)
-        years = list(range(int(self.time_a), int(self.time_b) + 1))
+        # Collect all yearly values for the subject between year_a and year_b (inclusive)
+        years = list(range(int(self.year_a), int(self.year_b) + 1))
 
         yearly_values = []
         for year in years:
@@ -138,18 +138,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate an AverageChange question.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
-    parser.add_argument('--time_a', type=str, choices=Time.get_values(), help='The first time.')
-    parser.add_argument('--time_b', type=str, choices=Time.get_values(), help='The second time.')
+    parser.add_argument('--year_a', type=str, choices=Year.get_values(), help='The first year.')
+    parser.add_argument('--year_b', type=str, choices=Year.get_values(), help='The second year.')
 
     args = parser.parse_args()
 
     q = AverageChange()
-    if all([args.property, args.subject, args.time_a, args.time_b]):
+    if all([args.property, args.subject, args.year_a, args.year_b]):
         comb = {
             'property': args.property,
             'subject': args.subject,
-            'time_a': args.time_a,
-            'time_b': args.time_b,
+            'year_a': args.year_a,
+            'year_b': args.year_b,
         }
     else:
         comb = q.get_random_combination()

@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Region, Time
+from frankenstein.slot_values import Property, Region, Year
 
 
 class AverageProperty(FrankensteinQuestion):
@@ -23,15 +23,15 @@ class AverageProperty(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the mean {property} of the countries in {region} in {time}?',
-            'For the countries in {region}, what was the mean {property} in {time}?',
-            'In {time}, what was the mean {property} of the countries in {region}?',
+            'What was the mean {property} of the countries in {region} in {year}?',
+            'For the countries in {region}, what was the mean {property} in {year}?',
+            'In {year}, what was the mean {property} of the countries in {region}?',
         )
 
         allowed_values = {
             'region': Region,
             'property': Property,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -64,7 +64,7 @@ class AverageProperty(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time,
+                year=self.year,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -105,7 +105,7 @@ if __name__ == '__main__':
         help='The region.',
     )
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year.')
 
     args = parser.parse_args()
 
@@ -115,13 +115,13 @@ if __name__ == '__main__':
         [
             args.region,
             args.property,
-            args.time,
+            args.year,
         ]
     ):
         comb = {
             'region': args.region,
             'property': args.property,
-            'time': args.time,
+            'year': args.year,
         }
 
     else:

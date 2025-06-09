@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Property, Region, Time
+from frankenstein.slot_values import NaryOperator, Property, Region, Year
 
 
 class RegionComparison(FrankensteinQuestion):
@@ -23,16 +23,16 @@ class RegionComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Which country in the region of {region} had the {operator} {property} in {time}?',
-            'In {region}, which country had the {operator} {property} in {time}?',
-            'For the countries in {region}, which had the {operator} {property} in {time}?',
+            'Which country in the region of {region} had the {operator} {property} in {year}?',
+            'In {region}, which country had the {operator} {property} in {year}?',
+            'For the countries in {region}, which had the {operator} {property} in {year}?',
         )
 
         allowed_values = {
             'region': Region,
             'operator': NaryOperator,
             'property': Property,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -62,7 +62,7 @@ class RegionComparison(FrankensteinQuestion):
             country_code = action.result
 
             action = FrankensteinAction(
-                'retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.time
+                'retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.year
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare.')
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values(), help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year to compare.')
 
     args = parser.parse_args()
 
@@ -124,14 +124,14 @@ if __name__ == '__main__':
             args.region,
             args.operator,
             args.property,
-            args.time,
+            args.year,
         ]
     ):
         comb = {
             'region': args.region,
             'operator': args.operator,
             'property': args.property,
-            'time': args.time,
+            'year': args.year,
         }
 
     else:

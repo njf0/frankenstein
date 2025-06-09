@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Year
 
 
 class CountryThresholdCount(FrankensteinQuestion):
@@ -23,9 +23,9 @@ class CountryThresholdCount(FrankensteinQuestion):
 
         """
         self.templates = (
-            'How many countries in the region of {region} had a {operator} {property} than {subject} in {time}?',
-            'In {time}, how many countries in the region of {region} had a {operator} {property} than {subject}?',
-            'In {region}, how many countries had a {operator} {property} than {subject} in {time}?',
+            'How many countries in the region of {region} had a {operator} {property} than {subject} in {year}?',
+            'In {year}, how many countries in the region of {region} had a {operator} {property} than {subject}?',
+            'In {region}, how many countries had a {operator} {property} than {subject} in {year}?',
         )
 
         allowed_values = {
@@ -33,7 +33,7 @@ class CountryThresholdCount(FrankensteinQuestion):
             'operator': BinaryOperator,
             'property': Property,
             'subject': Subject,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -99,7 +99,7 @@ class CountryThresholdCount(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=country_code,
                 indicator_code=indicator_code,
-                year=self.time,
+                year=self.year,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -120,7 +120,7 @@ class CountryThresholdCount(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=threshold_subject_country_code,
                 indicator_code=indicator_code,
-                year=self.time,
+                year=self.year,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -132,7 +132,7 @@ class CountryThresholdCount(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=self.c2n[self.subject],
                 indicator_code=indicator_code,
-                year=self.time,
+                year=self.year,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     parser.add_argument('--operator', type=str, choices=BinaryOperator.get_values(), help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year to compare.')
 
     args = parser.parse_args()
 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
             args.operator,
             args.property,
             args.subject,
-            args.time,
+            args.year,
         ]
     ):
         comb = {
@@ -209,7 +209,7 @@ if __name__ == '__main__':
             'operator': args.operator,
             'property': args.property,
             'subject': args.subject,
-            'time': args.time,
+            'year': args.year,
         }
 
     else:

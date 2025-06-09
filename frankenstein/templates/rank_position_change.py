@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Number, Property, Region, Time
+from frankenstein.slot_values import NaryOperator, Number, Property, Region, Year
 
 
 class RankPositionChange(FrankensteinQuestion):
@@ -23,9 +23,9 @@ class RankPositionChange(FrankensteinQuestion):
 
         """
         self.templates = (
-            'For the countries in {region}, did the country with the {n} {operator} {property} in {time_a} retain that position in {time_b}?',
-            'Did the country ranked {n} {operator} for {property} in {time_a} in {region} keep the same rank in {time_b}?',
-            'In {region}, did the country with the {n} {operator} {property} in {time_a} keep that position in {time_b}?',
+            'For the countries in {region}, did the country with the {n} {operator} {property} in {year_a} retain that position in {year_b}?',
+            'Did the country ranked {n} {operator} for {property} in {year_a} in {region} keep the same rank in {year_b}?',
+            'In {region}, did the country with the {n} {operator} {property} in {year_a} keep that position in {year_b}?',
         )
 
         allowed_values = {
@@ -33,8 +33,8 @@ class RankPositionChange(FrankensteinQuestion):
             'n': Number,
             'operator': NaryOperator,
             'property': Property,
-            'time_a': Time,
-            'time_b': Time,
+            'year_a': Year,
+            'year_b': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -42,8 +42,8 @@ class RankPositionChange(FrankensteinQuestion):
         self.metadata['answer_format'] = 'bool'
 
     def validate_combination(self, combination: dict) -> bool:
-        """Ensure time_a != time_b and n is valid."""
-        return combination['time_a'] != combination['time_b']
+        """Ensure year_a != year_b and n is valid."""
+        return combination['year_a'] != combination['year_b']
 
     def compute_actions(self):
         """Compute actions for the question."""
@@ -59,14 +59,14 @@ class RankPositionChange(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Retrieve property values for all countries in time_a
+        # Retrieve property values for all countries in year_a
         values_a = []
         for country in countries:
             action = FrankensteinAction(
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time_a,
+                year=self.year_a,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -79,7 +79,7 @@ class RankPositionChange(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
-        # Sort values for time_a
+        # Sort values for year_a
         reverse = self.operator == 'highest'
         sorted_a = sorted(values_a, key=lambda x: x[1], reverse=reverse)
         n_idx = int(self.n) - 1
@@ -91,14 +91,14 @@ class RankPositionChange(FrankensteinQuestion):
         target_country = sorted_a[n_idx][0]
         target_value_a = sorted_a[n_idx][1]
 
-        # Retrieve property values for all countries in time_b
+        # Retrieve property values for all countries in year_b
         values_b = []
         for country in countries:
             action = FrankensteinAction(
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time_b,
+                year=self.year_b,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -111,18 +111,18 @@ class RankPositionChange(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
-        # Sort values for time_b
+        # Sort values for year_b
         sorted_b = sorted(values_b, key=lambda x: x[1], reverse=reverse)
         values_b_list = [v for _, v in sorted_b]
 
-        # Get the value for the target country in time_b
+        # Get the value for the target country in year_b
         target_value_b = next((v for c, v in values_b if c == target_country), None)
         if target_value_b is None:
             self.metadata['data_availability'] = 'partial'
             self.metadata['answerable'] = False
             return
 
-        # Find index of target country in sorted_b (i.e., its position in time_b)
+        # Find index of target country in sorted_b (i.e., its position in year_b)
         action = FrankensteinAction('index', values=values_b_list, query_value=target_value_b)
         action.execute()
         self.actions.append(action.to_dict())
@@ -133,7 +133,7 @@ class RankPositionChange(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
-        # Compare the index in time_b to n_idx
+        # Compare the index in year_b to n_idx
         retained = index_b == n_idx
 
         # Set the final answer
@@ -151,20 +151,20 @@ if __name__ == '__main__':
     parser.add_argument('--n', type=str, choices=Number.get_values(), help='The rank position to check.')
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values(), help='The operator (highest/lowest).')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to check.')
-    parser.add_argument('--time_a', type=str, choices=Time.get_values(), help='The first time.')
-    parser.add_argument('--time_b', type=str, choices=Time.get_values(), help='The second time.')
+    parser.add_argument('--year_a', type=str, choices=Year.get_values(), help='The first year.')
+    parser.add_argument('--year_b', type=str, choices=Year.get_values(), help='The second year.')
 
     args = parser.parse_args()
 
     q = RankPositionChange()
-    if all([args.region, args.n, args.operator, args.property, args.time_a, args.time_b]):
+    if all([args.region, args.n, args.operator, args.property, args.year_a, args.year_b]):
         comb = {
             'region': args.region,
             'n': args.n,
             'operator': args.operator,
             'property': args.property,
-            'time_a': args.time_a,
-            'time_b': args.time_b,
+            'year_a': args.year_a,
+            'year_b': args.year_b,
         }
     else:
         comb = q.get_random_combination()

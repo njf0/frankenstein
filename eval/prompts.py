@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from frankenstein.action import FrankensteinAction
-from frankenstein.slot_values import Property, Region, Subject, Time
+from frankenstein.slot_values import Property, Region, Subject, Year
 from frankenstein.tools import arithmetic, data_retrieval
 from frankenstein.utils import get_tool_metadata
 
@@ -86,7 +86,7 @@ def generate_tool_call_example(tool_name, tool_modules):
         country_names = iso_data['country_name'].dropna().unique().tolist()
     except Exception:
         country_names = country_codes
-    years = Time.get_values()
+    years = Year.get_values()
 
     params = inspect.signature(tool_func).parameters
     kwargs = {}

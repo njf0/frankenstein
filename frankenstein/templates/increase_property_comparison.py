@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import NaryOperator, Property, Region, Time
+from frankenstein.slot_values import NaryOperator, Property, Region, Year
 
 
 class IncreasePropertyComparison(FrankensteinQuestion):
@@ -23,18 +23,18 @@ class IncreasePropertyComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Which country in {region} had the {operator} increase in {property} between {time_a} and {time_b}?',
-            'Between {time_a} and {time_b}, which country in {region} had the {operator} increase in {property}?',
-            'For the countries in {region}, which had the {operator} increase in {property} between {time_a} and {time_b}?',
-            'In {region}, which country had the {operator} increase in {property} between {time_a} and {time_b}?',
+            'Which country in {region} had the {operator} increase in {property} between {year_a} and {year_b}?',
+            'Between {year_a} and {year_b}, which country in {region} had the {operator} increase in {property}?',
+            'For the countries in {region}, which had the {operator} increase in {property} between {year_a} and {year_b}?',
+            'In {region}, which country had the {operator} increase in {property} between {year_a} and {year_b}?',
         )
 
         allowed_values = {
             'region': Region,
             'operator': NaryOperator,
             'property': Property,
-            'time_a': Time,
-            'time_b': Time,
+            'year_a': Year,
+            'year_b': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -44,7 +44,7 @@ class IncreasePropertyComparison(FrankensteinQuestion):
     def validate_combination(self, combination: dict) -> bool:
         """Apply constraints to the combination of slot values.
 
-        For this question type, we need to ensure that the two times are not the same, and that time_a is 'before' time_b.
+        For this question type, we need to ensure that the two years are not the same, and that year_a is 'before' year_b.
 
         Parameters
         ----------
@@ -57,7 +57,7 @@ class IncreasePropertyComparison(FrankensteinQuestion):
             True if the combination is valid, False otherwise.
 
         """
-        return not (combination['time_a'] == combination['time_b'] or combination['time_a'] > combination['time_b'])
+        return not (combination['year_a'] == combination['year_b'] or combination['year_a'] > combination['year_b'])
 
     def compute_actions(self):
         """Compute answer in terms of FrankensteinAction."""
@@ -79,14 +79,14 @@ class IncreasePropertyComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = action.result
 
-        # Get the values for each country in the region for both time_a and time_b
+        # Get the values for each country in the region for both year_a and year_b
         values = []
         for country in countries_in_region:
             action = FrankensteinAction(
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time_a,
+                year=self.year_a,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -96,7 +96,7 @@ class IncreasePropertyComparison(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time_b,
+                year=self.year_b,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -173,8 +173,8 @@ if __name__ == '__main__':
     parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare.')
     parser.add_argument('--operator', type=str, choices=NaryOperator.get_values(), help='The operator to use for comparison.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
-    parser.add_argument('--time_a', type=str, choices=Time.get_values(), help='The first time to compare.')
-    parser.add_argument('--time_b', type=str, choices=Time.get_values(), help='The second time to compare.')
+    parser.add_argument('--year_a', type=str, choices=Year.get_values(), help='The first year to compare.')
+    parser.add_argument('--year_b', type=str, choices=Year.get_values(), help='The second year to compare.')
 
     args = parser.parse_args()
 
@@ -184,16 +184,16 @@ if __name__ == '__main__':
             args.region,
             args.operator,
             args.property,
-            args.time_a,
-            args.time_b,
+            args.year_a,
+            args.year_b,
         ]
     ):
         comb = {
             'region': args.region,
             'operator': args.operator,
             'property': args.property,
-            'time_a': args.time_a,
-            'time_b': args.time_b,
+            'year_a': args.year_a,
+            'year_b': args.year_b,
         }
 
     else:

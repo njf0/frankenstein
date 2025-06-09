@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Time
+from frankenstein.slot_values import BinaryOperator, Property, Region, Subject, Year
 
 
 class AveragePropertyComparison(FrankensteinQuestion):
@@ -23,10 +23,10 @@ class AveragePropertyComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Was the {property} of {subject} {operator} than the average value for {region} in {time}?',
-            'In {time}, was the {property} of {subject} {operator} than the average value for {region}?',
-            "Was {subject}'s {property} {operator} than the average value for {region} in {time}?",
-            "In {time}, was {subject}'s {property} {operator} than the average value for {region}?",
+            'Was the {property} of {subject} {operator} than the average value for {region} in {year}?',
+            'In {year}, was the {property} of {subject} {operator} than the average value for {region}?',
+            "Was {subject}'s {property} {operator} than the average value for {region} in {year}?",
+            "In {year}, was {subject}'s {property} {operator} than the average value for {region}?",
         )
 
         allowed_values = {
@@ -34,7 +34,7 @@ class AveragePropertyComparison(FrankensteinQuestion):
             'subject': Subject,
             'operator': BinaryOperator,
             'region': Region,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -66,7 +66,7 @@ class AveragePropertyComparison(FrankensteinQuestion):
             'retrieve_value',
             country_code=subject_code,
             indicator_code=indicator_code,
-            year=self.time,
+            year=self.year,
         )
         action.execute()
         self.actions.append(action.to_dict())
@@ -94,7 +94,7 @@ class AveragePropertyComparison(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time,
+                year=self.year,
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -142,18 +142,18 @@ if __name__ == '__main__':
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to compare.')
     parser.add_argument('--operator', type=str, choices=BinaryOperator.get_values(), help='The operator to use for comparison.')
     parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to compare against.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to compare.')
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year to compare.')
 
     args = parser.parse_args()
 
     q = AveragePropertyComparison()
-    if all([args.property, args.subject, args.operator, args.region, args.time]):
+    if all([args.property, args.subject, args.operator, args.region, args.year]):
         comb = {
             'property': args.property,
             'subject': args.subject,
             'operator': args.operator,
             'region': args.region,
-            'time': args.time,
+            'year': args.year,
         }
     else:
         comb = q.get_random_combination()

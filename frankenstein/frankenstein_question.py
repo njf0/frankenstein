@@ -145,14 +145,20 @@ class FrankensteinQuestion:
         formatted_slot_values = slot_values.copy()
 
         # --- Add original (non-paraphrased) indicator name to slot_values ---
-        # If 'property' is present, add 'property_original' to slot_values for provenance
         if 'property' in slot_values:
             property_id = slot_values['property']
-            # Find the original indicator name from the indicator key
             property_original = self.i2n.get(property_id)
             if property_original:
                 slot_values['property_original'] = property_original
                 formatted_slot_values['property_original'] = property_original
+
+        # --- Add full country name to slot_values if 'subject' is present ---
+        if 'subject' in slot_values:
+            subject_code = slot_values['subject']
+            subject_name = self.c2n.get(subject_code)
+            if subject_name:
+                slot_values['subject_name'] = subject_name
+                formatted_slot_values['subject_name'] = subject_name
 
         # Get property name from id (paraphrase)
         if 'property' in slot_values:

@@ -4,7 +4,7 @@ import argparse
 
 from frankenstein.action import FrankensteinAction
 from frankenstein.frankenstein_question import FrankensteinQuestion
-from frankenstein.slot_values import Property, Region, Time
+from frankenstein.slot_values import Property, Region, Year
 
 
 class PropertyRatio(FrankensteinQuestion):
@@ -23,15 +23,15 @@ class PropertyRatio(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the ratio of the highest value to the lowest for the {property} of {region} in {time}?',
-            'In {region}, what was the ratio of the highest value of {property} to the lowest in {time}?',
-            'In {time}, what was the ratio of the highest value of {property} to the lowest for {region}?',
+            'What was the ratio of the highest value to the lowest for the {property} of {region} in {year}?',
+            'In {region}, what was the ratio of the highest value of {property} to the lowest in {year}?',
+            'In {year}, what was the ratio of the highest value of {property} to the lowest for {region}?',
         )
 
         allowed_values = {
             'region': Region,
             'property': Property,
-            'time': Time,
+            'year': Year,
         }
 
         super().__init__(slot_values, allowed_values)
@@ -59,7 +59,7 @@ class PropertyRatio(FrankensteinQuestion):
                 'retrieve_value',
                 country_code=country,
                 indicator_code=indicator_code,
-                year=self.time,  # Use the time slot
+                year=self.year,  # Use the year slot
             )
             action.execute()
             self.actions.append(action.to_dict())
@@ -110,16 +110,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a PropertyRatio question.')
     parser.add_argument('--region', type=str, choices=Region.get_values(), help='The region to use.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to use.')
-    parser.add_argument('--time', type=str, choices=Time.get_values(), help='The time to use.')  # Add time
+    parser.add_argument('--year', type=str, choices=Year.get_values(), help='The year to use.')  # Add year
 
     args = parser.parse_args()
 
     q = PropertyRatio()
-    if all([args.region, args.property, args.time]):
+    if all([args.region, args.property, args.year]):
         comb = {
             'region': args.region,
             'property': args.property,
-            'time': args.time,  # Add time
+            'year': args.year,  # Add year
         }
     else:
         comb = q.get_random_combination()
