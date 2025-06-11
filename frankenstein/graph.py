@@ -24,7 +24,7 @@ class FrankensteinGraph(nx.DiGraph):
         super().__init__()
         slot_values = row.get('metadata', {}).get('slot_values', {})
         question_structure = [{k: v} for k, v in slot_values.items()]
-        question = row.get('question', None)
+        question = row['question']
         messages = row['messages']
 
         self.actions: dict[str, FrankensteinAction] = {}
@@ -47,6 +47,13 @@ class FrankensteinGraph(nx.DiGraph):
             return [str(val)]
         return []
 
+    @staticmethod
+    def _format_args(args: dict) -> str:
+        """Format function arguments as a string for logging and display."""
+        if not args:
+            return ''
+        return ', '.join([f"{k}='{v}'" for k, v in args.items()])
+
     # ---------- origin / question node -----------------------------------
     def _add_origin_root(self, structures: List[Dict[str, Any]]):
         self.origin_node_id = 'question_root'
@@ -60,11 +67,26 @@ class FrankensteinGraph(nx.DiGraph):
             type='question_param',
             values=dict(flat_pairs),  # optional metadata
         )
+        logging.info(f'🌟 Added question root node with slot values: {dict(flat_pairs)}')
 
+    # ---------- tree layout ----------------------------------------------
     def compute_tree_layout(
         self,
         root: str = 'question_root',
     ) -> Dict[str, tuple[float, float]]:
+        """Compute a layered tree layout for the graph, starting from the given root node.
+
+        Parameters
+        ----------
+        root : str
+            The node ID to start the layout from. Default is 'question_root'.
+
+        Returns
+        -------
+        Dict[str, tuple[float, float]]
+            A dictionary mapping node IDs to their (x, y) positions in the layout.
+
+        """
         # Improved: Layered layout for all weakly connected components
 
         G = self
@@ -111,188 +133,37 @@ class FrankensteinGraph(nx.DiGraph):
         return pos
 
     # ---------- build graph ----------------------------------------------
-    def _build_graph(self, messages: List[Dict[str, Any]]):
-        logging.info('🧩 Starting graph build process.')
-        pending: dict[str, Dict[str, Any]] = {}
+    def _build_graph(
+        self,
+        messages: List[Dict[str, Any]],
+    ) -> None:
+        """Build the Frankenstein tool-call graph from the provided messages.
 
+        Parameters
+        ----------
+        messages : List[Dict[str, Any]]
+            A list of message dictionaries containing tool calls and results.
+
+        """
+        logging.info('🧩 Starting graph build process.')
         # Prepare for NLQ-argument heuristic
-        question_words = set()
+        self._pending: dict[str, Dict[str, Any]] = {}
+        self._search_results_by_node = {}
+        self._country_codes_by_node = {}
+        self._question_words = set()
         if self.question:
             q = self.question.lower().translate(str.maketrans('', '', string.punctuation))
-            question_words = set(q.split())
-            logging.info(f'🔍 Extracted question words: {question_words}')
+            self._question_words = set(q.split())
+            logging.info(f'🔍 Extracted question words: {self._question_words}')
 
-        # Track search_for_indicator_codes results for later matching
-        search_results_by_node = {}
-        # Track get_country_codes_in_region results for robust country code provenance
-        country_codes_by_node = {}
-
-        # pass 1: create FrankensteinAction objects and graph nodes ----------
-        logging.info('⚙️  Pass 1: Creating FrankensteinAction objects and graph nodes.')
-        for m in messages:
-            role = m.get('role')
-            logging.info(f'👤 Processing message with role: {role}')
-
-            # assistant proposes tool calls
-            if role == 'assistant' and m.get('tool_calls'):
-                for call in m['tool_calls']:
-                    call_id = call['id']
-                    name = call['function']['name']
-                    args = call['function']['arguments']
-                    pending[call_id] = {'name': name, 'args': args}
-                    logging.info(f'🛠️  Registered pending tool call with id {call_id}: {name}({args})')
-
-            # tool returns a result
-            elif role == 'tool':
-                call_id = m['tool_call_id']
-                content = m['content']
-                try:
-                    result = json.loads(content)
-                except Exception:
-                    result = content
-
-                if call_id in pending:
-                    info = pending.pop(call_id)
-                    action = FrankensteinAction(id=call_id, action=info['name'], **info['args'])
-                    action.result = result
-
-                    # store
-                    self.actions[call_id] = action
-                    self.add_node(call_id, label=action.action, args=action.kwargs, result=action.result)
-                    logging.info(f'🧱 Added node for action with id {call_id}: {action.action}({action.kwargs})')
-
-                    # provenance for result values (general)
-                    for v in self._norm(result):
-                        self.value_provenance.setdefault(v, []).append(call_id)
-                        logging.info(f"🧬 Provenance: output '{v}' produced by {call_id}")
-
-                    # special case: semantic propagation from search_for_indicator_codes
-                    if action.action == 'search_for_indicator_codes' and isinstance(result, list):
-                        for item in result:
-                            if isinstance(item, dict):
-                                name = item.get('name')
-                                id_ = item.get('id')
-                                if name:
-                                    self.value_provenance.setdefault(name, []).append(call_id)
-                                if id_:
-                                    self.value_provenance.setdefault(id_, []).append(call_id)
-                        search_results_by_node[call_id] = result
-                        logging.info(f'🔗 Stored search_for_indicator_codes result for node {call_id}')
-
-                    # robust: track all get_country_codes_in_region results
-                    if action.action == 'get_country_codes_in_region' and isinstance(result, list):
-                        for code in result:
-                            if isinstance(code, dict):
-                                code_str = str(code.get('id') or code.get('code') or code.get('country_code') or code)
-                            else:
-                                code_str = str(code)
-                            country_codes_by_node.setdefault(code_str, []).append(call_id)
-                        logging.info(f'🌏 Tracked country codes for node {call_id}: {result}')
-
-        # pass 2: add edges (origins → tool inputs or outputs → inputs) ------
-        logging.info('🔗 Pass 2: Adding edges between nodes.')
-        for tgt_id, action in self.actions.items():
-            tgt_label = f'{action.action}({action.kwargs})'
-            logging.info(f'➡️  Processing edges for node: {tgt_label}')
-            for arg_key, arg_val in action.kwargs.items():
-                for val in self._norm(arg_val):
-                    # 1️⃣ origin node match
-                    if (arg_key, val) in self.origin_values:
-                        self.add_edge(self.origin_node_id, tgt_id, label=f'{arg_key}={val}')
-                        logging.info(f'🌱 Question({self.origin_node_id}) --[{arg_key}="{val}"]--> {tgt_label}')
-                        continue
-
-                    # 1b️⃣ slot_values original indicator name match for get_indicator_code_from_name
-                    if (
-                        action.action == 'get_indicator_code_from_name'
-                        and arg_key == 'indicator_name'
-                        and 'property_original' in self.origin_values
-                        and val == list(self.origin_values)[0][1]
-                    ):
-                        self.add_edge(self.origin_node_id, tgt_id, label=f'property_original={val}')
-                        logging.info(f'🌱 Question({self.origin_node_id}) --[property_original="{val}"]--> {tgt_label}')
-                        continue
-
-                    # 1c️⃣ slot_values subject_name match for get_country_code_from_name
-                    if (
-                        action.action == 'get_country_code_from_name'
-                        and arg_key == 'country_name'
-                        and 'subject_name' in self.origin_values
-                        and val == list(self.origin_values)[0][1]
-                    ):
-                        self.add_edge(self.origin_node_id, tgt_id, label=f'subject_name={val}')
-                        logging.info(f'🌱 Question({self.origin_node_id}) --[subject_name="{val}"]--> {tgt_label}')
-                        continue
-
-                    # 2️⃣ produced value match (general)
-                    for src_id in reversed(self.value_provenance.get(val, [])):
-                        if src_id != tgt_id:
-                            src_action = self.actions[src_id]
-                            src_label = f'{src_action.action}({src_action.kwargs})'
-                            logging.info(f'🔄 {src_label} --[{arg_key}="{val}"]--> {tgt_label}')
-                            self.add_edge(src_id, tgt_id, label=f'{arg_key}={val}')
-                            break
-
-            # 3️⃣ Heuristic: NLQ phrase/word in search_for_indicator_codes or get_indicator_code_from_name argument
-            if self.question:
-                # For search_for_indicator_codes: check keywords
-                if action.action == 'search_for_indicator_codes' and 'keywords' in action.kwargs:
-                    keywords = action.kwargs['keywords']
-                    if isinstance(keywords, str):
-                        keywords = [keywords]
-                    keyword_words = set()
-                    for kw in keywords:
-                        kw_clean = str(kw).lower().translate(str.maketrans('', '', string.punctuation))
-                        keyword_words.update(kw_clean.split())
-                    overlap = question_words & keyword_words
-                    if overlap:
-                        self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→keywords: {"/".join(sorted(overlap))}')
-                        logging.info(
-                            f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
-                        )
-                # For get_indicator_code_from_name: check indicator_name for phrases from NLQ
-                if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
-                    indicator_name = (
-                        str(action.kwargs['indicator_name']).lower().translate(str.maketrans('', '', string.punctuation))
-                    )
-                    # Check for overlap of any word or phrase from the NLQ in the indicator_name argument
-                    overlap = set()
-                    # Check for word overlap
-                    indicator_words = set(indicator_name.split())
-                    overlap |= question_words & indicator_words
-                    # Also check for any NLQ phrase (of length >=2) in indicator_name
-                    q_tokens = self.question.lower().translate(str.maketrans('', '', string.punctuation)).split()
-                    for n in range(2, min(6, len(q_tokens) + 1)):
-                        for i in range(len(q_tokens) - n + 1):
-                            phrase = ' '.join(q_tokens[i : i + n])
-                            if phrase in indicator_name:
-                                overlap.add(phrase)
-                    if overlap:
-                        self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→indicator_name: {"/".join(sorted(overlap))}')
-                        logging.info(
-                            f'💡 Question({self.origin_node_id}) --[NLQ→indicator_name: {"/".join(sorted(overlap))}]--> {tgt_label}'
-                        )
-
-            # 4️⃣ Heuristic: get_indicator_code_from_name argument matches indicator_name from search_for_indicator_codes
-            if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
-                indicator_name = str(action.kwargs['indicator_name']).strip().lower()
-                for src_id, search_results in search_results_by_node.items():
-                    if not isinstance(search_results, list):
-                        continue
-                    for item in search_results:
-                        if not isinstance(item, dict):
-                            continue
-                        candidate = str(item.get('indicator_name', '')).strip().lower()
-                        if indicator_name == candidate and src_id != tgt_id:
-                            src_action = self.actions[src_id]
-                            src_label = f'{src_action.action}({src_action.kwargs})'
-                            logging.info(f'🔗 {src_label} --[indicator_name match]--> {tgt_label}')
-                            self.add_edge(src_id, tgt_id, label='indicator_name match')
-                            break
+        # Pass 1: create nodes
+        self._create_nodes(messages)
+        # Pass 2: add edges
+        self._add_edges()
 
         # --- Report on provenance and pending after graph build -------------
-        if pending:
-            logging.info(f'🗂️ Pending tool calls left after graph build: {list(pending.keys())}')
+        if self._pending:
+            logging.info(f'🗂️ Pending tool calls left after graph build: {list(self._pending.keys())}')
         else:
             logging.info('✅ No pending tool calls left after graph build.')
 
@@ -304,8 +175,259 @@ class FrankensteinGraph(nx.DiGraph):
         else:
             logging.info('✅ All provenance values mapped to nodes.')
 
-        # Optionally, show all provenance mapping for debugging
         logging.debug(f'📚 Full value_provenance mapping: {self.value_provenance}')
+
+    def _create_nodes(
+        self,
+        messages: List[Dict[str, Any]],
+    ) -> None:
+        """Pass 1: Create FrankensteinAction objects and graph nodes.
+
+        This method processes the messages and creates nodes for each tool call and its result.
+        It also tracks provenance for values produced by tool calls, and adds special nodes for errors and warnings.
+
+        Nodes are added based on the following heuristics:
+        1. Each tool call result is added as a node, with its arguments and result.
+        2. Provenance is tracked for each output value, mapping values to the producing node.
+        3. If a tool call result starts with 'Error:', an edge is added from the node to a generic error node.
+        4. If a tool call result starts with 'Warning:', an edge is added from the node to a generic warning node.
+        5. Special cases:
+           5a. For 'search_for_indicator_codes', propagate indicator names and ids for provenance.
+           5b. For 'get_country_codes_in_region', track all country codes for provenance.
+
+        Parameters
+        ----------
+        messages : List[Dict[str, Any]]
+            A list of message dictionaries containing tool calls and results.
+
+        """
+        self._error_node_id = None
+        self._warning_node_id = None
+        for m in messages:
+            role = m.get('role')
+            logging.info(f'👤 Processing message with role: {role}')
+            if role == 'assistant' and m.get('tool_calls'):
+                # 1. Register pending tool calls (assistant proposes tool calls)
+                for call in m['tool_calls']:
+                    call_id = call['id']
+                    name = call['function']['name']
+                    args = call['function']['arguments']
+                    self._pending[call_id] = {'name': name, 'args': args}
+                    logging.info(f'🛠️  Registered pending tool call with id {call_id}: {name}({args})')
+            elif role == 'tool':
+                call_id = m['tool_call_id']
+                content = m['content']
+                try:
+                    result = json.loads(content)
+                except Exception:
+                    result = content
+
+                # 3. Check if the result is an error or warning
+                is_error = isinstance(result, str) and result.strip().startswith('Error:')
+                is_warning = isinstance(result, str) and result.strip().startswith('Warning:')
+
+                if call_id in self._pending:
+                    info = self._pending.pop(call_id)
+                    # 1. Add node for each tool call result
+                    action = FrankensteinAction(id=call_id, action=info['name'], **info['args'])
+                    action.result = result
+                    self.actions[call_id] = action
+                    # Use formatted args for logging
+                    formatted_args = self._format_args(action.kwargs)
+                    self.add_node(call_id, label=action.action, args=action.kwargs, result=action.result)
+                    logging.info(f'🧱 Added node for action with id {call_id}:')
+                    logging.info(f'    🔗 Name: {action.action}')
+                    logging.info(f'    🔍 Args: {action.kwargs}')
+                    logging.info(f'    ➡️ Result: {action.result}')
+                    # 2. Track provenance for each output value
+                    for v in self._norm(result):
+                        self.value_provenance.setdefault(v, []).append(call_id)
+                        logging.info(f"🧬 Provenance: output '{v}' produced by {call_id}")
+
+                    # 5a. Special case: propagate indicator names/ids for search_for_indicator_codes
+                    if action.action == 'search_for_indicator_codes' and isinstance(result, list):
+                        for item in result:
+                            if isinstance(item, dict):
+                                name = item.get('name')
+                                id_ = item.get('id')
+                                if name:
+                                    self.value_provenance.setdefault(name, []).append(call_id)
+                                if id_:
+                                    self.value_provenance.setdefault(id_, []).append(call_id)
+                        self._search_results_by_node[call_id] = result
+                        logging.info(f'🔗 Stored search_for_indicator_codes result for node {call_id}')
+                    # 5b. Special case: track all get_country_codes_in_region results
+                    if action.action == 'get_country_codes_in_region' and isinstance(result, list):
+                        for code in result:
+                            if isinstance(code, dict):
+                                code_str = str(code.get('id') or code.get('code') or code.get('country_code') or code)
+                            else:
+                                code_str = str(code)
+                            self._country_codes_by_node.setdefault(code_str, []).append(call_id)
+                        logging.info(f'🌏 Tracked country codes for node {call_id}: {result}')
+
+                    # 3. Add error node and edge if needed
+                    if is_error:
+                        if self._error_node_id is None:
+                            self._error_node_id = '__error__'
+                            self.add_node(self._error_node_id, label='Error', type='error')
+                        self.add_edge(call_id, self._error_node_id, label='error')
+                        logging.info(f'🚨 Added edge from {call_id} to error node')
+                    # 4. Add warning node and edge if needed
+                    elif is_warning:
+                        if self._warning_node_id is None:
+                            self._warning_node_id = '__warning__'
+                            self.add_node(self._warning_node_id, label='Warning', type='warning')
+                        self.add_edge(call_id, self._warning_node_id, label='warning')
+                        logging.info(f'⚠️ Added edge from {call_id} to warning node')
+
+    def _add_edges(
+        self,
+    ) -> None:
+        """Pass 2: Add edges between nodes.
+
+        This method processes the actions and connects them based on their arguments and results,
+        using heuristics to conditionally connect nodes of different labels.
+
+        Edges are added based on the following conditions:
+        1. Origin node matches action arguments (e.g., slot_values).
+            a. Adds edge if `get_indicator_code_from_name` has an `indicator_name` argument matching `property_original`.
+            b. Adds edge if `get_country_code_from_name` has a `country_name` argument matching `subject_name`.
+        2. A produced value matches an argument in a subsequent action.
+        3. A word or phrase from the NLQ matches keywords in `search_for_indicator_codes`.
+        4. A `get_indicator_code_from_name` argument matches any `indicator_name` produced from `search_for_indicator_codes`.
+        5. An `indicator_code` argument in a `retrieve_value` call matches any `indicator_code` produced from `search_for_indicator_codes`.
+        6. If a node's result is an error or warning, add an edge to the generic error/warning node (if not already present).
+
+        """
+        for tgt_id, action in self.actions.items():
+            formatted_args = self._format_args(action.kwargs)
+            tgt_label = f'{action.action}({formatted_args})'
+            logging.info(f'➡️  Processing edges for node: {tgt_label}')
+            for arg_key, arg_val in action.kwargs.items():
+                # --- NEW: For lists, preserve index for each value ---
+                normed_vals = self._norm(arg_val)
+                # For lists, we want to match each value in order, and allow multiple edges for repeated values.
+                used_src_ids = set()
+                for idx, val in enumerate(normed_vals):
+                    # 1. Heuristic: origin node matches action arguments
+                    if (arg_key, val) in self.origin_values:
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'{arg_key}={val}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[{arg_key}="{val}"]--> {tgt_label}')
+                        continue
+
+                    # 1a. Heuristic: slot_values match for get_indicator_code_from_name
+                    if (
+                        action.action == 'get_indicator_code_from_name'
+                        and arg_key == 'indicator_name'
+                        and ('property_original', val) in self.origin_values
+                    ):
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'property_original={val}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[property_original="{val}"]--> {tgt_label}')
+                        continue
+
+                    # 1b. Heuristic: subject_name match for get_country_code_from_name
+                    if (
+                        action.action == 'get_country_code_from_name'
+                        and arg_key == 'country_name'
+                        and ('subject_name', val) in self.origin_values
+                    ):
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'subject_name={val}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[subject_name="{val}"]--> {tgt_label}')
+                        continue
+
+                    # 2. Heuristic: produced value matches argument in subsequent action
+                    # --- MODIFIED: allow multiple edges for repeated values ---
+                    src_ids = self.value_provenance.get(val, [])
+                    # Only consider src_ids that are not tgt_id and not already used for this argument position
+                    for src_id in reversed(src_ids):
+                        if src_id != tgt_id and src_id not in used_src_ids:
+                            src_action = self.actions[src_id]
+                            src_label = f'{src_action.action}({self._format_args(src_action.kwargs)})'
+                            logging.info(f'🔄 {src_label} --[{arg_key}="{val}"]--> {tgt_label}')
+                            self.add_edge(src_id, tgt_id, label=f'{arg_key}={val}')
+                            used_src_ids.add(src_id)
+                            break
+                    # If no unused src_id is found, do nothing (prevents duplicate edges from same src to same tgt for same value)
+
+            # 3. Heuristic: check for NLQ keywords in search_for_indicator_codes and get_indicator_code_from_name
+            if self.question:
+                # For search_for_indicator_codes: check keywords
+                if action.action == 'search_for_indicator_codes' and 'keywords' in action.kwargs:
+                    keywords = action.kwargs['keywords']
+                    if isinstance(keywords, str):
+                        keywords = [keywords]
+                    keyword_words = set()
+                    for kw in keywords:
+                        kw_clean = str(kw).lower().translate(str.maketrans('', '', string.punctuation))
+                        keyword_words.update(kw_clean.split())
+                    overlap = self._question_words & keyword_words
+                    if overlap:
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→keywords: {"/".join(sorted(overlap))}')
+                        logging.info(
+                            f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
+                        )
+                # For get_indicator_code_from_name: check indicator_name for phrases from NLQ
+                if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
+                    indicator_name = (
+                        str(action.kwargs['indicator_name']).lower().translate(str.maketrans('', '', string.punctuation))
+                    )
+                    overlap = set()
+                    indicator_words = set(indicator_name.split())
+                    overlap |= self._question_words & indicator_words
+                    q_tokens = self.question.lower().translate(str.maketrans('', '', string.punctuation)).split()
+                    for n in range(2, min(6, len(q_tokens) + 1)):
+                        for i in range(len(q_tokens) - n + 1):
+                            phrase = ' '.join(q_tokens[i : i + n])
+                            if phrase in indicator_name:
+                                overlap.add(phrase)
+                    if overlap:
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'keywords="{"/".join(sorted(overlap))}"')
+                        logging.info(
+                            f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
+                        )
+
+            # 4. Heuristic: search_for_indicator_codes results match get_indicator_code_from_name
+            if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
+                indicator_name = str(action.kwargs['indicator_name']).strip().lower()
+                for src_id, search_results in self._search_results_by_node.items():
+                    if not isinstance(search_results, list):
+                        continue
+                    for item in search_results:
+                        if not isinstance(item, dict):
+                            continue
+                        candidate = str(item.get('indicator_name', '')).strip().lower()
+                        if indicator_name == candidate and src_id != tgt_id:
+                            src_action = self.actions[src_id]
+                            src_label = f'{src_action.action}({src_action.kwargs})'
+                            logging.info(f'🔗 {src_label} --[indicator_name="{candidate}"]--> {tgt_label}')
+                            self.add_edge(src_id, tgt_id, label='indicator_name match')
+                            break
+
+            # 5. Heuristic: retrieve_value with indicator_code matches search_for_indicator_codes
+            if action.action == 'retrieve_value' and 'indicator_code' in action.kwargs:
+                indicator_code = str(action.kwargs['indicator_code']).strip().lower()
+                for code, src_ids in self._country_codes_by_node.items():
+                    if indicator_code == code:
+                        for src_id in src_ids:
+                            if src_id != tgt_id:
+                                src_action = self.actions[src_id]
+                                src_label = f'{src_action.action}({src_action.kwargs})'
+                                logging.info(f'🔗 {src_label} --[indicator_code="{code}"]--> {tgt_label}')
+                                self.add_edge(src_id, tgt_id, label='indicator_code match')
+                                break
+
+            # 6. Add error/warning edge if not already present (for completeness)
+            result = getattr(action, 'result', None)
+            if isinstance(result, str):
+                if result.strip().startswith('Error:') and self._error_node_id:
+                    if not self.has_edge(tgt_id, self._error_node_id):
+                        self.add_edge(tgt_id, self._error_node_id, label='error')
+                        logging.info(f'🚨 (edges) Added edge from {tgt_id} to error node')
+                elif result.strip().startswith('Warning:') and self._warning_node_id:
+                    if not self.has_edge(tgt_id, self._warning_node_id):
+                        self.add_edge(tgt_id, self._warning_node_id, label='warning')
+                        logging.info(f'⚠️ (edges) Added edge from {tgt_id} to warning node')
 
     # ---------- visual helper --------------------------------------------
     def draw_pretty(self, pos='tree'):
@@ -347,8 +469,8 @@ class FrankensteinGraph(nx.DiGraph):
                 fn = data.get('label', '')
                 args = data.get('args', {})
                 result = data.get('result', '')
-                arg_lines = [f'{k} = {v}' for k, v in args.items()]
-                lines = [f'{fn}'] + arg_lines + [f'→ {result}']
+                arg_lines = [self._format_args(args)] if args else []
+                lines = [f'{fn}', *arg_lines, f'→ {result}']
 
             # Draw box
             box = FancyBboxPatch(
@@ -374,7 +496,7 @@ class FrankensteinGraph(nx.DiGraph):
         for src, tgt, data in self.edges(data=True):
             x0, y0 = pos[src]
             x1, y1 = pos[tgt]
-            ax.annotate('', xy=(x1, y1), xytext=(x0, y0), arrowprops=dict(arrowstyle='->', lw=1, color='gray'))
+            ax.annotate('', xy=(x1, y1), xytext=(x0, y0), arrowprops={'arrowstyle': '->', 'lw': 1, 'color': 'gray'})
 
             # Optional edge label
             label = data.get('label')
@@ -388,21 +510,21 @@ class FrankensteinGraph(nx.DiGraph):
         plt.show()
 
     def draw(self, layout='tree'):
-        def fmt(name, args=None):
+        def fmt(name, args=None, node_data=None):
             if args is None:
                 return name
-            short = ', '.join(f'{k}={str(v)[:17]}…' if len(str(v)) > 20 else f'{k}={v}' for k, v in args.items())
-            # also get result and display it
-            if 'result' in args:
-                result = args['result']
-                if isinstance(result, list):
-                    result = ', '.join(str(r)[:17] + '…' if len(str(r)) > 20 else str(r) for r in result)
-                elif isinstance(result, dict):
-                    result = ', '.join(f'{k}={str(v)[:17]}…' if len(str(v)) > 20 else f'{k}={v}' for k, v in result.items())
+            short = self._format_args(args)
+            # Always get result from node_data if available
+            result = ''
+            if node_data is not None:
+                result_val = node_data.get('result', '')
+                if isinstance(result_val, list):
+                    result = ', '.join(str(r)[:17] + '…' if len(str(r)) > 20 else str(r) for r in result_val)
+                elif isinstance(result_val, dict):
+                    result = ', '.join(f'{k}={str(v)[:17]}…' if len(str(v)) > 20 else f'{k}={v}' for k, v in result_val.items())
                 else:
-                    result = str(result)[:17] + '…' if len(str(result)) > 20 else str(result)
-            else:
-                result = ''
+                    result = str(result_val)[:17] + '…' if len(str(result_val)) > 20 else str(result_val)
+            # Always show three lines: name, args, result
             return f'{name}\n{short}\n{result}'
 
         labels = {}
@@ -410,9 +532,9 @@ class FrankensteinGraph(nx.DiGraph):
             if d.get('type') == 'question_param':
                 labels[n] = d['label']
             else:
-                labels[n] = fmt(d['label'], d.get('args'))
+                labels[n] = fmt(d['label'], d.get('args'), d)
 
-        pos = self.compute_tree_layout() if layout == 'tree' else nx.shell_layout(self)
+        pos = self.compute_tree_layout() if layout == 'tree' else nx.random_layout(self)
         plt.figure(figsize=(13, 8))
         nx.draw(self, pos, node_size=3000, node_color='lightblue', with_labels=False, arrows=True, edge_color='gray')
         nx.draw_networkx_labels(self, pos, labels, font_size=8)
@@ -429,5 +551,5 @@ if __name__ == '__main__':
 
     df = pd.read_json('eval/runs/gpt-4o-mini_answerable-full.jsonl', orient='records', lines=True)
 
-    graph = FrankensteinGraph(df.iloc[1])
-    graph.draw('shell')
+    G = FrankensteinGraph(df.iloc[3])
+    G.draw(layout='shell')
