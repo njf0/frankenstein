@@ -5,15 +5,11 @@ import logging
 
 
 class Matcher:
-    """Flexible answer matcher using answer_format from metadata.
+    """Flexible answer matcher using answer_format from metadata."""
 
-    Provides methods for matching predicted and gold answers of various types,
-    returning a percent error (0.0 for exact match, 100.0 for mismatch).
-    """
-
-    def __init__(self):
+    def __init__(self, percent_tolerance: float = 0.01):
         """Initialize the Matcher."""
-        pass
+        self.percent_tolerance = percent_tolerance
 
     def match(
         self,
@@ -21,22 +17,14 @@ class Matcher:
         gold: str,
         answer_format: str | None = None,
     ) -> tuple[bool, float]:
-        """Match predicted and gold answers using the specified answer format.
-
-        Returns
-        -------
-        (bool, float)
-            Tuple of (correct, percent_error).
-
-        """
-        self.percent_tolerance = 0.01  # 0.01% tolerance for float matching
-
-        if answer_format == 'float':
+        """Match predicted and gold answers using the specified answer format."""
+        # Accept both 'list' and 'list[str]' as list formats
+        if answer_format in ('list', 'list[str]', 'list[int]', 'list[float]'):
+            return self.match_list(pred, gold)
+        elif answer_format == 'float':
             return self.match_float(pred, gold)
         elif answer_format == 'bool':
             return self.match_bool(pred, gold)
-        elif answer_format == 'list':
-            return self.match_list(pred, gold)
         elif answer_format == 'int':
             return self.match_int(pred, gold)
         elif answer_format == 'str':
@@ -57,7 +45,7 @@ class Matcher:
             Tuple of (correct, percent_error).
 
         """
-        logging.info(f'🔬 Matcher().match_float(pred = {pred!r}, gold = {gold!r})')
+        logging.info(f'🔬 Matcher().match_float(pred={pred!r}, gold={gold!r})')
 
         try:
             pred_f = float(ast.literal_eval(pred))
@@ -75,6 +63,7 @@ class Matcher:
             logging.info(f'✅ Correct within {self.percent_tolerance}% tolerance.')
         else:
             logging.warning(f'❌ Incorrect. Answer {pred_f!r} differs from gold {gold_f!r} by {percent_error:.2f}%')
+        logging.info(f'🔬 Percent error value: {percent_error}')
 
         return correct, percent_error
 
@@ -87,7 +76,7 @@ class Matcher:
             Tuple of (correct, percent_error).
 
         """
-        logging.info(f'🔬 Matcher().match_bool(pred = {pred!r}, gold = {gold!r})')
+        logging.info(f'🔬 Matcher().match_bool(pred={pred!r}, gold={gold!r})')
         bool_map = {
             'true': True,
             'false': False,
@@ -120,47 +109,37 @@ class Matcher:
         return correct, percent_error
 
     def match_list(self, pred: str, gold: str) -> tuple[bool, float]:
-        """Match list-formatted strings, e.g., "['a', 'b']" or "['a', 'b', 'c']".
-
-        Returns
-        -------
-        (bool, float)
-            Tuple of (correct, percent_error). If not correct, percent_error is delta in length.
-
-        """
-        logging.info(f'🔬 Matcher().match_list(pred = {pred!r}, gold = {gold!r})')
-
-        # Attempt to parse the predicted and gold values as lists. If parsing fails, fallback to simple string splitting.
+        """Match list-formatted answers, e.g., "['a', 'b']" or ['a', 'b']."""
+        logging.info(f'🔬 Matcher().match_list(pred={pred!r}, gold={gold!r})')
+        # Parse pred to list
         try:
-            pred_list = ast.literal_eval(pred.strip())
-            gold_list = gold
-            logging.info(f'🔬 Parsed pred: {pred_list}.')
-            logging.info(f'🔬 Parsed gold: {gold_list}.')
+            pred_list = ast.literal_eval(pred.strip()) if isinstance(pred, str) else pred
         except Exception as e:
             logging.warning(f'🔬 Failed to parse pred: {e}. Using fallback parsing.')
-            pred_list = [item.strip() for item in pred.strip('[](){}').split(',') if item.strip()]
-            gold_list = (
-                gold
-                if isinstance(gold, list)
-                else [item.strip() for item in str(gold).strip('[](){}').split(',') if item.strip()]
-            )
-            logging.info(f'🔬 Fallback pred_list: {pred_list} | fallback gold_list: {gold_list}')
-
-        # If both are lists, compare them as sets for order-insensitive matching.
+            pred_list = [item.strip() for item in str(pred).strip('[](){}').split(',') if item.strip()]
+        # Gold may already be a list, or a string representation of a list
+        if isinstance(gold, list):
+            gold_list = gold
+        else:
+            try:
+                gold_list = ast.literal_eval(str(gold).strip())
+            except Exception as e:
+                logging.warning(f'🔬 Failed to parse gold: {e}. Using fallback parsing.')
+                gold_list = [item.strip() for item in str(gold).strip('[](){}').split(',') if item.strip()]
+        logging.info(f'🔬 Parsed pred_list: {pred_list}')
+        logging.info(f'🔬 Parsed gold_list: {gold_list}')
+        # Compare as sets (order-insensitive)
         if isinstance(pred_list, list) and isinstance(gold_list, list):
-            pred_set = set(pred_list)
-            logging.info(f'🔬 Pred set: {pred_set}')
-            gold_set = set(gold_list)
-            logging.info(f'🔬 Gold set: {gold_set}')
+            pred_set = set(str(x) for x in pred_list)
+            gold_set = set(str(x) for x in gold_list)
             correct = pred_set == gold_set
             percent_error = 0.0 if correct else float(abs(len(pred_list) - len(gold_list)))
-            if correct:
-                logging.info('✅ Correct match (order-insensitive).')
-            else:
-                logging.warning(f'❌ Incorrect match (order-insensitive). Set difference: {pred_set ^ gold_set}')
+            logging.info(
+                f'🔬 Set comparison: pred_set={pred_set}, gold_set={gold_set}, correct={correct}, percent_error={percent_error}'
+            )
             return correct, percent_error
         else:
-            logging.warning('🔬 One or both values are not lists.')
+            logging.warning('🔬 One or both values are not lists after parsing.')
             return False, 100.0
 
     def match_int(self, pred: str, gold: str) -> tuple[bool, float]:
@@ -172,7 +151,7 @@ class Matcher:
             Tuple of (correct, percent_error). If not correct, percent_error is delta.
 
         """
-        logging.info(f'🔬 Matcher().match_int(pred = {pred!r}, gold = {gold!r})')
+        logging.info(f'🔬 Matcher().match_int(pred={pred!r}, gold={gold!r})')
 
         try:
             pred_i = int(ast.literal_eval(pred))
@@ -201,7 +180,7 @@ class Matcher:
             Tuple of (correct, percent_error).
 
         """
-        logging.info(f'🔬 Matcher().match_str(pred = {pred!r}, gold = {gold!r})')
+        logging.info(f'🔬 Matcher().match_str(pred={pred!r}, gold={gold!r})')
         pred_str = str(pred).strip().lower()
         gold_str = str(gold).strip().lower()
         logging.info(f'🔬 Parsed pred: {pred_str}')

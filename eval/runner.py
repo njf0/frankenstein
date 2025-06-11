@@ -4,13 +4,13 @@ import argparse
 import datetime
 import json
 import logging
-import random
 from pathlib import Path
 
 import litellm
 import pandas as pd
 from rich.logging import RichHandler
 
+from eval.matcher import Matcher
 from eval.prompts import ALL_TOOLS, ARITHMETIC_TOOLS, BASE_PROMPT, DATA_TOOLS, TOOL_USE_BASE, create_n_shot_examples
 from frankenstein.action import FrankensteinAction
 from frankenstein.utils import get_tool_metadata, parse_json_arguments, to_json_safe
@@ -76,6 +76,7 @@ class Runner:
         self.debug = debug
         self.MAX_REPEATED_TOOL_CALLS = 10
         self.tool_call_counts = {}
+        self.matcher = Matcher()
 
         if self.debug:
             # Print config
@@ -188,7 +189,7 @@ class Runner:
                 parsed_args = json.loads(arguments)
 
                 # Format and log the function call
-                args_string = ', '.join([f"{k} = '{v}'" for k, v in parsed_args.items()])
+                args_string = ', '.join([f'{k}={v!r}' for k, v in parsed_args.items()])
                 logging.info(f'🔨 {name}({args_string})')
 
                 # Update the tool call counts
@@ -251,12 +252,31 @@ class Runner:
         parsed_messages = parse_json_arguments(messages)
         return to_json_safe(parsed_messages)
 
+    def match_results(
+        self,
+        messages: list[dict],
+        gold_answer,
+        answer_format: str | None = None,
+    ):
+        """Extract final answer from messages and match to gold using Matcher."""
+        final_answer = None
+        for message in messages:
+            if message.get('role') == 'assistant' and message.get('tool_calls'):
+                for tool_call in message['tool_calls']:
+                    if tool_call.get('function', {}).get('name') == 'final_answer':
+                        parsed_args = json.loads(tool_call['function']['arguments'])
+                        final_answer = parsed_args.get('answer')
+                        break
+            if final_answer is not None:
+                break
+        if final_answer is not None:
+            return self.matcher.match(final_answer, gold_answer, answer_format)
+        else:
+            logging.warning('⚠️  No final answer found in the messages.')
+            return None
+
 
 if __name__ == '__main__':
-    # vLLM serve commands
-    # vllm serve --model "public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct" --serve-model-name "Llama-3.1-8B-Instruct"
-    # vllm serve --model "public/hf/models/Qwen/Qwen3-4B" --serve-model-name "Qwen3-4B"
-
     parser = argparse.ArgumentParser(description='Run a tool-using loop with a language model.')
     parser.add_argument(
         '--model_name',
@@ -300,46 +320,25 @@ if __name__ == '__main__':
         n_shots=args.n_shots,
     )
 
-    variants = Path('dataset', 'answerable_full').iterdir()
-    variant = random.choice(list(variants))
-    with variant.open('r') as f:
+    file = Path('dataset', 'answerable-full.jsonl')
+    with file.open('r') as f:
         dataset = pd.read_json(f, lines=True)
     dataset = dataset.sample(1)
 
     messages = runner.loop(dataset['question'].to_list()[0])
 
-    # --- Added: Check and log correctness of the model-generated answer ---
-    # Try to extract the expected answer from the dataset
-    expected_answer = dataset['answer'].to_list()[0] if 'answer' in dataset.columns else None
-
-    # Find the content of the 'final_answer' tool call in the messages
-    final_answer = None
-    for message in messages:
-        if message.get('role') == 'assistant' and message.get('tool_calls'):
-            for tool_call in message['tool_calls']:
-                if tool_call.get('function', {}).get('name') == 'final_answer':
-                    # Parse the function call arguments to get the final answer
-                    parsed_args = json.loads(tool_call['function']['arguments'])
-                    final_answer = parsed_args.get('answer')
-                    break
-
-    # Log the final answer and compare it with the expected answer
-    if final_answer is not None:
-        logging.info(f'Final answer: {final_answer}')
-        if expected_answer is not None:
-            logging.info(f'Expected answer: {expected_answer}')
-            if str(final_answer) == str(expected_answer) or str(expected_answer) in str(final_answer):
-                logging.info('✅ Final answer matches the expected answer.')
-            else:
-                logging.warning('❌ Final answer does not match the expected answer.')
-    else:
-        logging.warning('⚠️  No final answer found in the messages.')
+    # Example: match results if gold answer and format are present
+    gold_answer = dataset['answer'].to_list()[0] if 'answer' in dataset.columns else None
+    answer_format = None
+    if 'metadata' in dataset.columns and isinstance(dataset.iloc[0]['metadata'], dict):
+        answer_format = dataset.iloc[0]['metadata'].get('answer_format')
+    if gold_answer is not None:
+        runner.match_results(messages, gold_answer, answer_format)
 
     if args.save:
         timestamp = datetime.datetime.now()
         output_path = Path('eval', 'dumps', f'{timestamp}').with_suffix('.json')
-        cleaned = runner.format_messages(messages)
+        parsed_messages = parse_json_arguments(messages)
         with output_path.open('w') as f:
-            f.write(json.dumps(cleaned, indent=2) + '\n')
-
+            f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
         logging.info(f"💾 Saved messages to '{output_path}'")

@@ -1,12 +1,10 @@
 import argparse
-import json
 import logging
 from pathlib import Path
 
 import pandas as pd
 from rich.logging import RichHandler
 
-from eval.matcher import Matcher  # <-- Import Matcher from new file
 from eval.runner import Runner  # <-- Use Runner instead of vLLMModel
 
 
@@ -54,8 +52,6 @@ class FrankensteinEvaluator:
             self.dataset = self.dataset.sample(self.num_samples)
         logging.info(f'Loaded dataset from {dataset_path} with {len(self.dataset)} samples.')
 
-        self.matcher = Matcher()
-
     def run(
         self,
     ) -> list:
@@ -68,6 +64,8 @@ class FrankensteinEvaluator:
 
         """
         all_messages = []
+        corrects = []
+        errors = []
 
         for i, row in self.dataset.iterrows():
             self.runner = Runner(
@@ -79,31 +77,26 @@ class FrankensteinEvaluator:
             logging.info(f'Processing question {i + 1}/{len(self.dataset)}')
             messages = self.runner.loop(row['question'])
 
-            # Extract the final answer using the same logic as runner.py
-            final_answer = None
-            for message in messages:
-                if message.get('role') == 'assistant' and message.get('tool_calls'):
-                    for tool_call in message['tool_calls']:
-                        if tool_call.get('function', {}).get('name') == 'final_answer':
-                            parsed_args = json.loads(tool_call['function']['arguments'])
-                            final_answer = parsed_args.get('answer')
-                            break
-                if final_answer is not None:
-                    break
-
+            # Extract gold answer and answer_format
+            gold_answer = row['answer']
             answer_format = None
             if isinstance(row, pd.Series) and 'metadata' in row and isinstance(row['metadata'], dict):
                 answer_format = row['metadata'].get('answer_format')
 
-            # Use Matcher for evaluation and log details
-            if final_answer is not None:
-                match_result = self.matcher.match(final_answer, row['answer'], answer_format)
+            # Use Runner for evaluation and logging
+            match_result = self.runner.match_results(messages, gold_answer, answer_format)
+            if match_result is not None:
+                correct, error = match_result
             else:
-                logging.warning('⚠️ No final answer found in the messages.')
+                correct, error = False, 100.0
+            corrects.append(correct)
+            errors.append(error)
 
             all_messages.append(self.runner.format_messages(messages))
 
         self.dataset['messages'] = all_messages
+        self.dataset['correct'] = corrects
+        self.dataset['error'] = errors
 
         if self.save:
             model_name = str(self.model_name).split('/')[-1]
