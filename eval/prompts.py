@@ -82,7 +82,7 @@ def generate_tool_call_example(tool_name, tool_modules):
     except Exception:
         indicator_names = indicator_codes
     try:
-        iso_data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+        iso_data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
         country_names = iso_data['country_name'].dropna().unique().tolist()
     except Exception:
         country_names = country_codes

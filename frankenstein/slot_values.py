@@ -38,7 +38,7 @@ class Subject(Slot):
     @classmethod
     def get_values(cls) -> list[str]:
         """Return all subjects."""
-        return cls.read_csv_file(cls.DATA_PATH / 'iso_3166.csv', column_name='country_code')
+        return cls.read_csv_file(cls.DATA_PATH / 'un_m49_cleaned.csv', column_name='country_code')
 
 
 class Region(Slot):
@@ -47,7 +47,7 @@ class Region(Slot):
     @classmethod
     def get_values(cls) -> list[str]:
         """Return all unique subject sets."""
-        return cls.read_csv_file(cls.DATA_PATH / 'iso_3166.csv', 'region')
+        return cls.read_csv_file(cls.DATA_PATH / 'un_m49_cleaned.csv', 'region')
 
 
 class Property(Slot):

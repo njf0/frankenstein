@@ -112,7 +112,7 @@ class GetCountryCodeFromName(BaseModel):
     country_name: str
 
     def forward(self):
-        data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+        data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
         try:
             return data[data['country_name'] == self.country_name]['country_code'].to_list()[0]
         except IndexError as e:
@@ -138,7 +138,7 @@ class GetMembership(BaseModel):
     region: str
 
     def forward(self):
-        data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+        data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
         try:
             return data[data['region'] == self.region]['country_code'].to_list()
         except IndexError as e:
@@ -154,7 +154,7 @@ class RetrieveValue(BaseModel):
 
     def forward(self):
         # Check country code is valid
-        data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+        data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
         if self.country_code not in data['country_code'].tolist():
             raise InvalidCountryCodeError(self.country_code)
 

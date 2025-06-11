@@ -13,7 +13,7 @@ YEAR_BEGIN = 2003
 YEAR_END = 2023
 DATA_PATH = Path('resources')
 WDI_IND_DIR = DATA_PATH / 'wdi'
-ISO_3166_PATH = DATA_PATH / 'iso_3166.csv'
+UN_M49_PATH = DATA_PATH / 'un_m49_cleaned.csv'
 
 console = Console()
 
@@ -41,7 +41,7 @@ class WDIDataFetcher:
         self.overwrite = overwrite
         self.data_path = DATA_PATH
         self.wdi_ind_dir = WDI_IND_DIR
-        self.iso_3166_path = ISO_3166_PATH
+        self.un_m49_cleaned_path = UN_M49_PATH
         self.console = console
 
     def get_country_codes(
@@ -55,9 +55,9 @@ class WDIDataFetcher:
             List of ISO 3166-1 alpha-3 country codes.
 
         """
-        iso_3166 = pd.read_csv(ISO_3166_PATH)
+        un_m49_cleaned = pd.read_csv(UN_M49_PATH)
 
-        return iso_3166['country_code'].to_list()
+        return un_m49_cleaned['country_code'].to_list()
 
     def get_featured_indicators(
         self,

@@ -15,7 +15,7 @@ from frankenstein.slot_values import Slot
 DATA_DIR = Path('resources')
 INDICATOR_DATA_DIR = DATA_DIR / 'wdi'
 INDICATOR_KEY = DATA_DIR / 'wdi.csv'
-ISO_3166 = DATA_DIR / 'iso_3166.csv'
+UN_M49 = DATA_DIR / 'un_m49_cleaned.csv'
 
 
 class FrankensteinQuestion:
@@ -39,7 +39,7 @@ class FrankensteinQuestion:
         """
         # Indicator/country-related data things
         # Create mapping of country_codes to country_names
-        self.country_region_data = pd.read_csv(ISO_3166)
+        self.country_region_data = pd.read_csv(UN_M49)
         self.c2n = self.country_region_data.set_index('country_code')['country_name'].to_dict()
         self.n2c = self.country_region_data.set_index('country_name')['country_code'].to_dict()
 

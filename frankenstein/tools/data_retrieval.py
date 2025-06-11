@@ -62,11 +62,30 @@ def get_country_code_from_name(
         The three-letter country code.
 
     """
-    data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+    data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
     try:
         return data[data['country_name'] == country_name]['country_code'].to_list()[0]
     except IndexError as e:
         raise InvalidCountryNameError(country_name) from e
+
+
+def get_country_name_from_code(
+    country_code: str,
+) -> str:
+    """Get the country name from a three-letter country code.
+
+    Args:
+        country_code: The three-letter country code to get the name for.
+
+    Returns:
+        The name of the country.
+
+    """
+    data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
+    try:
+        return data[data['country_code'] == country_code]['country_name'].to_list()[0]
+    except IndexError as e:
+        raise InvalidCountryCodeError(country_code) from e
 
 
 def get_indicator_code_from_name(
@@ -88,6 +107,25 @@ def get_indicator_code_from_name(
         raise InvalidIndicatorNameError(indicator_name) from e
 
 
+def get_indicator_name_from_code(
+    indicator_code: str,
+) -> str:
+    """Get the indicator name from an indicator code.
+
+    Args:
+        indicator_code: The code of the indicator to get the name for.
+
+    Returns:
+        The name of the indicator.
+
+    """
+    data = pd.read_csv(Path('resources', 'wdi.csv'))
+    try:
+        return data[data['id'] == indicator_code]['name'].to_list()[0]
+    except IndexError as e:
+        raise InvalidIndicatorCodeError(indicator_code) from e
+
+
 def get_country_codes_in_region(
     region: str,
 ) -> list[str]:
@@ -100,7 +138,7 @@ def get_country_codes_in_region(
         A list of countries in the region as three-letter country codes.
 
     """
-    data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+    data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
 
     if region not in data['region'].tolist():
         raise InvalidRegionNameError(region)
@@ -129,7 +167,7 @@ def retrieve_value(
 
     """
     # Check country code is valid
-    data = pd.read_csv(Path('resources', 'iso_3166.csv'))
+    data = pd.read_csv(Path('resources', 'un_m49_cleaned.csv'))
     if country_code not in data['country_code'].tolist():
         raise InvalidCountryCodeError(country_code)
 
