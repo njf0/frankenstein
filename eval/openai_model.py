@@ -2,12 +2,12 @@ import json
 import logging
 from copy import deepcopy
 
-from frankenstein.action import FrankensteinAction
-from frankenstein.model import ToolCalls
 from openai import OpenAI
 from rich.logging import RichHandler
 
 from eval.prompts import BASE_PROMPT, FULL_TOOL_USE, SIMULATE_TOOL_USE
+from frankenstein.action import FrankensteinAction
+from frankenstein.model import ToolCalls
 
 
 class OpenAIModel:

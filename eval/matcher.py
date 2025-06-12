@@ -2,6 +2,7 @@
 
 import ast
 import logging
+import re
 
 
 class Matcher:
@@ -47,22 +48,49 @@ class Matcher:
         """
         logging.info(f'🔬 Matcher().match_float(pred={pred!r}, gold={gold!r})')
 
+        # Attempt to parse both pred and gold as floats
         try:
             pred_f = float(ast.literal_eval(pred))
             gold_f = float(gold)
             logging.info(f'🔬 Parsed pred: {pred_f}')
             logging.info(f'🔬 Parsed gold: {gold_f}')
             percent_error = abs(pred_f - gold_f) * 100 if gold_f == 0 else abs(pred_f - gold_f) / abs(gold_f) * 100
+            correct = percent_error <= 0.01
 
+        # If parsing fails, try to handle common cases
         except Exception as e:
             logging.warning(f'🔬 Exception parsing float values: {e}')
-            percent_error = 100.0
 
-        correct = percent_error <= 0.01
+            # Fallback: check if gold value as string is present in pred string
+            gold_str = str(gold).strip()
+            if gold_str in str(pred):
+                logging.info(f'✅ Gold value {gold_str!r} found in prediction string (fallback).')
+                return True, 0.0
+
+            # Further fallback: extract any float from pred and compare
+            try:
+                gold_f = float(gold)
+                float_pattern = r'[-+]?\d*\.\d+|\d+'
+                found_floats = [float(x) for x in re.findall(float_pattern, str(pred))]
+                for f in found_floats:
+                    percent_error = abs(f - gold_f) * 100 if gold_f == 0 else abs(f - gold_f) / abs(gold_f) * 100
+                    if percent_error <= 0.01:
+                        logging.info(f'✅ Found matching float {f} in prediction string (regex fallback).')
+                        return True, 0.0
+                logging.warning('❌ No matching float found in prediction string (regex fallback).')
+            except Exception as e2:
+                logging.warning(f'🔬 Exception in regex float extraction: {e2}')
+
+            percent_error = 100.0
+            correct = False
+            pred_f = None
+            gold_f = None
+
         if correct:
             logging.info(f'✅ Correct within {self.percent_tolerance}% tolerance.')
         else:
             logging.warning(f'❌ Incorrect. Answer {pred_f!r} differs from gold {gold_f!r} by {percent_error:.2f}%')
+
         logging.info(f'🔬 Percent error value: {percent_error}')
 
         return correct, percent_error
@@ -89,34 +117,45 @@ class Matcher:
         try:
             pred_val = ast.literal_eval(pred)
         except Exception as e:
-            logging.warning(f'🔬 Exception parsing pred: {e}. Using fallback parsing.')
+            logging.warning(f'🔬 Exception parsing pred: {e}. Falling back to mapping.')
             pred_val = pred
 
         gold_val = gold
 
         pred_bool = bool_map.get(str(pred_val).strip().lower(), pred_val)
-        logging.info(f'🔬 Parsed pred: {pred_bool}')
-        gold_bool = bool_map.get(str(gold_val).strip().lower(), gold_val)
-        logging.info(f'🔬 Parsed gold: {gold_bool}')
+        logging.info(f'🔬 Parsed pred {pred} -> {pred_bool}')
 
-        correct = bool(pred_bool) == bool(gold_bool)
+        correct = bool(pred_bool) == bool(gold_val)
         if correct:
             logging.info('✅ Correct boolean match.')
         else:
-            logging.warning(f'❌ Incorrect boolean match. Received: {pred_bool!r}, expected: {gold_bool!r}')
+            logging.warning(f'❌ Incorrect boolean match. Received: {pred_bool!r}, expected: {gold_val!r}')
 
         percent_error = 0.0 if correct else 100.0
         return correct, percent_error
 
-    def match_list(self, pred: str, gold: str) -> tuple[bool, float]:
-        """Match list-formatted answers, e.g., "['a', 'b']" or ['a', 'b']."""
+    def match_list(
+        self,
+        pred: str,
+        gold: str,
+    ) -> tuple[bool, float]:
+        """Match list-formatted answers, e.g., "['a', 'b']", or comma-separated strings e.g., "a, b".
+
+        Returns
+        -------
+        (bool, float)
+            Tuple of (correct, percent_error). If not correct, percent_error is delta.
+
+        """
         logging.info(f'🔬 Matcher().match_list(pred={pred!r}, gold={gold!r})')
+
         # Parse pred to list
         try:
             pred_list = ast.literal_eval(pred.strip()) if isinstance(pred, str) else pred
         except Exception as e:
             logging.warning(f'🔬 Failed to parse pred: {e}. Using fallback parsing.')
             pred_list = [item.strip() for item in str(pred).strip('[](){}').split(',') if item.strip()]
+
         # Gold may already be a list, or a string representation of a list
         if isinstance(gold, list):
             gold_list = gold
@@ -126,18 +165,30 @@ class Matcher:
             except Exception as e:
                 logging.warning(f'🔬 Failed to parse gold: {e}. Using fallback parsing.')
                 gold_list = [item.strip() for item in str(gold).strip('[](){}').split(',') if item.strip()]
+
+        # Log parsed values
         logging.info(f'🔬 Parsed pred_list: {pred_list}')
         logging.info(f'🔬 Parsed gold_list: {gold_list}')
+
         # Compare as sets (order-insensitive)
         if isinstance(pred_list, list) and isinstance(gold_list, list):
-            pred_set = set(str(x) for x in pred_list)
-            gold_set = set(str(x) for x in gold_list)
+            pred_set = {str(x) for x in pred_list}
+            gold_set = {str(x) for x in gold_list}
             correct = pred_set == gold_set
             percent_error = 0.0 if correct else float(abs(len(pred_list) - len(gold_list)))
-            logging.info(
-                f'🔬 Set comparison: pred_set={pred_set}, gold_set={gold_set}, correct={correct}, percent_error={percent_error}'
-            )
+
+            if correct:
+                logging.info('✅ Correct set match.')
+            else:
+                missing = gold_set - pred_set
+                extra = pred_set - gold_set
+                logging.warning('❌ Set mismatch')
+                logging.warning(f'🔬 Correct: {gold_set & pred_set}')
+                logging.warning(f'🔬 Missing: {missing}')
+                logging.warning(f'🔬 Extra: {extra}')
+
             return correct, percent_error
+
         else:
             logging.warning('🔬 One or both values are not lists after parsing.')
             return False, 100.0

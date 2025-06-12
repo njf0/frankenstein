@@ -2,8 +2,6 @@ import json
 import logging
 from copy import deepcopy
 
-from frankenstein.action import FrankensteinAction
-from frankenstein.schema import ToolCalls
 from openai import OpenAI
 from pydantic import ValidationError
 from rich.logging import RichHandler
@@ -11,6 +9,8 @@ from vllm import LLM
 from vllm.sampling_params import GuidedDecodingParams, SamplingParams
 
 from eval.prompts import BASE_PROMPT, FULL_TOOL_USE, SIMULATE_TOOL_USE
+from frankenstein.action import FrankensteinAction
+from frankenstein.schema import ToolCalls
 
 
 # --- Main Model Class ---

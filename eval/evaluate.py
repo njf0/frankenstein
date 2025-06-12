@@ -2,6 +2,7 @@ import argparse
 import logging
 from pathlib import Path
 
+import openai
 import pandas as pd
 from rich.logging import RichHandler
 
@@ -52,6 +53,8 @@ class FrankensteinEvaluator:
             self.dataset = self.dataset.sample(self.num_samples)
         logging.info(f'Loaded dataset from {dataset_path} with {len(self.dataset)} samples.')
 
+        self.log_config(vars(self))
+
     def run(
         self,
     ) -> list:
@@ -66,15 +69,21 @@ class FrankensteinEvaluator:
         all_messages = []
         corrects = []
         errors = []
+        i = 1
 
-        for i, row in self.dataset.iterrows():
+        for _, row in self.dataset.iterrows():
             self.runner = Runner(
                 model_name=self.model_name,
                 toolbox=self.toolbox,
                 n_shots=self.n_shots,
             )
 
-            logging.info(f'Processing question {i + 1}/{len(self.dataset)}')
+            logging.info(f'✨ Processing question {i}/{len(self.dataset)}')
+            # Should log slot values to compare with the model's output
+
+            logging.info('Question Metadata')
+            self.log_metadata_table(row['metadata'])
+
             messages = self.runner.loop(row['question'])
 
             # Extract gold answer and answer_format
@@ -94,6 +103,8 @@ class FrankensteinEvaluator:
 
             all_messages.append(self.runner.format_messages(messages))
 
+            i += 1
+
         self.dataset['messages'] = all_messages
         self.dataset['correct'] = corrects
         self.dataset['error'] = errors
@@ -107,6 +118,48 @@ class FrankensteinEvaluator:
 
         return all_messages
 
+    def log_config(
+        self,
+        config: dict,
+    ) -> None:
+        """Log the configuration in a formatted way.
+
+        Parameters
+        ----------
+        config : dict
+            Configuration dictionary to log.
+
+        """
+        key_width = max(len(str(k)) for k in config)
+        logging.info('Model Config')
+        for k, v in config.items():
+            if k == 'dataset':
+                continue
+            arrow = '-' * (key_width + 1 - len(str(k))) + '>'
+            logging.info(f"⚙️ '{k}' {arrow} {v!r}")
+
+    def log_metadata_table(
+        self,
+        metadata: dict,
+    ) -> None:
+        """Log metadata in a formatted table.
+
+        Parameters
+        ----------
+        metadata : dict
+            Metadata dictionary to log.
+
+        """
+        key_width = max(len(str(k)) for k in metadata)
+        for k, v in metadata.items():
+            if k == 'slot_values':
+                self.log_metadata_table(v)
+            else:
+                # Arrow line replaces padding: key + ('-' * (key_width - len(key))) + '>'
+                arrow = '-' * (key_width + 1 - len(str(k))) + '>'
+                # Can we add a good emoji for 'metadata'?
+                logging.info(f"🔑 '{k}' {arrow} {v!r}")
+
 
 if __name__ == '__main__':
     FORMAT = '%(message)s'
@@ -114,7 +167,7 @@ if __name__ == '__main__':
         level=logging.INFO,
         format=FORMAT,
         datefmt='[%X]',
-        handlers=[RichHandler()],
+        handlers=[RichHandler(tracebacks_suppress=[openai])],
     )
 
     parser = argparse.ArgumentParser(description='Evaluate a transformer model.')
@@ -156,9 +209,6 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    # Example usage
-    # python eval/evaluate.py --model_name openai/gpt-4o-mini --split answerable-full --num_samples 10 --toolbox all --save --n_shots 0
-
     evaluator = FrankensteinEvaluator(
         model_name=args.model_name,
         toolbox=args.toolbox,
@@ -167,8 +217,6 @@ if __name__ == '__main__':
         split=args.split,
         n_shots=args.n_shots,
     )
-
-    logging.info('Running config:')
-    logging.info(vars(args))
+    evaluator.args = args  # Attach args for logging
 
     evaluator.run()

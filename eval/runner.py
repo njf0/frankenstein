@@ -141,7 +141,7 @@ class Runner:
             {'role': 'user', 'content': input_text},
         ]
 
-        logging.info(f'❓ {input_text}')
+        logging.info(f'❓ {input_text!r}')
 
         while True:
             if self.debug:
