@@ -154,7 +154,7 @@ class IncreasePropertyComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
 
         # Set the answer to the country with the 'operator' increase
-        self.answer = [country for country, delta in deltas if delta == action.result]
+        self.answer = [self.c2n[country] for country, delta in deltas if delta == action.result]
 
         # Call the final_answer tool to format the answer
         action = FrankensteinAction(

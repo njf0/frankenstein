@@ -111,8 +111,6 @@ class FactorIncreaseComparison(FrankensteinQuestion):
             self.metadata['data_availability'] = 'partial'
             self.metadata['answerable'] = False
 
-            return
-
         # Compute the increase
         action = FrankensteinAction(
             'subtract',

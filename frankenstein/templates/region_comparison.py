@@ -104,8 +104,6 @@ class RegionComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         self.answer = action.result
 
-        self.metadata['data_availability'] = 'full'
-
         return self.answer
 
 

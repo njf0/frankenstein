@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(message)s',
     datefmt='[%X]',
-    handlers=[RichHandler(rich_tracebacks=True)],
+    handlers=[RichHandler()],
 )
 
 
@@ -40,7 +40,11 @@ def search_for_indicator_codes(
     data['original_name'] = data['name']
     # Lowercase for searching
     data['name'] = data['name'].str.lower()
-    keywords = [keyword.lower() for keyword in keywords]
+    # --- Split multi-word keywords into individual words ---
+    split_keywords = []
+    for keyword in keywords:
+        split_keywords.extend(keyword.lower().split())
+    keywords = split_keywords
     data = data[data['name'].str.contains('|'.join(keywords))]
     # Use original_name for output
     data = data[['id', 'original_name']]
@@ -205,8 +209,8 @@ def retrieve_value(
 
 if __name__ == '__main__':
     print('\n=== Search for Indicator Codes ===')
-    print('search_for_indicator_codes(["water"])')
-    print('Result:', search_for_indicator_codes(['water']))
+    print('search_for_indicator_codes(["total internal renewable water resources"])')
+    print('Result:', search_for_indicator_codes(['total internal renewable water resources']))
 
     print('\n=== Get Country Code from Name ===')
     print('get_country_code_from_name("Comoros")')

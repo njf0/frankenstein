@@ -66,7 +66,15 @@ class FrankensteinAction:
         self,
         error_handling: str = 'ignore',
     ):
-        """Execute the action using the mapped tool."""
+        """Execute the action using the mapped tool.
+
+        Parameters
+        ----------
+        error_handling: str
+            How to handle errors during execution. Options are 'raise' or 'ignore'.
+            If 'raise', exceptions will be raised; if 'ignore', the result will be set to None.
+
+        """
         if self.action is None:
             raise ValueError('Action must be specified with set_action() or during initialization.')
 

@@ -23,9 +23,9 @@ class RankPositionChange(FrankensteinQuestion):
 
         """
         self.templates = (
-            'For the countries in {region}, did the country with the {n} {operator} {property} in {year_a} retain that position in {year_b}?',
-            'Did the country ranked {n} {operator} for {property} in {year_a} in {region} keep the same rank in {year_b}?',
-            'In {region}, did the country with the {n} {operator} {property} in {year_a} keep that position in {year_b}?',
+            'For the countries in {region}, did the country with the {n} {operator} {property} in {year_a} have the same position in {year_b}?',
+            'Did the country ranked {n} {operator} for {property} in {year_a} in {region} have the same rank in {year_b}?',
+            'In {region}, did the country with the {n} {operator} {property} in {year_a} have the same position in {year_b}?',
         )
 
         allowed_values = {
@@ -71,19 +71,28 @@ class RankPositionChange(FrankensteinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            if value is not None:
-                values_a.append((country, value))
+            print((country, value))
+            values_a.append((country, value))
 
-        if not values_a:
+        if any(v[1] is None for v in values_a):
+            print('Partial data for year_a')
+            self.metadata['data_availability'] = 'partial'
+
+        if all(v[1] is None for v in values_a):
+            print('Missing data for year_a')
             self.metadata['data_availability'] = 'missing'
             self.metadata['answerable'] = False
             return
+
+        # Remove countries with None values
+        values_a = [v for v in values_a if v[1] is not None]
 
         # Sort values for year_a
         reverse = self.operator == 'highest'
         sorted_a = sorted(values_a, key=lambda x: x[1], reverse=reverse)
         n_idx = int(self.n) - 1
         if n_idx >= len(sorted_a):
+            print(f'Invalid rank position {self.n} for year_a')
             self.metadata['data_availability'] = 'partial'
             self.metadata['answerable'] = False
             return
@@ -103,13 +112,21 @@ class RankPositionChange(FrankensteinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            if value is not None:
-                values_b.append((country, value))
+            print((country, value))
+            values_b.append((country, value))
 
-        if not values_b:
+        if any(v[1] is None for v in values_b):
+            print('Partial data for year_b')
+            self.metadata['data_availability'] = 'partial'
+
+        if all(v[1] is None for v in values_b):
+            print('Missing data for year_b')
             self.metadata['data_availability'] = 'missing'
             self.metadata['answerable'] = False
             return
+
+        # Remove countries with None values
+        values_b = [v for v in values_b if v[1] is not None]
 
         # Sort values for year_b
         sorted_b = sorted(values_b, key=lambda x: x[1], reverse=reverse)
@@ -118,6 +135,7 @@ class RankPositionChange(FrankensteinQuestion):
         # Get the value for the target country in year_b
         target_value_b = next((v for c, v in values_b if c == target_country), None)
         if target_value_b is None:
+            print(f'No value for target country {target_country} in year_b')
             self.metadata['data_availability'] = 'partial'
             self.metadata['answerable'] = False
             return

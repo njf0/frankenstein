@@ -121,8 +121,7 @@ class RegionProportionChange(FrankensteinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            if value is not None:
-                region_values_a.append(value)
+            region_values_a.append(value)
 
         if any(v is None for v in region_values_a):
             self.metadata['data_availability'] = 'partial'
@@ -143,8 +142,7 @@ class RegionProportionChange(FrankensteinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            if value is not None:
-                region_values_b.append(value)
+            region_values_b.append(value)
 
         # Check for missing data
         if any(v is None for v in region_values_b):

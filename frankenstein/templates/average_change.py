@@ -119,6 +119,12 @@ class AverageChange(FrankensteinQuestion):
             change = action.result
             yearly_changes.append(change)
 
+        # If all changes are None, set data availability to missing
+        if all(change is None for change in yearly_changes):
+            self.metadata['data_availability'] = 'missing'
+            self.metadata['answerable'] = False
+            return
+
         # Compute the average yearly change
         action = FrankensteinAction('mean', values=yearly_changes)
         action.execute()
