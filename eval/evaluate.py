@@ -72,15 +72,14 @@ class FrankensteinEvaluator:
         errors = []
         i = 1
 
-        # Initialize Runner once
-        self.runner = Runner(
-            model_name=self.model_name,
-            toolbox=self.toolbox,
-            n_shots=self.n_shots,
-        )
-
         for _, row in self.dataset.iterrows():
-            self.runner.reset()
+            # Create a new Runner for each example
+            runner = Runner(
+                model_name=self.model_name,
+                toolbox=self.toolbox,
+                n_shots=self.n_shots,
+            )
+
             logging.info(f'✨ Processing question {i}/{len(self.dataset)}')
             # Should log slot values to compare with the model's output
 
@@ -88,24 +87,25 @@ class FrankensteinEvaluator:
             self.log_question_info(row)
 
             # Run the model on the question
-            messages = self.runner.loop(row['question'])
+            messages = runner.loop(row['question'])
 
             # Extract gold answer and answer_format
             gold_answer = row['answer']
             answer_format = row['answer_format']
 
             # Use Runner for evaluation and logging
-            match_result = self.runner.match_results(messages, gold_answer, answer_format)
+            match_result = runner.match_results(messages, gold_answer, answer_format)
             correct, error = match_result
             corrects.append(correct)
             errors.append(error)
 
-            all_messages.append(self.runner.format_messages(messages))
+            all_messages.append(runner.format_messages(messages))
 
             # Use Matcher.extract_final_answer to get the model prediction
-            pred = self.runner.matcher.extract_final_answer(messages)
+            pred = runner.matcher.extract_final_answer(messages)
             preds.append(pred)
 
+            del runner
             i += 1
 
         self.dataset['messages'] = all_messages
@@ -227,4 +227,5 @@ if __name__ == '__main__':
     )
     evaluator.args = args  # Attach args for logging
 
+    evaluator.run()
     evaluator.run()

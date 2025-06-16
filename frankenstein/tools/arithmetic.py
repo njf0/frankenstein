@@ -251,14 +251,15 @@ def rank(
     values: list[float],
     query_value: float,
 ) -> int:
-    """Return the position of a value in a sorted list, e.g., 1 for the highest value, 3 for the third highest.
+    """Return the 1-based rank of query_value in values sorted descending.
 
     Args:
         values: A list of numbers to rank against.
-        query_value: The value to rank.
+        query_value: The value whose rank is to be determined.
 
     Returns:
-        The rank of the query_value in the list of values.
+        The 1-based rank of query_value in the list of values sorted in descending order.
+        If there are duplicate values, the rank of the first occurrence is returned.
 
     """
     if isinstance(values, str):
@@ -295,14 +296,14 @@ def index(
     values: list[float],
     query_value: float,
 ) -> int:
-    """Return the index of query_value in values (0-based).
+    """Return the 0-based index of query_value in values.
 
     Args:
-        values: List of values.
-        query_value:
+        values: List of values to search.
+        query_value: The value to find the index for.
 
     Returns:
-        Index of query_value in values, or -1 if not found.
+        The 0-based index of the first occurrence of query_value in values after filtering out NaN.
 
     """
     if isinstance(values, str):
@@ -310,8 +311,10 @@ def index(
     values = [float(value) for value in values if pd.notna(value)]
     try:
         return values.index(query_value)
-    except ValueError:
-        return -1
+    except ValueError as e:
+        raise ValueError(
+            f"Value {query_value} not found in the list. Ensure it is present in the values."
+        ) from e
 
 
 if __name__ == '__main__':

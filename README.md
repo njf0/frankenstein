@@ -53,6 +53,8 @@ To evaluate models using `vllm serve`, the following commands may be useful:
 ```bash
 vllm serve --model "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct" --served-model-name "Llama-3.1-8B-Instruct" --tool-call-parser "llama3_json" --enable-auto-tool-choice
 vllm serve --model "/public/hf/models/Qwen/Qwen3-4B" --served-model-name "Qwen3-4B" --tool-call-parser "hermes" --enable-auto-tool-choice
+vllm serve --model "NousResearch/Hermes-3-Llama-3.1-8B" --served-model-name "Hermes-3-Llama-3.1-8B" --tool-call-parser "hermes" --enable-auto-tool-choice
+vllm serve --model mistralai/Mistral-7B-Instruct-v0.3 --chat-template examples/tool_chat_template_mistral.jinja --enable-auto-tool-choice --tool-call-parser mistral
 ```
 Then, `eval/evaluate.py` can be used to run evaluations against the served models. For example:
 ```bash

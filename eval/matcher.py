@@ -101,7 +101,7 @@ class Matcher:
             try:
                 gold_f = float(gold)
                 float_pattern = r'[-+]?\d*\.\d+|\d+'
-                found_floats = [float(x) for x in re.findall(float_pattern, str(pred))]
+                found_floats = [float(x) for x in re.findall(float_pattern, str(pred.replace(',', '')))]
                 for f in found_floats:
                     percent_error = abs(f - gold_f) * 100 if gold_f == 0 else abs(f - gold_f) / abs(gold_f) * 100
                     if percent_error <= 0.01:

@@ -4,6 +4,7 @@ import argparse
 import datetime
 import json
 import logging
+import gc
 from pathlib import Path
 
 import litellm
@@ -16,7 +17,7 @@ from frankenstein.action import FrankensteinAction
 from frankenstein.utils import get_tool_metadata, parse_json_arguments, to_json_safe
 
 SINGLE_TOOL_CALL_MODELS = {
-    'Meta-Llama-3.1-8B-Instruct',
+    'Llama-3.1-8B-Instruct',
     'Llama-3.2-3B-Instruct',
 }
 
@@ -111,6 +112,7 @@ class Runner:
             model=self.model_name,
             messages=messages,
             tools=self.tools,
+            tool_choice='required',
             api_base=self.api_base,
         )
         output = response.choices[0]
@@ -144,6 +146,7 @@ class Runner:
         logging.info(f'❓ {input_text!r}')
 
         while True:
+
             if self.debug:
                 i = input('')
                 if i.lower() == 'nodebug':
@@ -158,7 +161,7 @@ class Runner:
             message = output.message
 
             # --- Stop if model generates nothing ---
-            if message.content is None and not message.tool_calls:
+            if not message or (message.content is None and not message.tool_calls):
                 logging.warning("🛑 Model generated an empty message or no tool calls. Stopping loop.")
                 return messages
 
@@ -256,8 +259,12 @@ class Runner:
             # Check repeated tool calls (already counted in self.tool_call_counts)
             for (tool, args_json), count in self.tool_call_counts.items():
                 if count >= self.MAX_REPEATED_TOOL_CALLS:
-                    logging.warning(f'🛑 Tool "{tool}" called 10 times with same arguments: {args_json}')
+                    logging.warning(f'🛑 Tool "{tool}" called {self.MAX_REPEATED_TOOL_CALLS} times with same arguments: {args_json}')
                     return messages
+
+
+            # Optionally run garbage collection to free memory
+            gc.collect()
 
         return messages
 
