@@ -406,16 +406,20 @@ class FrankensteinGraph(nx.DiGraph):
 
             # 5. Heuristic: retrieve_value with indicator_code matches search_for_indicator_codes
             if action.action == 'retrieve_value' and 'indicator_code' in action.kwargs:
-                indicator_code = str(action.kwargs['indicator_code']).strip().lower()
-                for code, src_ids in self._country_codes_by_node.items():
-                    if indicator_code == code:
-                        for src_id in src_ids:
-                            if src_id != tgt_id:
-                                src_action = self.actions[src_id]
-                                src_label = f'{src_action.action}({src_action.kwargs})'
-                                logging.info(f'🔗 {src_label} --[indicator_code="{code}"]--> {tgt_label}')
-                                self.add_edge(src_id, tgt_id, label='indicator_code match')
-                                break
+                indicator_code = str(action.kwargs['indicator_code'])
+                for src_id, search_results in self._search_results_by_node.items():
+                    if not isinstance(search_results, list):
+                        continue
+                    for item in search_results:
+                        if not isinstance(item, dict):
+                            continue
+                        candidate_code = str(item.get('indicator_code', '')).strip()
+                        if indicator_code == candidate_code and src_id != tgt_id:
+                            src_action = self.actions[src_id]
+                            src_label = f'{src_action.action}({src_action.kwargs})'
+                            logging.info(f'🔗 {src_label} --[indicator_code="{candidate_code}"]--> {tgt_id}')
+                            self.add_edge(src_id, tgt_id, label='indicator_code match')
+                            break
 
             # 6. Add error/warning edge if not already present (for completeness)
             result = getattr(action, 'result', None)
@@ -424,10 +428,38 @@ class FrankensteinGraph(nx.DiGraph):
                     if not self.has_edge(tgt_id, self._error_node_id):
                         self.add_edge(tgt_id, self._error_node_id, label='error')
                         logging.info(f'🚨 (edges) Added edge from {tgt_id} to error node')
-                elif result.strip().startswith('Warning:') and self._warning_node_id:
-                    if not self.has_edge(tgt_id, self._warning_node_id):
-                        self.add_edge(tgt_id, self._warning_node_id, label='warning')
-                        logging.info(f'⚠️ (edges) Added edge from {tgt_id} to warning node')
+                elif (
+                    result.strip().startswith('Warning:')
+                    and self._warning_node_id
+                    and not self.has_edge(tgt_id, self._warning_node_id)
+                ):
+                    self.add_edge(tgt_id, self._warning_node_id, label='warning')
+                    logging.info(f'⚠️ (edges) Added edge from {tgt_id} to warning node')
+
+        # --- Add fuzzy edges for nearly-equal numeric results ---
+        node_ids = list(self.actions.keys())
+        for i, id_a in enumerate(node_ids):
+            result_a = getattr(self.actions[id_a], 'result', None)
+            try:
+                val_a = float(result_a)
+            except (TypeError, ValueError):
+                continue
+            for id_b in node_ids[i + 1 :]:
+                result_b = getattr(self.actions[id_b], 'result', None)
+                try:
+                    val_b = float(result_b)
+                except (TypeError, ValueError):
+                    continue
+                if id_a == id_b:
+                    continue
+                diff = abs(val_a - val_b)
+                max_val = max(abs(val_a), abs(val_b))
+                if 0 < diff < max_val * 0.0001:
+                    # Add fuzzy edge in both directions for symmetry
+                    if not self.has_edge(id_a, id_b):
+                        self.add_edge(id_a, id_b, label='fuzzy match')
+                    if not self.has_edge(id_b, id_a):
+                        self.add_edge(id_b, id_a, label='fuzzy match')
 
     # ---------- visual helper --------------------------------------------
     def draw_pretty(self, pos='tree'):
@@ -534,7 +566,7 @@ class FrankensteinGraph(nx.DiGraph):
             else:
                 labels[n] = fmt(d['label'], d.get('args'), d)
 
-        pos = self.compute_tree_layout() if layout == 'tree' else nx.random_layout(self)
+        pos = self.compute_tree_layout() if layout == 'tree' else nx.shell_layout(self)
         plt.figure(figsize=(13, 8))
         nx.draw(self, pos, node_size=3000, node_color='lightblue', with_labels=False, arrows=True, edge_color='gray')
         nx.draw_networkx_labels(self, pos, labels, font_size=8)
@@ -551,5 +583,5 @@ if __name__ == '__main__':
 
     df = pd.read_json('eval/runs/gpt-4o-mini_answerable-full.jsonl', orient='records', lines=True)
 
-    G = FrankensteinGraph(df.iloc[3])
+    G = FrankensteinGraph(df.iloc[0])
     G.draw(layout='shell')

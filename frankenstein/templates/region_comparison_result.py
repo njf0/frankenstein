@@ -23,8 +23,9 @@ class RegionComparisonResult(FrankensteinQuestion):
 
         """
         self.templates = (
-            'For the country in {region} that had the {operator} {property} in {year_2}, and what was its value in {year_1}?',
+            'For the country in {region} that had the {operator} {property} in {year_2}, what was its value in {year_1}?',
             'In {year_1}, what was the {property} for the country in {region} that had the {operator} value for that indicator in {year_2}?',
+            'What was the {property} in {year_1} for the country in {region} that had the {operator} value for that indicator in {year_2}?',
         )
 
         allowed_values = {

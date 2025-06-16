@@ -273,7 +273,7 @@ class Runner:
             return self.matcher.match(final_answer, gold_answer, answer_format)
         else:
             logging.warning('⚠️  No final answer found in the messages.')
-            return None
+            return None, None
 
 
 if __name__ == '__main__':

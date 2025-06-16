@@ -120,11 +120,20 @@ class Year(Slot):
 
 
 if __name__ == '__main__':
+    # print something like ===== Subject Values =====
+    print('Subject Values'.center(30, '='))
     print(Subject.get_values())
+    print('Region Values'.center(30, '='))
     print(Region.get_values())
+    print('Property Values'.center(30, '='))
     print(Property.get_values())
+    print('Nary Operator Values'.center(30, '='))
     print(NaryOperator.get_values())
+    print('Binary Operator Values'.center(30, '='))
     print(BinaryOperator.get_values())
+    print('Aggregation Operator Values'.center(30, '='))
     print(AggregationOperator.get_values())
+    print('Current Year'.center(30, '='))
     print(Year.get_current_year())
+    print('Past Years'.center(30, '='))
     print(Year.get_values())

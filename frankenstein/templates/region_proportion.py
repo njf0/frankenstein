@@ -105,8 +105,7 @@ class RegionProportion(FrankensteinQuestion):
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            if value is not None:
-                region_values.append(value)
+            region_values.append(value)
 
         # Check for missing data
         if any(v is None for v in region_values):

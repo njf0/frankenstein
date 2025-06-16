@@ -55,7 +55,7 @@ TEMPLATES = get_templates(templates)
 class TemplateFiller:
     """Fill slot values in templates and compute answers."""
 
-    def __init__(self, templates, n, overwrite=False):
+    def __init__(self, templates, n, save=False, overwrite=False):
         """Initialize TemplateFiller.
 
         Parameters
@@ -70,6 +70,7 @@ class TemplateFiller:
         """
         self.templates = templates
         self.n = n
+        self.save = save
         self.overwrite = overwrite
         # Optional: mapping of template_name to set of categories to skip
         self.skip_categories = {
@@ -81,10 +82,12 @@ class TemplateFiller:
             'FactorIncreaseComparison': {'answerable-partial'},
             'IncreasePropertyComparison': {'unanswerable-partial'},
             'PropertyOfSubject': {'unanswerable-partial', 'answerable-partial'},
-            'PropertyRatio': {'unanswerable-partial'},
+            'PropertyRatioComparison': {'unanswerable-partial', 'answerable-partial'},
             'RankPositionChange': {'answerable-partial'},
             'RegionComparisonResult': {'unanswerable-partial'},
             'RegionComparison': {'unanswerable-partial', 'answerable-partial'},
+            'RegionPropertyChange': {'unanswerable-partial'},
+            'RegionPropertyRatio': {'unanswerable-partial'},
             'RegionProportionChange': {'unanswerable-partial', 'answerable-partial'},
             'RegionProportion': {'unanswerable-partial', 'answerable-partial'},
             'RegionRangeComparison': {'unanswerable-partial'},
@@ -129,7 +132,7 @@ class TemplateFiller:
         """
         # Check is Path('dataset') is populated
         outdir = Path('dataset')
-        if outdir.exists() and any(outdir.iterdir()) and not self.overwrite:
+        if self.save and outdir.exists() and any(outdir.iterdir()) and not self.overwrite:
             logging.warning(
                 'Output directory "dataset" is not empty. Use --overwrite to re-generate the dataset.',
             )
@@ -221,12 +224,10 @@ class TemplateFiller:
                     t.create_question(combination)
                     t.compute_actions()
                     output = t.format_output()
-                    # Add template name to output for traceability
-                    output['template_name'] = template_name
 
                     # Determine answerability and data availability
-                    answerable = output['metadata'].get('answerable', None)
-                    data_availability = output['metadata'].get('data_availability', None)
+                    answerable = output.get('answerable', None)
+                    data_availability = output.get('data_availability', None)
 
                     updated_any = False
                     if (
@@ -432,5 +433,5 @@ if __name__ == '__main__':
     selected_templates = [t for t in TEMPLATES if t[0] in args.templates]
 
     # Fill templates
-    filler = TemplateFiller(selected_templates, args.number, overwrite=args.overwrite)
+    filler = TemplateFiller(selected_templates, args.number, save=args.save, overwrite=args.overwrite)
     results = filler.run(save=args.save)

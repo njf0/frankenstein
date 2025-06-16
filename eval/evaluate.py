@@ -1,4 +1,5 @@
 import argparse
+import ast
 import logging
 from pathlib import Path
 
@@ -67,6 +68,7 @@ class FrankensteinEvaluator:
 
         """
         all_messages = []
+        preds = []
         corrects = []
         errors = []
         i = 1
@@ -82,30 +84,31 @@ class FrankensteinEvaluator:
             # Should log slot values to compare with the model's output
 
             logging.info('Question Metadata')
-            self.log_metadata_table(row['metadata'])
+            self.log_question_info(row)
 
+            # Run the model on the question
             messages = self.runner.loop(row['question'])
 
             # Extract gold answer and answer_format
             gold_answer = row['answer']
-            answer_format = None
-            if isinstance(row, pd.Series) and 'metadata' in row and isinstance(row['metadata'], dict):
-                answer_format = row['metadata'].get('answer_format')
+            answer_format = row['answer_format']
 
             # Use Runner for evaluation and logging
             match_result = self.runner.match_results(messages, gold_answer, answer_format)
-            if match_result is not None:
-                correct, error = match_result
-            else:
-                correct, error = False, 100.0
+            correct, error = match_result
             corrects.append(correct)
             errors.append(error)
 
             all_messages.append(self.runner.format_messages(messages))
 
+            # Use Matcher.extract_final_answer to get the model prediction
+            pred = self.runner.matcher.extract_final_answer(messages)
+            preds.append(pred)
+
             i += 1
 
         self.dataset['messages'] = all_messages
+        self.dataset['pred'] = preds
         self.dataset['correct'] = corrects
         self.dataset['error'] = errors
 
@@ -138,9 +141,9 @@ class FrankensteinEvaluator:
             arrow = '-' * (key_width + 1 - len(str(k))) + '>'
             logging.info(f"⚙️ '{k}' {arrow} {v!r}")
 
-    def log_metadata_table(
+    def log_question_info(
         self,
-        metadata: dict,
+        row: pd.Series,
     ) -> None:
         """Log metadata in a formatted table.
 
@@ -150,15 +153,21 @@ class FrankensteinEvaluator:
             Metadata dictionary to log.
 
         """
-        key_width = max(len(str(k)) for k in metadata)
-        for k, v in metadata.items():
+        keys = ['question_template', 'slot_values', 'answerable', 'answer_format', 'data_availability']
+        key_width = max(len(str(k)) for k in keys)
+        for k in keys:
             if k == 'slot_values':
-                self.log_metadata_table(v)
+                for sk, sv in row.get(k, {}).items():
+                    # Arrow line replaces padding: key + ('-' * (key_width - len(key))) + '>'
+                    arrow = '-' * (key_width + 1 - len(str(sk))) + '>'
+                    lit_sv = ast.literal_eval(sv)
+                    logging.info(f"🔑 '{sk}' {arrow} {lit_sv!r}")
             else:
+                v = row.get(k)
                 # Arrow line replaces padding: key + ('-' * (key_width - len(key))) + '>'
                 arrow = '-' * (key_width + 1 - len(str(k))) + '>'
-                # Can we add a good emoji for 'metadata'?
-                logging.info(f"🔑 '{k}' {arrow} {v!r}")
+                lit_v = ast.literal_eval(v)
+                logging.info(f"🔑 '{k}' {arrow} {lit_v!r}")
 
 
 if __name__ == '__main__':

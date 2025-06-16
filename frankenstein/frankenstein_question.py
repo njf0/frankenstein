@@ -198,20 +198,16 @@ class FrankensteinQuestion:
         self,
     ) -> dict:
         """Format question, facts, etc., for output into dataset."""
-        # Ensure 'property_original' is included in metadata if present
-        metadata = {
-            'question_template': self.__class__.__name__,
+        return {
+            'id': self.metadata['id'],
+            'question_template': self.metadata['question_template'],
+            'question': self.question,
+            'actions': self.actions,
+            'answer': self.answer,
             'slot_values': self.slot_values,
             'answerable': self.metadata['answerable'],
             'data_availability': self.metadata['data_availability'],
             'answer_format': self.metadata['answer_format'],
-            'total_actions': len(self.actions),
-        }
-        return {
-            'question': self.question,
-            'actions': self.actions,
-            'answer': self.answer,
-            'metadata': metadata,
         }
 
     def compute_answer(self) -> str:

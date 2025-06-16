@@ -1,8 +1,11 @@
 """Flexible answer matcher that can handle various answer formats."""
 
 import ast
+import json
 import logging
 import re
+
+import pandas as pd
 
 
 class Matcher:
@@ -12,13 +15,40 @@ class Matcher:
         """Initialize the Matcher."""
         self.percent_tolerance = percent_tolerance
 
+    def extract_final_answer(self, messages):
+        """Extract the final answer from a list of messages (dicts)."""
+        final_answer = None
+        for message in messages:
+            if message.get('role') == 'assistant' and message.get('tool_calls'):
+                for tool_call in message['tool_calls']:
+                    if tool_call.get('function', {}).get('name') == 'final_answer':
+                        arguments = tool_call['function']['arguments']
+                        # Fix: Only parse if arguments is a string
+                        if isinstance(arguments, str):
+                            parsed_args = json.loads(arguments)
+                        elif isinstance(arguments, dict):
+                            parsed_args = arguments
+                        else:
+                            parsed_args = {}
+                        final_answer = parsed_args.get('answer')
+                        break
+            if final_answer is not None:
+                break
+        return final_answer
+
     def match(
         self,
-        pred: str,
+        pred,
         gold: str,
         answer_format: str | None = None,
     ) -> tuple[bool, float]:
-        """Match predicted and gold answers using the specified answer format."""
+        """Match predicted and gold answers using the specified answer format.
+
+        If pred is a list of messages, extract the final answer.
+        """
+        # If pred is a list of dicts (messages), extract the final answer
+        if isinstance(pred, list) and pred and isinstance(pred[0], dict):
+            pred = self.extract_final_answer(pred)
         # Accept both 'list' and 'list[str]' as list formats
         if answer_format in ('list', 'list[str]', 'list[int]', 'list[float]'):
             return self.match_list(pred, gold)
@@ -123,7 +153,7 @@ class Matcher:
         gold_val = gold
 
         pred_bool = bool_map.get(str(pred_val).strip().lower(), pred_val)
-        logging.info(f'🔬 Parsed pred {pred} -> {pred_bool}')
+        logging.info(f"🔬 Parsed pred '{pred}' -> {pred_bool}")
 
         correct = bool(pred_bool) == bool(gold_val)
         if correct:
@@ -262,3 +292,25 @@ class Matcher:
                 return True, percent_error
         logging.warning('🔬 Matcher() match_fallback | No matcher succeeded.')
         return False, 100.0
+
+    def match_row(self, row: pd.Series):
+        """Match a DataFrame row by extracting messages, gold answer, and answer format.
+
+        Parameters
+        ----------
+        row : pd.Series
+            A row from a DataFrame containing at least 'messages', 'answer', and optionally 'metadata'.
+
+        Returns
+        -------
+        (bool, float)
+            Tuple of (correct, percent_error).
+
+        """
+        messages = row.get('messages')
+        gold = row.get('answer')
+        answer_format = None
+        metadata = row.get('metadata')
+        if isinstance(metadata, dict):
+            answer_format = metadata.get('answer_format')
+        return self.match(messages, gold, answer_format)
