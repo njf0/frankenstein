@@ -6,7 +6,7 @@ import openai
 import pandas as pd
 from rich.logging import RichHandler
 
-from eval.runner import Runner  # <-- Use Runner instead of vLLMModel
+from runner import Runner
 
 
 class FrankensteinEvaluator:
@@ -72,13 +72,15 @@ class FrankensteinEvaluator:
         errors = []
         i = 1
 
-        for _, row in self.dataset.iterrows():
-            self.runner = Runner(
-                model_name=self.model_name,
-                toolbox=self.toolbox,
-                n_shots=self.n_shots,
-            )
+        # Initialize Runner once
+        self.runner = Runner(
+            model_name=self.model_name,
+            toolbox=self.toolbox,
+            n_shots=self.n_shots,
+        )
 
+        for _, row in self.dataset.iterrows():
+            self.runner.reset()
             logging.info(f'✨ Processing question {i}/{len(self.dataset)}')
             # Should log slot values to compare with the model's output
 

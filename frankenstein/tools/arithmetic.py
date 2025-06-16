@@ -267,8 +267,10 @@ def rank(
     sorted_values = sorted(values, reverse=True)
     try:
         return sorted_values.index(query_value) + 1
-    except ValueError:
-        return -1
+    except ValueError as e:
+        raise ValueError(
+            f"Value {query_value} not found in the list. Ensure it is present in the values."
+        ) from e
 
 
 def sort(
@@ -297,7 +299,7 @@ def index(
 
     Args:
         values: List of values.
-        query_value: Value to find.
+        query_value:
 
     Returns:
         Index of query_value in values, or -1 if not found.

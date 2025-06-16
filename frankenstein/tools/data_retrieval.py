@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+import ast
 
 import pandas as pd
 from rich.logging import RichHandler
@@ -35,6 +36,13 @@ def search_for_indicator_codes(
         A list of indicator codes that match the keywords.
 
     """
+    # If keywords is a string representation of a list, parse it
+    keywords = ast.literal_eval(keywords)
+    if isinstance(keywords, str):
+        try:
+            keywords = ast.literal_eval(keywords)
+        except Exception:
+            pass
     data = pd.read_json(Path('resources', 'indicator_paraphrases.json'))
     # Store original names for later use
     data['original_name'] = data['name']

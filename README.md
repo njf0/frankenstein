@@ -48,6 +48,17 @@ python setup.sh
 4. **Customize and extend:**
    Add new tools, templates, or datasets as needed.
 
+## Evaluating models
+To evaluate models using `vllm serve`, the following commands may be useful:
+```bash
+vllm serve --model "/public/hf/models/meta-llama/Meta-Llama-3.1-8B-Instruct" --served-model-name "Llama-3.1-8B-Instruct" --tool-call-parser "llama3_json" --enable-auto-tool-choice
+vllm serve --model "/public/hf/models/Qwen/Qwen3-4B" --served-model-name "Qwen3-4B" --tool-call-parser "hermes" --enable-auto-tool-choice
+```
+Then, `eval/evaluate.py` can be used to run evaluations against the served models. For example:
+```bash
+python eval/evaluate.py --model "Llama-3.1-8B-Instruct"
+```
+
 ## Project Highlights
 
 - **Research-Ready:** Built for reproducibility and extensibility.

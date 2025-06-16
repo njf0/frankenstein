@@ -16,8 +16,8 @@ from frankenstein.action import FrankensteinAction
 from frankenstein.utils import get_tool_metadata, parse_json_arguments, to_json_safe
 
 SINGLE_TOOL_CALL_MODELS = {
-    'Llama-3.1',
-    'Llama-3.2',
+    'Meta-Llama-3.1-8B-Instruct',
+    'Llama-3.2-3B-Instruct',
 }
 
 
@@ -157,6 +157,11 @@ class Runner:
             output = self.generate(messages)
             message = output.message
 
+            # --- Stop if model generates nothing ---
+            if message.content is None and not message.tool_calls:
+                logging.warning("🛑 Model generated an empty message or no tool calls. Stopping loop.")
+                return messages
+
             # Format and log the model's response
             tool_calls = message.tool_calls or []
             parsed_tool_calls = []
@@ -177,13 +182,27 @@ class Runner:
                 'role': message.role,
                 'content': message.content,
             }
+            # --- Only include one tool call for single-tool-call models ---
+            single_tool_call_model = any(m in self.model_name for m in SINGLE_TOOL_CALL_MODELS)
             if parsed_tool_calls:
-                assistant_message['tool_calls'] = parsed_tool_calls
+                if single_tool_call_model:
+                    assistant_message['tool_calls'] = [parsed_tool_calls[0]]
+                else:
+                    assistant_message['tool_calls'] = parsed_tool_calls
 
             messages.append(assistant_message)
 
+            # --- Filter tool calls for single-tool-call models ---
+            tool_calls_to_execute = parsed_tool_calls
+            single_tool_call_model = any(m in self.model_name for m in SINGLE_TOOL_CALL_MODELS)
+            if single_tool_call_model:
+                if parsed_tool_calls:
+                    tool_calls_to_execute = [parsed_tool_calls[0]]
+                else:
+                    tool_calls_to_execute = []
+
             # Execute each tool call
-            for tool_call in parsed_tool_calls:
+            for tool_call in tool_calls_to_execute:
                 name = tool_call['function']['name']
                 arguments = tool_call['function']['arguments']
                 parsed_args = json.loads(arguments)
@@ -216,6 +235,16 @@ class Runner:
                         'content': str(result),
                     }
                 )
+
+                # After first tool call, add user message if single-tool-call model
+                if single_tool_call_model:
+                    messages.append(
+                        {
+                            'role': 'user',
+                            'content': "Note: Only the first tool call was executed because this model only supports single tool calls at a time. Please only call one tool per turn.",
+                        }
+                    )
+                    break
 
             # --- Folded stop condition here ---
             # Stop if 'final_answer' tool has been called once
@@ -275,11 +304,16 @@ class Runner:
             logging.warning('⚠️  No final answer found in the messages.')
             return None, None
 
+    def reset(self):
+        """Reset stateful variables for a new evaluation run."""
+        self.tool_call_counts = {}
+        # Add any other stateful variables that should be reset here
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run a tool-using loop with a language model.')
     parser.add_argument(
-        '--model_name',
+        '--model-name',
         type=str,
         default='openai/gpt-4o-mini',
         help='The name of the model to use.',
@@ -297,7 +331,7 @@ if __name__ == '__main__':
         help='If set, the loop will wait for user input after each message.',
     )
     parser.add_argument(
-        '--n_shots',
+        '--n-shots',
         type=int,
         default=0,
         help='Number of n-shot tool call examples to prepend to the prompt.',
@@ -339,6 +373,9 @@ if __name__ == '__main__':
         timestamp = datetime.datetime.now()
         output_path = Path('eval', 'dumps', f'{timestamp}').with_suffix('.json')
         parsed_messages = parse_json_arguments(messages)
+        with output_path.open('w') as f:
+            f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
+        logging.info(f"💾 Saved messages to '{output_path}'")
         with output_path.open('w') as f:
             f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
         logging.info(f"💾 Saved messages to '{output_path}'")
