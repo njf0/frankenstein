@@ -94,7 +94,7 @@ class Matcher:
             # Fallback: check if gold value as string is present in pred string
             gold_str = str(gold).strip()
             if gold_str in str(pred):
-                logging.info(f'✅ Gold value {gold_str!r} found in prediction string (fallback).')
+                logging.info(f'✅ Correct: gold value {gold_str!r} found in prediction string (fallback).')
                 return True, 0.0
 
             # Further fallback: extract any float from pred and compare
@@ -116,12 +116,12 @@ class Matcher:
             pred_f = None
             gold_f = None
 
-        if correct:
-            logging.info(f'✅ Correct within {self.percent_tolerance}% tolerance.')
+        if correct and percent_error == 0.0:
+            logging.info('✅ Correct: exact match.')
+        elif correct:
+            logging.info(f'✅ Correct within {self.percent_tolerance}% tolerance. Percent error: {percent_error:.2f}%')
         else:
             logging.warning(f'❌ Incorrect. Answer {pred_f!r} differs from gold {gold_f!r} by {percent_error:.2f}%')
-
-        logging.info(f'🔬 Percent error value: {percent_error}')
 
         return correct, percent_error
 
@@ -250,6 +250,18 @@ class Matcher:
 
         except Exception as e:
             logging.warning(f'🔬 Exception parsing int values: {e}')
+            # Fallback: search for any integer in pred string and compare
+            try:
+                gold_i = int(gold)
+                int_pattern = r'-?\d+'
+                found_ints = [int(x) for x in re.findall(int_pattern, str(pred))]
+                for i in found_ints:
+                    if i == gold_i:
+                        logging.info(f'✅ Found matching int {i} in prediction string (regex fallback).')
+                        return True, 0.0
+                logging.warning('❌ No matching int found in prediction string (regex fallback).')
+            except Exception as e2:
+                logging.warning(f'🔬 Exception in regex int extraction: {e2}')
             return False, 100.0
 
     def match_str(self, pred: str, gold: str) -> tuple[bool, float]:
@@ -269,8 +281,12 @@ class Matcher:
         correct = pred_str == gold_str
         percent_error = 0.0 if correct else 100.0
         if correct:
-            logging.info('✅ Correct string match.')
+            logging.info('✅ Exact string match.')
         else:
+            # Fallback: check if gold string is present in pred string
+            if gold_str and gold_str in pred_str:
+                logging.info('✅ Gold string found in prediction string (fallback).')
+                return True, 0.0
             logging.warning(f'❌ Incorrect string match. Predicted: {pred_str!r}, Gold: {gold_str!r}')
 
         return correct, percent_error

@@ -1,5 +1,4 @@
 import argparse
-import ast
 import logging
 from pathlib import Path
 
@@ -160,14 +159,12 @@ class FrankensteinEvaluator:
                 for sk, sv in row.get(k, {}).items():
                     # Arrow line replaces padding: key + ('-' * (key_width - len(key))) + '>'
                     arrow = '-' * (key_width + 1 - len(str(sk))) + '>'
-                    lit_sv = ast.literal_eval(sv)
-                    logging.info(f"🔑 '{sk}' {arrow} {lit_sv!r}")
+                    logging.info(f"🔑 '{sk}' {arrow} {sv!r}")
             else:
                 v = row.get(k)
                 # Arrow line replaces padding: key + ('-' * (key_width - len(key))) + '>'
                 arrow = '-' * (key_width + 1 - len(str(k))) + '>'
-                lit_v = ast.literal_eval(v)
-                logging.info(f"🔑 '{k}' {arrow} {lit_v!r}")
+                logging.info(f"🔑 '{k}' {arrow} {v!r}")
 
 
 if __name__ == '__main__':
