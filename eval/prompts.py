@@ -15,6 +15,8 @@ BASE_PROMPT = """You are a helpful assistant tasked with answering questions tha
 
 The questions involve using World Bank data for various countries and indicators.
 
+The question cannot be answered in a single step, so you must break it down into smaller tasks, and use the results of each step to inform the next step.
+
 Create a step-by-step plan to answer the question, and then execute each step of that plan to arrive at the final answer.
 
 If you need to, take the time to think through the problem and plan your approach before acting.

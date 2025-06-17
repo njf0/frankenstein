@@ -20,6 +20,7 @@ class FrankensteinEvaluator:
         num_samples: int = -1,
         split: str = 'answerable-full',
         n_shots: int = 0,
+        debug: bool = False,  # Add debug argument
     ):
         """Initialize the evaluator.
 
@@ -45,6 +46,7 @@ class FrankensteinEvaluator:
         self.num_samples = num_samples
         self.split = split
         self.n_shots = n_shots
+        self.debug = debug
 
         # Load dataset from dataset/{split}.jsonl or .json
         dataset_path = Path('dataset', f'{self.split}.jsonl')
@@ -78,6 +80,7 @@ class FrankensteinEvaluator:
                 model_name=self.model_name,
                 toolbox=self.toolbox,
                 n_shots=self.n_shots,
+                debug=self.debug,  # Pass debug to Runner
             )
 
             logging.info(f'✨ Processing question {i}/{len(self.dataset)}')
@@ -215,6 +218,11 @@ if __name__ == '__main__':
         default=0,
         help='Number of n-shot tool call examples to prepend to the prompt.',
     )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='If set, the loop will wait for user input after each message.',
+    )
     args = parser.parse_args()
 
     evaluator = FrankensteinEvaluator(
@@ -224,6 +232,7 @@ if __name__ == '__main__':
         num_samples=args.num_samples,
         split=args.split,
         n_shots=args.n_shots,
+        debug=args.debug,  # Pass debug argument
     )
     evaluator.args = args  # Attach args for logging
 

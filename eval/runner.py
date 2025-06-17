@@ -183,7 +183,7 @@ class Runner:
 
             # If output is None, it indicates a malformed tool call or an error
             if output is None:
-                logging.error("⚠️  Malformed tool call(s) detected. Exiting.")
+                logging.error("❌   Malformed tool calls detected. Exiting.")
                 return messages
 
             # If output is a RateLimitError, return the messages so far
