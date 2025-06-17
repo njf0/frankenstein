@@ -96,7 +96,7 @@ class FrankensteinEvaluator:
             # Use Runner for evaluation and logging
             match_result = runner.match_results(messages, gold_answer, answer_format)
             correct, error = match_result
-            corrects.append(correct)
+            corrects.append(correct if correct is not None else False)
             errors.append(error)
 
             all_messages.append(runner.format_messages(messages))
