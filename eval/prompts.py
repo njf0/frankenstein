@@ -39,6 +39,8 @@ If a tool call fails, use the error message to help you debug the issue, re-plan
 
 Only provide the answer itself (e.g., the number, list, string, or boolean value) as your answer. Do not include any additional text or explanations. Do not perform any rounding or formatting of the answer.
 
+**You must create a `final_answer` tool call to return your final answer - I will not be able to parse your answer from message content.**
+
 """
 
 ALL_TOOLS = f"""The tools you have access to are below:

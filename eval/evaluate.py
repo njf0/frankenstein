@@ -102,7 +102,7 @@ class FrankensteinEvaluator:
             logging.info(f'✨ Processing question {i}/{len(self.dataset)}')
 
             # Log question metadata
-            logging.info('[bold magenta]🔎 Question Metadata[/bold magenta]')
+            logging.info('🔎 Question Metadata')
             self.log_question_info(row)
 
             # Run the model on the question
@@ -188,8 +188,6 @@ class FrankensteinEvaluator:
 
 
 if __name__ == '__main__':
-    logging.info('[bold green]Frankenstein Evaluator[/bold green]')
-
     parser = argparse.ArgumentParser(description='Evaluate a transformer model.')
     parser.add_argument(
         '--model-name',

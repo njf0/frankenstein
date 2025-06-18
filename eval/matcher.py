@@ -1,12 +1,29 @@
 """Flexible answer matcher that can handle various answer formats."""
 
 import ast
+import csv
 import json
 import logging
 import re
 
 import pandas as pd
 
+
+def load_country_code_map():
+    code_map = {}
+    try:
+        with open('/home/frankenstein/resources/un_m49_cleaned.csv', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                code = row['country_code'].strip().upper()
+                name = row['country_name'].strip()
+                if code and name:
+                    code_map[code] = name
+    except Exception as e:
+        logging.warning(f"Could not load country code map: {e}")
+    return code_map
+
+COUNTRY_CODE_MAP = load_country_code_map()
 
 class Matcher:
     """Flexible answer matcher using answer_format from metadata."""
@@ -119,9 +136,9 @@ class Matcher:
         if correct and percent_error == 0.0:
             logging.info('✅ Correct: exact match.')
         elif correct:
-            logging.info(f'✅ Correct within {self.percent_tolerance}% tolerance. Percent error: {percent_error:.2f}%')
+            logging.info(f'✅ Correct within {self.percent_tolerance}% tolerance. Percent error: {percent_error:.5f}%')
         else:
-            logging.warning(f'❌ Incorrect. Answer {pred_f!r} differs from gold {gold_f!r} by {percent_error:.2f}%')
+            logging.warning(f'❌ Incorrect. Answer {pred_f!r} differs from gold {gold_f!r} by {percent_error:.5f}%')
 
         return correct, percent_error
 
@@ -196,16 +213,31 @@ class Matcher:
                 logging.warning(f'🔬 Failed to parse gold: {e}. Using fallback parsing.')
                 gold_list = [item.strip() for item in str(gold).strip('[](){}').split(',') if item.strip()]
 
+        # --- Country code fallback for lists ---
+        def normalize_country(val):
+            val = str(val).strip()
+            # If 3-letter uppercase, try to map to country name
+            if len(val) == 3 and val.isupper():
+                mapped = COUNTRY_CODE_MAP.get(val)
+                if mapped:
+                    return mapped.strip().lower()
+            return val.lower()
+
+        pred_list_norm = [normalize_country(x) for x in pred_list]
+        gold_list_norm = [normalize_country(x) for x in gold_list]
+
         # Log parsed values
         logging.info(f'🔬 Parsed pred_list: {pred_list}')
         logging.info(f'🔬 Parsed gold_list: {gold_list}')
+        logging.info(f'🔬 Normalized pred_list: {pred_list_norm}')
+        logging.info(f'🔬 Normalized gold_list: {gold_list_norm}')
 
         # Compare as sets (order-insensitive)
-        if isinstance(pred_list, list) and isinstance(gold_list, list):
-            pred_set = {str(x) for x in pred_list}
-            gold_set = {str(x) for x in gold_list}
+        if isinstance(pred_list_norm, list) and isinstance(gold_list_norm, list):
+            pred_set = set(pred_list_norm)
+            gold_set = set(gold_list_norm)
             correct = pred_set == gold_set
-            percent_error = 0.0 if correct else float(abs(len(pred_list) - len(gold_list)))
+            percent_error = 0.0 if correct else float(abs(len(pred_list_norm) - len(gold_list_norm)))
 
             if correct:
                 logging.info('✅ Correct set match.')
@@ -276,8 +308,8 @@ class Matcher:
         logging.info(f'🔬 Matcher().match_str(pred={pred!r}, gold={gold!r})')
         pred_str = str(pred).strip().lower()
         gold_str = str(gold).strip().lower()
-        logging.info(f'🔬 Parsed pred: {pred_str}')
-        logging.info(f'🔬 Parsed gold: {gold_str}')
+        logging.info(f"🔬 Parsed pred: '{pred_str}'")
+        logging.info(f"🔬 Parsed gold: '{gold_str}'")
         correct = pred_str == gold_str
         percent_error = 0.0 if correct else 100.0
         if correct:
@@ -287,6 +319,21 @@ class Matcher:
             if gold_str and gold_str in pred_str:
                 logging.info('✅ Gold string found in prediction string (fallback).')
                 return True, 0.0
+
+            # Fallback: if pred is a 3-letter uppercase country code, try to convert to country name
+            pred_code = str(pred).strip()
+            if len(pred_code) == 3 and pred_code.isupper():
+                country_name = COUNTRY_CODE_MAP.get(pred_code)
+                if country_name:
+                    logging.info(f"🔬 Fallback: Converted code '{pred_code}' to country name '{country_name}'")
+                    if country_name.strip().lower() == gold_str:
+                        logging.info('✅ Pred country code matches gold country name.')
+                        return True, 0.0
+                    # Also try if gold is a code and pred is a name
+                    if gold_str in COUNTRY_CODE_MAP and COUNTRY_CODE_MAP[gold_str.upper()].strip().lower() == pred_str:
+                        logging.info('✅ Gold code matches predicted country name.')
+                        return True, 0.0
+
             logging.warning(f'❌ Incorrect string match. Predicted: {pred_str!r}, Gold: {gold_str!r}')
 
         return correct, percent_error

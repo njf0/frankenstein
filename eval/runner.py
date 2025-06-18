@@ -113,20 +113,30 @@ class Runner:
         try:
             token_count = litellm.token_counter(messages=messages, model=self.model_name)
             self.total_tokens += token_count
-            logging.info(f'🔢 Tokens used: {token_count}/{self.total_tokens}')
+            logging.info(f'🔢 {token_count} tokens used')
         except Exception as e:
             logging.warning(f'⚠️  Could not count tokens: {e}')
 
-        response = litellm.completion(
-            model=self.model_name,
-            messages=messages,
-            temperature=0.0,
-            tools=self.tools,
-            # tool_choice='required',
-            api_base=self.api_base,
-            # max_tokens=4096,
-            # max_input_tokens=4096,
-        )
+        # Log the number of messages so far
+        logging.info(f"📨 {len(messages)} messages created")
+
+        try:
+            response = litellm.completion(
+                model=self.model_name,
+                messages=messages,
+                temperature=0.0,
+                tools=self.tools,
+                # tool_choice='required',
+                api_base=self.api_base,
+                # max_tokens=4096,
+                # max_input_tokens=4096,
+            )
+        except litellm.exceptions.ContextWindowExceededError as e:
+            logging.error(f'❌ Context window exceeded: {e}') # noqa: TRY400
+            return None
+        except litellm.exceptions.BadRequestError as e:
+            logging.error(f'❌ Bad request: {e}') # noqa: TRY400
+            return None
 
         output = response.choices[0]
         message = response.choices[0].message
@@ -163,6 +173,7 @@ class Runner:
                 i = input('')
                 if i.lower() == 'nodebug':
                     self.debug = False
+                    litellm._logging._disable_debugging()
                     logging.info('🪲  Debug mode disabled.')
                 if i.lower() == 'exit':
                     logging.info('🛑  Cancelled by user.')
@@ -170,6 +181,8 @@ class Runner:
 
             # Generate a response from the model
             output = self.generate(messages)
+            if output is None:# Caused by error
+                return messages
 
             # If output is None, it indicates a malformed tool call or an error
             # if output is None:
@@ -198,6 +211,9 @@ class Runner:
                     }
                 )
 
+            # Log the assistant message content
+            logging.info(f"💬 {message.content}")
+
             # Only include 'tool_calls' if not empty
             assistant_message = {
                 'role': message.role,
@@ -213,6 +229,7 @@ class Runner:
                     assistant_message['tool_calls'] = parsed_tool_calls
 
             messages.append(assistant_message)
+
 
             # Filter tool calls for single-tool-call models
             tool_calls_to_execute = parsed_tool_calls
@@ -269,6 +286,11 @@ class Runner:
             total_tool_calls = sum(self.tool_call_counts.values())
             if total_tool_calls >= 100:
                 logging.warning('🛑 Stopping: total number of tool calls reached the limit of 100.')
+                return messages
+
+            # Also stop after 200 messages to prevent infinite loops
+            if len(messages) >= 200:
+                logging.warning('🛑 Stopping: total number of messages reached the limit of 200.')
                 return messages
 
             # --- Folded stop condition here ---
