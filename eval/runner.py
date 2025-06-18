@@ -2,9 +2,9 @@
 
 import argparse
 import datetime
+import gc
 import json
 import logging
-import gc
 from pathlib import Path
 
 import litellm
@@ -113,29 +113,20 @@ class Runner:
         try:
             token_count = litellm.token_counter(messages=messages, model=self.model_name)
             self.total_tokens += token_count
-            logging.info(f"🔢 Tokens used: {token_count}/{self.total_tokens}")
+            logging.info(f'🔢 Tokens used: {token_count}/{self.total_tokens}')
         except Exception as e:
-            logging.warning(f"⚠️  Could not count tokens: {e}")
+            logging.warning(f'⚠️  Could not count tokens: {e}')
 
-        try:
-            response = litellm.completion(
-                model=self.model_name,
-                messages=messages,
-                temperature=0.0,
-                tools=self.tools,
-                tool_choice='required',
-                api_base=self.api_base,
-                max_tokens=4096,
-                max_input_tokens=4096,
-            )
-            # tool_calls = response["choices"][0]["message"]["tool_calls"]
-        except (KeyError, TypeError, json.JSONDecodeError, litellm.exceptions.BadRequestError) as e:
-            return None
-        except litellm.exceptions.RateLimitError as e:
-            logging.error(
-                f"❌ RateLimitError: {e}. This may be due to exceeding the model's maximum context length."
-            )
-            return e
+        response = litellm.completion(
+            model=self.model_name,
+            messages=messages,
+            temperature=0.0,
+            tools=self.tools,
+            # tool_choice='required',
+            api_base=self.api_base,
+            # max_tokens=4096,
+            # max_input_tokens=4096,
+        )
 
         output = response.choices[0]
         message = response.choices[0].message
@@ -168,7 +159,6 @@ class Runner:
         logging.info(f'❓ {input_text!r}')
 
         while True:
-
             if self.debug:
                 i = input('')
                 if i.lower() == 'nodebug':
@@ -182,13 +172,13 @@ class Runner:
             output = self.generate(messages)
 
             # If output is None, it indicates a malformed tool call or an error
-            if output is None:
-                logging.error("❌   Malformed tool calls detected. Exiting.")
-                return messages
+            # if output is None:
+            #     logging.error("❌   Malformed tool calls detected. Exiting.")
+            #     return messages
 
-            # If output is a RateLimitError, return the messages so far
-            elif isinstance(output, litellm.exceptions.RateLimitError):
-                return messages
+            # # If output is a RateLimitError, return the messages so far
+            # elif isinstance(output, litellm.exceptions.RateLimitError):
+            #     return messages
 
             # Otherwise, process the output
             message = output.message
@@ -215,7 +205,7 @@ class Runner:
             }
 
             # Only include one tool call for single-tool-call models
-            single_tool_call_model = any(m in self.model_name for m in SINGLE_TOOL_CALL_MODELS)
+            single_tool_call_model = self.model_name in SINGLE_TOOL_CALL_MODELS
             if parsed_tool_calls:
                 if single_tool_call_model:
                     assistant_message['tool_calls'] = [parsed_tool_calls[0]]
@@ -226,12 +216,9 @@ class Runner:
 
             # Filter tool calls for single-tool-call models
             tool_calls_to_execute = parsed_tool_calls
-            single_tool_call_model = any(m in self.model_name for m in SINGLE_TOOL_CALL_MODELS)
+            single_tool_call_model = self.model_name in SINGLE_TOOL_CALL_MODELS
             if single_tool_call_model:
-                if parsed_tool_calls:
-                    tool_calls_to_execute = [parsed_tool_calls[0]]
-                else:
-                    tool_calls_to_execute = []
+                tool_calls_to_execute = [parsed_tool_calls[0]] if parsed_tool_calls else []
 
             # Execute each tool call
             for tool_call in tool_calls_to_execute:
@@ -273,7 +260,7 @@ class Runner:
                     messages.append(
                         {
                             'role': 'user',
-                            'content': "Note: Only the first tool call was executed because this model only supports single tool calls at a time. Please only call one tool per turn.",
+                            'content': 'Note: Only the first tool call was executed because this model only supports single tool calls at a time. Please only call one tool per turn.',
                         }
                     )
                     break
@@ -281,7 +268,7 @@ class Runner:
             # After each tool call, check total tool calls limit
             total_tool_calls = sum(self.tool_call_counts.values())
             if total_tool_calls >= 100:
-                logging.warning("🛑 Stopping: total number of tool calls reached the limit of 100.")
+                logging.warning('🛑 Stopping: total number of tool calls reached the limit of 100.')
                 return messages
 
             # --- Folded stop condition here ---
@@ -294,9 +281,10 @@ class Runner:
             # Check repeated tool calls (already counted in self.tool_call_counts)
             for (tool, args_json), count in self.tool_call_counts.items():
                 if count >= self.MAX_REPEATED_TOOL_CALLS:
-                    logging.warning(f'🛑 Tool "{tool}" called {self.MAX_REPEATED_TOOL_CALLS} times with same arguments: {args_json}')
+                    logging.warning(
+                        f'🛑 Tool "{tool}" called {self.MAX_REPEATED_TOOL_CALLS} times with same arguments: {args_json}'
+                    )
                     return messages
-
 
             # Optionally run garbage collection to free memory
             gc.collect()

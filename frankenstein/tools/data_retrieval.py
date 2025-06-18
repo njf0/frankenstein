@@ -1,8 +1,8 @@
 """Library of tools to be provided to the model and provide the basis for solutions."""
 
+import ast
 import logging
 from pathlib import Path
-import ast
 
 import pandas as pd
 from rich.logging import RichHandler
@@ -36,29 +36,38 @@ def search_for_indicator_codes(
         A list of indicator codes that match the keywords.
 
     """
-    # If keywords is a string representation of a list, parse it
-    keywords = ast.literal_eval(keywords)
+    # Accept both string and list input for keywords
     if isinstance(keywords, str):
         try:
+            # Try to parse string representation of a list
             keywords = ast.literal_eval(keywords)
         except Exception:
-            pass
-    data = pd.read_json(Path('resources', 'indicator_paraphrases.json'))
-    # Store original names for later use
-    data['original_name'] = data['name']
-    # Lowercase for searching
-    data['name'] = data['name'].str.lower()
-    # --- Split multi-word keywords into individual words ---
+            # If not a list, treat as a single keyword
+            keywords = [keywords]
+    if not isinstance(keywords, list):
+        keywords = [str(keywords)]
+
+    # Lowercase and split multi-word keywords into individual words
     split_keywords = []
     for keyword in keywords:
-        split_keywords.extend(keyword.lower().split())
+        if isinstance(keyword, str):
+            split_keywords.extend(keyword.lower().split())
+        else:
+            split_keywords.append(str(keyword).lower())
     keywords = split_keywords
-    data = data[data['name'].str.contains('|'.join(keywords))]
-    # Use original_name for output
-    data = data[['id', 'original_name']]
-    data = data.rename(columns={'id': 'indicator_code', 'original_name': 'indicator_name'})
-    # Now output into a list of dictionaries
-    data = data.to_dict(orient='records')
+
+    data = pd.read_json(Path('resources', 'indicator_paraphrases.json'))
+    data['original_name'] = data['name']
+    data['name'] = data['name'].str.lower()
+    # Only search if keywords is not empty
+    if keywords:
+        data = data[data['name'].str.contains('|'.join(keywords))]
+        data = data[['id', 'original_name']]
+        data = data.rename(columns={'id': 'indicator_code', 'original_name': 'indicator_name'})
+        data = data.to_dict(orient='records')
+    else:
+        data = []
+
     return data
 
 

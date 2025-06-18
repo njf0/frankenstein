@@ -5,8 +5,20 @@ from pathlib import Path
 import openai
 import pandas as pd
 from rich.logging import RichHandler
-
 from runner import Runner
+
+FORMAT = '%(message)s'
+logging.basicConfig(
+    level=logging.INFO,
+    format=FORMAT,
+    datefmt='[%X]',
+    handlers=[
+        RichHandler(
+            tracebacks_suppress=[openai],
+            markup=True,
+        )
+    ],
+)
 
 
 class FrankensteinEvaluator:
@@ -74,19 +86,23 @@ class FrankensteinEvaluator:
         errors = []
         i = 1
 
+        runner = Runner(
+            model_name=self.model_name,
+            toolbox=self.toolbox,
+            n_shots=self.n_shots,
+            debug=self.debug,
+        )
+
         for _, row in self.dataset.iterrows():
-            # Create a new Runner for each example
-            runner = Runner(
-                model_name=self.model_name,
-                toolbox=self.toolbox,
-                n_shots=self.n_shots,
-                debug=self.debug,  # Pass debug to Runner
-            )
+            # Reset runner for each question
+            runner.reset()
+
+            # os.system('cls' if os.name == 'nt' else 'clear')
 
             logging.info(f'✨ Processing question {i}/{len(self.dataset)}')
-            # Should log slot values to compare with the model's output
 
-            logging.info('Question Metadata')
+            # Log question metadata
+            logging.info('[bold magenta]🔎 Question Metadata[/bold magenta]')
             self.log_question_info(row)
 
             # Run the model on the question
@@ -108,7 +124,6 @@ class FrankensteinEvaluator:
             pred = runner.matcher.extract_final_answer(messages)
             preds.append(pred)
 
-            del runner
             i += 1
 
         self.dataset['messages'] = all_messages
@@ -173,13 +188,7 @@ class FrankensteinEvaluator:
 
 
 if __name__ == '__main__':
-    FORMAT = '%(message)s'
-    logging.basicConfig(
-        level=logging.INFO,
-        format=FORMAT,
-        datefmt='[%X]',
-        handlers=[RichHandler(tracebacks_suppress=[openai])],
-    )
+    logging.info('[bold green]Frankenstein Evaluator[/bold green]')
 
     parser = argparse.ArgumentParser(description='Evaluate a transformer model.')
     parser.add_argument(
@@ -236,5 +245,4 @@ if __name__ == '__main__':
     )
     evaluator.args = args  # Attach args for logging
 
-    evaluator.run()
     evaluator.run()
