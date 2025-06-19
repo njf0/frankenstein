@@ -111,9 +111,8 @@ class Runner:
         """
         # --- Token counting and logging ---
         try:
-            token_count = litellm.token_counter(messages=messages, model=self.model_name)
-            self.total_tokens += token_count
-            logging.info(f'🔢 {token_count} tokens used')
+            self.token_count = litellm.token_counter(messages=messages, model=self.model_name)
+            logging.info(f'🔢 {self.token_count} tokens used')
         except Exception as e:
             logging.warning(f'⚠️  Could not count tokens: {e}')
 
@@ -136,6 +135,12 @@ class Runner:
             return None
         except litellm.exceptions.BadRequestError as e:
             logging.error(f'❌ Bad request: {e}') # noqa: TRY400
+            return None
+        except litellm.exceptions.RateLimitError as e:
+            logging.error(f'❌ Rate limit exceeded: {e}') # noqa: TRY400
+            return None
+        except litellm.exceptions.TimeoutError as e:
+            logging.error(f'❌ Timeout error: {e}') # noqa: TRY400
             return None
 
         output = response.choices[0]
@@ -182,16 +187,16 @@ class Runner:
             # Generate a response from the model
             output = self.generate(messages)
             if output is None:# Caused by error
-                return messages
+                return messages, self.token_count
 
             # If output is None, it indicates a malformed tool call or an error
             # if output is None:
             #     logging.error("❌   Malformed tool calls detected. Exiting.")
-            #     return messages
+            #     return messages, self.token_count
 
             # # If output is a RateLimitError, return the messages so far
             # elif isinstance(output, litellm.exceptions.RateLimitError):
-            #     return messages
+            #     return messages, self.token_count
 
             # Otherwise, process the output
             message = output.message
@@ -286,19 +291,19 @@ class Runner:
             total_tool_calls = sum(self.tool_call_counts.values())
             if total_tool_calls >= 100:
                 logging.warning('🛑 Stopping: total number of tool calls reached the limit of 100.')
-                return messages
+                return messages, self.token_count
 
             # Also stop after 200 messages to prevent infinite loops
             if len(messages) >= 200:
                 logging.warning('🛑 Stopping: total number of messages reached the limit of 200.')
-                return messages
+                return messages, self.token_count
 
             # --- Folded stop condition here ---
             # Stop if 'final_answer' tool has been called once
             for (tool, args_json), count in self.tool_call_counts.items():
                 if tool == 'final_answer' and count == 1:
                     logging.info('🏁 Final answer tool called.')
-                    return messages
+                    return messages, self.token_count
 
             # Check repeated tool calls (already counted in self.tool_call_counts)
             for (tool, args_json), count in self.tool_call_counts.items():
@@ -306,12 +311,12 @@ class Runner:
                     logging.warning(
                         f'🛑 Tool "{tool}" called {self.MAX_REPEATED_TOOL_CALLS} times with same arguments: {args_json}'
                     )
-                    return messages
+                    return messages, self.token_count
 
             # Optionally run garbage collection to free memory
             gc.collect()
 
-        return messages
+        return messages, self.token_count
 
     def format_messages(
         self,

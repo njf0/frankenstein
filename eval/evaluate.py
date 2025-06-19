@@ -84,6 +84,7 @@ class FrankensteinEvaluator:
         preds = []
         corrects = []
         errors = []
+        tokens = []
         i = 1
 
         runner = Runner(
@@ -106,7 +107,8 @@ class FrankensteinEvaluator:
             self.log_question_info(row)
 
             # Run the model on the question
-            messages = runner.loop(row['question'])
+            messages, tokens_used = runner.loop(row['question'])
+            tokens.append(tokens_used)
 
             # Extract gold answer and answer_format
             gold_answer = row['answer']
@@ -127,6 +129,7 @@ class FrankensteinEvaluator:
             i += 1
 
         self.dataset['messages'] = all_messages
+        self.dataset['tokens'] = tokens
         self.dataset['pred'] = preds
         self.dataset['correct'] = corrects
         self.dataset['error'] = errors
