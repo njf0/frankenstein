@@ -139,7 +139,7 @@ class Runner:
         except litellm.exceptions.RateLimitError as e:
             logging.error(f'❌ Rate limit exceeded: {e}') # noqa: TRY400
             return None
-        except litellm.exceptions.TimeoutError as e:
+        except litellm.exceptions.Timeout as e:
             logging.error(f'❌ Timeout error: {e}') # noqa: TRY400
             return None
 
