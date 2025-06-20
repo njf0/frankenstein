@@ -4,6 +4,7 @@ import ast
 import csv
 import json
 import logging
+from pathlib import Path
 import re
 
 import pandas as pd
@@ -12,7 +13,7 @@ import pandas as pd
 def load_country_code_map():
     code_map = {}
     try:
-        with open('/home/frankenstein/resources/un_m49_cleaned.csv', encoding='utf-8') as f:
+        with Path('resources','un_m49_cleaned.csv').open(encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 code = row['country_code'].strip().upper()
