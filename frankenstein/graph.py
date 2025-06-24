@@ -578,8 +578,12 @@ class FrankensteinGraph(nx.DiGraph):
 
 
 if __name__ == '__main__':
-    FORMAT = '%(message)s'
-    logging.basicConfig(level=logging.DEBUG, format=FORMAT, datefmt='[%X]', handlers=[RichHandler()])
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(message)s',
+        datefmt='[%X]',
+        handlers=[RichHandler()],
+    )
 
     df = pd.read_json('eval/runs/gpt-4o-mini_answerable-full.jsonl', orient='records', lines=True)
 

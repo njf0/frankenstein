@@ -117,7 +117,7 @@ class Runner:
             logging.warning(f'⚠️  Could not count tokens: {e}')
 
         # Log the number of messages so far
-        logging.info(f"📨 {len(messages)} messages created")
+        logging.info(f'📨 {len(messages)} messages created')
 
         try:
             response = litellm.completion(
@@ -131,16 +131,16 @@ class Runner:
                 # max_input_tokens=4096,
             )
         except litellm.exceptions.ContextWindowExceededError as e:
-            logging.error(f'❌ Context window exceeded: {e}') # noqa: TRY400
+            logging.error(f'❌ Context window exceeded: {e}')  # noqa: TRY400
             return None
         except litellm.exceptions.BadRequestError as e:
-            logging.error(f'❌ Bad request: {e}') # noqa: TRY400
+            logging.error(f'❌ Bad request: {e}')  # noqa: TRY400
             return None
         except litellm.exceptions.RateLimitError as e:
-            logging.error(f'❌ Rate limit exceeded: {e}') # noqa: TRY400
+            logging.error(f'❌ Rate limit exceeded: {e}')  # noqa: TRY400
             return None
         except litellm.exceptions.Timeout as e:
-            logging.error(f'❌ Timeout error: {e}') # noqa: TRY400
+            logging.error(f'❌ Timeout error: {e}')  # noqa: TRY400
             return None
 
         output = response.choices[0]
@@ -186,7 +186,7 @@ class Runner:
 
             # Generate a response from the model
             output = self.generate(messages)
-            if output is None:# Caused by error
+            if output is None:  # Caused by error
                 return messages, self.token_count
 
             # If output is None, it indicates a malformed tool call or an error
@@ -217,7 +217,7 @@ class Runner:
                 )
 
             # Log the assistant message content
-            logging.info(f"💬 {message.content}")
+            logging.info(f'💬 {message.content}')
 
             # Only include 'tool_calls' if not empty
             assistant_message = {
@@ -234,7 +234,6 @@ class Runner:
                     assistant_message['tool_calls'] = parsed_tool_calls
 
             messages.append(assistant_message)
-
 
             # Filter tool calls for single-tool-call models
             tool_calls_to_execute = parsed_tool_calls
@@ -402,8 +401,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    FORMAT = '%(message)s'
-    logging.basicConfig(level='NOTSET', format=FORMAT, datefmt='[%X]', handlers=[RichHandler()])
+    logging.basicConfig(
+        level='NOTSET',
+        format='%(message)s',
+        datefmt='[%X]',
+        handlers=[RichHandler()],
+    )
 
     runner = Runner(
         model_name=args.model_name,

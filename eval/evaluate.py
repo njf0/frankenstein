@@ -7,10 +7,9 @@ import pandas as pd
 from rich.logging import RichHandler
 from runner import Runner
 
-FORMAT = '%(message)s'
 logging.basicConfig(
     level=logging.INFO,
-    format=FORMAT,
+    format='%(message)s',
     datefmt='[%X]',
     handlers=[
         RichHandler(
@@ -91,7 +90,7 @@ class FrankensteinEvaluator:
         for idx, (_, row) in enumerate(self.dataset.iterrows()):
             runner.reset()
 
-            logging.info(f'✨ Processing question {idx+1}/{len(self.dataset)}')
+            logging.info(f'✨ Processing question {idx + 1}/{len(self.dataset)}')
             logging.info('🔎 Question Metadata')
             self.log_question_info(row)
 
@@ -103,22 +102,23 @@ class FrankensteinEvaluator:
             pred = runner.matcher.extract_final_answer(messages)
 
             result_row = row.to_dict()
-            result_row.update({
-                'messages': runner.format_messages(messages),
-                'tokens': tokens_used,
-                'pred': pred,
-                'correct': correct if correct is not None else False,
-                'error': error,
-            })
+            result_row.update(
+                {
+                    'messages': runner.format_messages(messages),
+                    'tokens': tokens_used,
+                    'pred': pred,
+                    'correct': correct if correct is not None else False,
+                    'error': error,
+                }
+            )
             results.append(result_row)
 
             # Save after every iteration
             if self.save:
                 model_name = str(self.model_name).split('/')[-1]
-                output_path = Path('eval', 'runs', f'{model_name}_{self.split}_incomplete.jsonl')
+                output_path = Path('eval', 'runs', f'{model_name}_{self.split}s.jsonl')
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 pd.DataFrame(results).to_json(output_path, orient='records', lines=True)
-                # logging.info(f'Saved partial results to {output_path}')
 
         results_df = pd.DataFrame(results)
 

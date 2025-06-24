@@ -421,10 +421,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Set up logging
-    FORMAT = '%(message)s'
+
     logging.basicConfig(
         level=logging.ERROR,
-        format=FORMAT,
+        format='%(message)s',
         datefmt='[%X]',
         handlers=[RichHandler()],
     )
