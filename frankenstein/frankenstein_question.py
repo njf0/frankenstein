@@ -152,13 +152,25 @@ class FrankensteinQuestion:
                 slot_values['property_original'] = property_original
                 formatted_slot_values['property_original'] = property_original
 
-        # --- Add full country name to slot_values if 'subject' is present ---
+        # --- Add full country name to slot_values if 'subject', 'subject_a', or 'subject_b' is present ---
         if 'subject' in slot_values:
             subject_code = slot_values['subject']
             subject_name = self.c2n.get(subject_code)
             if subject_name:
                 slot_values['subject_name'] = subject_name
                 formatted_slot_values['subject_name'] = subject_name
+        if 'subject_a' in slot_values:
+            subject_a_code = slot_values['subject_a']
+            subject_a_name = self.c2n.get(subject_a_code)
+            if subject_a_name:
+                slot_values['subject_a_name'] = subject_a_name
+                formatted_slot_values['subject_a_name'] = subject_a_name
+        if 'subject_b' in slot_values:
+            subject_b_code = slot_values['subject_b']
+            subject_b_name = self.c2n.get(subject_b_code)
+            if subject_b_name:
+                slot_values['subject_b_name'] = subject_b_name
+                formatted_slot_values['subject_b_name'] = subject_b_name
 
         # Get property name from id (paraphrase)
         if 'property' in slot_values:
