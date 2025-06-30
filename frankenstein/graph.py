@@ -2,6 +2,7 @@ import json
 import logging
 import string
 from collections import defaultdict, deque
+from pathlib import Path
 from typing import Any, Dict, List
 
 import matplotlib.pyplot as plt
@@ -11,6 +12,11 @@ from matplotlib.patches import FancyBboxPatch
 from rich.logging import RichHandler
 
 from frankenstein.action import FrankensteinAction  # ← make sure import path is correct
+
+DATA_DIR = Path('resources')
+INDICATOR_DATA_DIR = DATA_DIR / 'wdi'
+INDICATOR_KEY = DATA_DIR / 'wdi.csv'
+UN_M49 = DATA_DIR / 'un_m49_cleaned.csv'
 
 
 class FrankensteinGraph(nx.DiGraph):
@@ -22,7 +28,7 @@ class FrankensteinGraph(nx.DiGraph):
     ):
         # Expect a pandas Series row as input
         super().__init__()
-        slot_values = row.get('metadata', {}).get('slot_values', {})
+        slot_values = row.get('slot_values', {})
         question_structure = [{k: v} for k, v in slot_values.items()]
         question = row['question']
         messages = row['messages']
@@ -31,6 +37,18 @@ class FrankensteinGraph(nx.DiGraph):
         self.value_provenance: dict[str, List[str]] = {}  # value → list[producer_id]
         self.question_nodes: dict[tuple[str, str], str] = {}  # (key,val) → node_id
         self.question = question  # Store the NLQ if provided
+
+        # Mapping of country codes to names and vice versa
+        self.country_region_data = pd.read_csv(UN_M49)
+        self.c2n = self.country_region_data.set_index('country_code')['country_name'].to_dict()
+        self.n2c = self.country_region_data.set_index('country_name')['country_code'].to_dict()
+
+        # Create mapping of indicator names to indicator ids
+        self.indicator_key = pd.read_csv(INDICATOR_KEY)
+        self.n2i = self.indicator_key.set_index('name')['id'].to_dict()
+        self.i2n = self.indicator_key.set_index('id')['name'].to_dict()
+
+        self._call_order_counter = 0  # Track call order for nodes
 
         self._add_origin_root(question_structure or [])
         self._build_graph(messages)
@@ -60,13 +78,15 @@ class FrankensteinGraph(nx.DiGraph):
         flat_pairs = [(k, str(v)) for d in structures for k, v in d.items()]
         self.origin_values = set(flat_pairs)
 
-        # Add one root node
+        # Add one root node with call_order=0
         self.add_node(
             self.origin_node_id,
             label=self.question,
             type='question_param',
             values=dict(flat_pairs),  # optional metadata
+            call_order=0,
         )
+        self._call_order_counter = 1  # Next node will be 1
         logging.info(f'🌟 Added question root node with slot values: {dict(flat_pairs)}')
 
     # ---------- tree layout ----------------------------------------------
@@ -234,7 +254,15 @@ class FrankensteinGraph(nx.DiGraph):
                     self.actions[call_id] = action
                     # Use formatted args for logging
                     formatted_args = self._format_args(action.kwargs)
-                    self.add_node(call_id, label=action.action, args=action.kwargs, result=action.result)
+                    # Assign call_order and increment counter
+                    self.add_node(
+                        call_id,
+                        label=action.action,
+                        args=action.kwargs,
+                        result=action.result,
+                        call_order=self._call_order_counter,
+                    )
+                    self._call_order_counter += 1
                     logging.info(f'🧱 Added node for action with id {call_id}:')
                     logging.info(f'    🔗 Name: {action.action}')
                     logging.info(f'    🔍 Args: {action.kwargs}')
@@ -301,15 +329,19 @@ class FrankensteinGraph(nx.DiGraph):
 
         """
         for tgt_id, action in self.actions.items():
+            # tgt_id is the node ID for the current action
+            # action is the FrankensteinAction object for this node
+
             formatted_args = self._format_args(action.kwargs)
             tgt_label = f'{action.action}({formatted_args})'
             logging.info(f'➡️  Processing edges for node: {tgt_label}')
             for arg_key, arg_val in action.kwargs.items():
-                # --- NEW: For lists, preserve index for each value ---
                 normed_vals = self._norm(arg_val)
-                # For lists, we want to match each value in order, and allow multiple edges for repeated values.
+                # Buffer for candidate edges: {val: (src_id, label, call_order)}
+                candidate_edges = {}
                 used_src_ids = set()
                 for idx, val in enumerate(normed_vals):
+                    src_ids = []  # <-- Fix: always define src_ids for this value
                     # 1. Heuristic: origin node matches action arguments
                     if (arg_key, val) in self.origin_values:
                         self.add_edge(self.origin_node_id, tgt_id, label=f'{arg_key}={val}')
@@ -330,67 +362,173 @@ class FrankensteinGraph(nx.DiGraph):
                     if (
                         action.action == 'get_country_code_from_name'
                         and arg_key == 'country_name'
-                        and ('subject_name', val) in self.origin_values
+                        and (
+                            ('subject_name', val) in self.origin_values
+                            or ('subject_name', self.n2c.get(val, val)) in self.origin_values
+                            or ('subject_a', val) in self.origin_values
+                            or ('subject_a', self.n2c.get(val, val)) in self.origin_values
+                            or ('subject_b', val) in self.origin_values
+                            or ('subject_b', self.n2c.get(val, val)) in self.origin_values
+                        )
                     ):
                         self.add_edge(self.origin_node_id, tgt_id, label=f'subject_name={val}')
                         logging.info(f'🌱 Question({self.origin_node_id}) --[subject_name="{val}"]--> {tgt_label}')
                         continue
 
-                    # 2. Heuristic: produced value matches argument in subsequent action
-                    # --- MODIFIED: allow multiple edges for repeated values ---
+                    # 1c. Heuristic: year from slot_values matches action arguments
+                    if (
+                        action.action == 'retrieve_value'
+                        and arg_key == 'year'
+                        and (
+                            ('year', val) in self.origin_values
+                            or ('year_a', val) in self.origin_values
+                            or ('year_b', val) in self.origin_values
+                        )
+                    ):
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'year={val}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[year="{val}"]--> {tgt_label}')
+                        continue
+
+                    # --- COLLECT CANDIDATE EDGES FOR THIS ARGUMENT VALUE ---
+                    # 2. Heuristic: produced value matches argument in a subsequent action
                     src_ids = self.value_provenance.get(val, [])
-                    # Only consider src_ids that are not tgt_id and not already used for this argument position
                     for src_id in reversed(src_ids):
-                        if src_id != tgt_id and src_id not in used_src_ids:
-                            src_action = self.actions[src_id]
+                        src_action = self.actions.get(src_id)
+                        if src_action and src_action.action == 'final_answer':
+                            continue
+                        if src_id != tgt_id:
+                            call_order = self.nodes[src_id].get('call_order', -1)
+                            candidate_edges.setdefault(val, []).append((call_order, src_id, f'{arg_key}={val}'))
+                    # .0 trimming match
+                    if not src_ids:
+                        for prov_val, prov_src_ids in self.value_provenance.items():
+                            try:
+                                if (str(val).endswith('.0') and str(prov_val) == str(int(float(val)))) or (
+                                    str(prov_val).endswith('.0') and str(val) == str(int(float(prov_val)))
+                                ):
+                                    for src_id in reversed(prov_src_ids):
+                                        src_action = self.actions.get(src_id)
+                                        if src_action and src_action.action != 'final_answer' and src_id != tgt_id:
+                                            call_order = self.nodes[src_id].get('call_order', -1)
+                                            candidate_edges.setdefault(val, []).append((call_order, src_id, f'{arg_key}={val}'))
+                                            break
+                            except Exception:
+                                continue
+                    # Fuzzy match
+                    if not src_ids and not any('=.0' in c[2] for c in candidate_edges.get(val, [])):
+                        for prov_val, prov_src_ids in self.value_provenance.items():
+                            try:
+                                f_val = float(val)
+                                f_prov = float(prov_val)
+                            except Exception:
+                                continue
+                            diff = abs(f_val - f_prov)
+                            if diff > 0 and diff < 1e-8:
+                                for src_id in reversed(prov_src_ids):
+                                    src_action = self.actions.get(src_id)
+                                    if src_action and src_action.action != 'final_answer' and src_id != tgt_id:
+                                        call_order = self.nodes[src_id].get('call_order', -1)
+                                        candidate_edges.setdefault(val, []).append((call_order, src_id, f'{arg_key}≈{val}'))
+                                        break
+
+                    # --- PICK THE MOST RECENT (HIGHEST call_order) ---
+                    if candidate_edges:
+                        best = max(candidate_edges[val], key=lambda x: x[0])
+                        _, src_id, label = best
+                        if (src_id, label) not in used_src_ids:
+                            src_action = self.actions.get(src_id)
                             src_label = f'{src_action.action}({self._format_args(src_action.kwargs)})'
-                            logging.info(f'🔄 {src_label} --[{arg_key}="{val}"]--> {tgt_label}')
-                            self.add_edge(src_id, tgt_id, label=f'{arg_key}={val}')
-                            used_src_ids.add(src_id)
+                            logging.info(f'🔄 [most recent only] {src_label} --[{label}]--> {tgt_label}')
+                            self.add_edge(src_id, tgt_id, label=label)
+                            used_src_ids.add((src_id, label))
+
+                # --- STAGE 1: .0 trimming match ---
+                trimmed_match_found = False
+                if not src_ids:
+                    for prov_val, prov_src_ids in self.value_provenance.items():
+                        # Check if one is str(int) and the other is str(float) ending with .0
+                        try:
+                            if (str(val).endswith('.0') and str(prov_val) == str(int(float(val)))) or (
+                                str(prov_val).endswith('.0') and str(val) == str(int(float(prov_val)))
+                            ):
+                                for src_id in reversed(prov_src_ids):
+                                    src_action = self.actions.get(src_id)
+                                    if src_id != tgt_id and src_id not in used_src_ids and src_action.action != 'final_answer':
+                                        src_label = f'{src_action.action}({self._format_args(src_action.kwargs)})'
+                                        logging.info(
+                                            f'🔄 [.0 trim match] {src_label} --[{arg_key}="{val}" ≈ "{prov_val}"]--> {tgt_label}'
+                                        )
+                                        self.add_edge(src_id, tgt_id, label=f'{arg_key}={val}')
+                                        used_src_ids.add(src_id)
+                                        trimmed_match_found = True
+                                        break
+                                if trimmed_match_found:
+                                    break
+                        except Exception:
+                            continue
+
+                # --- STAGE 2: FUZZY MATCH: numerically close values (<1e-8) ---
+                if not src_ids and not trimmed_match_found:
+                    for prov_val, prov_src_ids in self.value_provenance.items():
+                        try:
+                            f_val = float(val)
+                            f_prov = float(prov_val)
+                        except Exception:
+                            continue
+                        diff = abs(f_val - f_prov)
+                        if diff > 0 and diff < 1e-8:
+                            for src_id in reversed(prov_src_ids):
+                                src_action = self.actions.get(src_id)
+                                if src_id != tgt_id and src_id not in used_src_ids and src_action.action != 'final_answer':
+                                    src_label = f'{src_action.action}({self._format_args(src_action.kwargs)})'
+                                    logging.info(
+                                        f'🔄 [fuzzy match] {src_label} --[{arg_key}="{val}" ≈ "{prov_val}" (diff={diff})]--> {tgt_label}'
+                                    )
+                                    self.add_edge(src_id, tgt_id, label=f'{arg_key}≈{val}')
+                                    used_src_ids.add(src_id)
+                                    break
                             break
-                    # If no unused src_id is found, do nothing (prevents duplicate edges from same src to same tgt for same value)
+                # If no unused src_id is found, do nothing (prevents duplicate edges from same src to same tgt for same value)
 
             # 3. Heuristic: check for NLQ keywords in search_for_indicator_codes and get_indicator_code_from_name
-            if self.question:
-                # For search_for_indicator_codes: check keywords
-                if action.action == 'search_for_indicator_codes' and 'keywords' in action.kwargs:
-                    keywords = action.kwargs['keywords']
-                    if isinstance(keywords, str):
-                        keywords = [keywords]
-                    keyword_words = set()
-                    for kw in keywords:
-                        kw_clean = str(kw).lower().translate(str.maketrans('', '', string.punctuation))
-                        keyword_words.update(kw_clean.split())
-                    overlap = self._question_words & keyword_words
-                    if overlap:
-                        self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→keywords: {"/".join(sorted(overlap))}')
-                        logging.info(
-                            f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
-                        )
-                # For get_indicator_code_from_name: check indicator_name for phrases from NLQ
-                if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
-                    indicator_name = (
-                        str(action.kwargs['indicator_name']).lower().translate(str.maketrans('', '', string.punctuation))
+            # if self.question:
+            # 3a. For search_for_indicator_codes: check keywords
+            if action.action == 'search_for_indicator_codes' and 'keywords' in action.kwargs:
+                keywords = action.kwargs['keywords']
+                if isinstance(keywords, str):
+                    keywords = [keywords]
+                keyword_words = set()
+                for kw in keywords:
+                    kw_clean = str(kw).lower().translate(str.maketrans('', '', string.punctuation))
+                    keyword_words.update(kw_clean.split())
+                overlap = self._question_words & keyword_words
+                if overlap:
+                    self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→keywords: {"/".join(sorted(overlap))}')
+                    logging.info(
+                        f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
                     )
-                    overlap = set()
-                    indicator_words = set(indicator_name.split())
-                    overlap |= self._question_words & indicator_words
-                    q_tokens = self.question.lower().translate(str.maketrans('', '', string.punctuation)).split()
-                    for n in range(2, min(6, len(q_tokens) + 1)):
-                        for i in range(len(q_tokens) - n + 1):
-                            phrase = ' '.join(q_tokens[i : i + n])
-                            if phrase in indicator_name:
-                                overlap.add(phrase)
-                    if overlap:
-                        self.add_edge(self.origin_node_id, tgt_id, label=f'keywords="{"/".join(sorted(overlap))}"')
-                        logging.info(
-                            f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
-                        )
+
+            # 3b. For get_indicator_code_from_name: check indicator_name for phrases from NLQ
+            if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
+                indicator_name = (
+                    str(action.kwargs['indicator_name']).lower().translate(str.maketrans('', '', string.punctuation))
+                )
+                indicator_words = set(indicator_name.split())
+                overlap = self._question_words & indicator_words
+                # Optionally, check if the indicator name appears as a substring in the question
+                if overlap or indicator_name in self.question.lower():
+                    self.add_edge(self.origin_node_id, tgt_id, label=f'keywords="{"/".join(sorted(overlap))}"')
+                    logging.info(
+                        f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
+                    )
 
             # 4. Heuristic: search_for_indicator_codes results match get_indicator_code_from_name
             if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
                 indicator_name = str(action.kwargs['indicator_name']).strip().lower()
                 for src_id, search_results in self._search_results_by_node.items():
+                    src_action = self.actions.get(src_id)
+                    if src_action and src_action.action == 'final_answer':
+                        continue
                     if not isinstance(search_results, list):
                         continue
                     for item in search_results:
@@ -408,6 +546,9 @@ class FrankensteinGraph(nx.DiGraph):
             if action.action == 'retrieve_value' and 'indicator_code' in action.kwargs:
                 indicator_code = str(action.kwargs['indicator_code'])
                 for src_id, search_results in self._search_results_by_node.items():
+                    src_action = self.actions.get(src_id)
+                    if src_action and src_action.action == 'final_answer':
+                        continue
                     if not isinstance(search_results, list):
                         continue
                     for item in search_results:
@@ -418,7 +559,7 @@ class FrankensteinGraph(nx.DiGraph):
                             src_action = self.actions[src_id]
                             src_label = f'{src_action.action}({src_action.kwargs})'
                             logging.info(f'🔗 {src_label} --[indicator_code="{candidate_code}"]--> {tgt_id}')
-                            self.add_edge(src_id, tgt_id, label='indicator_code match')
+                            self.add_edge(src_id, tgt_id, label=f'indicator_code={indicator_code}')
                             break
 
             # 6. Add error/warning edge if not already present (for completeness)
@@ -439,13 +580,19 @@ class FrankensteinGraph(nx.DiGraph):
         # --- Add fuzzy edges for nearly-equal numeric results ---
         node_ids = list(self.actions.keys())
         for i, id_a in enumerate(node_ids):
-            result_a = getattr(self.actions[id_a], 'result', None)
+            action_a = self.actions[id_a]
+            if action_a.action == 'final_answer':
+                continue
+            result_a = getattr(action_a, 'result', None)
             try:
                 val_a = float(result_a)
             except (TypeError, ValueError):
                 continue
             for id_b in node_ids[i + 1 :]:
-                result_b = getattr(self.actions[id_b], 'result', None)
+                action_b = self.actions[id_b]
+                if action_b.action == 'final_answer':
+                    continue
+                result_b = getattr(action_b, 'result', None)
                 try:
                     val_b = float(result_b)
                 except (TypeError, ValueError):
@@ -528,7 +675,9 @@ class FrankensteinGraph(nx.DiGraph):
         for src, tgt, data in self.edges(data=True):
             x0, y0 = pos[src]
             x1, y1 = pos[tgt]
-            ax.annotate('', xy=(x1, y1), xytext=(x0, y0), arrowprops={'arrowstyle': '->', 'lw': 1, 'color': 'gray'})
+            # Color red if label contains '≈'
+            edge_color = 'red' if data.get('label', '').find('≈') != -1 else 'gray'
+            ax.annotate('', xy=(x1, y1), xytext=(x0, y0), arrowprops={'arrowstyle': '->', 'lw': 1, 'color': edge_color})
 
             # Optional edge label
             label = data.get('label')
@@ -568,12 +717,16 @@ class FrankensteinGraph(nx.DiGraph):
 
         pos = self.compute_tree_layout() if layout == 'tree' else nx.shell_layout(self)
         plt.figure(figsize=(13, 8))
-        nx.draw(self, pos, node_size=3000, node_color='lightblue', with_labels=False, arrows=True, edge_color='gray')
+
+        # --- NEW: Draw edges with color based on label ---
+        edge_colors = []
+        for src, tgt, data in self.edges(data=True):
+            edge_colors.append('red' if data.get('label', '').find('≈') != -1 else 'gray')
+        nx.draw(self, pos, node_size=3000, node_color='lightblue', with_labels=False, arrows=True, edge_color=edge_colors)
         nx.draw_networkx_labels(self, pos, labels, font_size=8)
         nx.draw_networkx_edge_labels(self, pos, edge_labels=nx.get_edge_attributes(self, 'label'), font_size=7)
         plt.title('Frankenstein Tool-Call Graph')
         plt.axis('off')
-        # plt.tight_layout()
         plt.show()
 
 
@@ -587,5 +740,6 @@ if __name__ == '__main__':
 
     df = pd.read_json('eval/runs/gpt-4o-mini_answerable-full.jsonl', orient='records', lines=True)
 
-    G = FrankensteinGraph(df.iloc[0])
+    G = FrankensteinGraph(df.sample(1).iloc[0])
     G.draw(layout='shell')
+    # G.draw_pretty()
