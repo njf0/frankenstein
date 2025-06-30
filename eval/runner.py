@@ -31,6 +31,7 @@ class Runner:
         toolbox: str = 'all',
         debug: bool = False,
         n_shots: int = 0,
+        rerun_on_incorrect: bool = False,  # New argument
     ) -> None:
         """Initialize the Runner class.
 
@@ -56,6 +57,7 @@ class Runner:
             self.model_name = 'hosted_vllm/' + model_name
 
         self.n_shots = n_shots
+        self.rerun_on_incorrect = rerun_on_incorrect
 
         if toolbox == 'arithmetic':
             self.system_prompt = BASE_PROMPT + TOOL_USE_BASE + ARITHMETIC_TOOLS
@@ -152,6 +154,8 @@ class Runner:
     def loop(
         self,
         input_text: str,
+        gold_answer=None,
+        answer_format: str | None = None,
     ) -> list[dict]:
         """Run a full tool-using loop for a single input.
 
@@ -299,10 +303,40 @@ class Runner:
 
             # --- Folded stop condition here ---
             # Stop if 'final_answer' tool has been called once
+            final_answer_found = False
             for (tool, args_json), count in self.tool_call_counts.items():
                 if tool == 'final_answer' and count == 1:
                     logging.info('🏁 Final answer tool called.')
-                    return messages, self.token_count
+                    final_answer_found = True
+                    break
+
+            if final_answer_found:
+                # Run matcher if gold_answer is provided
+                if gold_answer is not None:
+                    match_result = (
+                        self.matcher.match_results(messages, gold_answer, answer_format)
+                        if hasattr(self, 'matcher')
+                        else (None, None)
+                    )
+                    if match_result is None or match_result[0] is None:
+                        logging.warning('⚠️  No match result available.')
+                        return messages, self.token_count
+                    is_correct, _ = match_result
+                    if not is_correct and self.rerun_on_incorrect:
+                        # Append a user message and continue the loop
+                        messages.append(
+                            {
+                                'role': 'user',
+                                'content': 'Your answer was incorrect. Re-think your approach and try again.',
+                            }
+                        )
+                        # Reset only the final_answer tool call count so the loop can continue
+                        # (or optionally reset all tool_call_counts)
+                        for key in list(self.tool_call_counts.keys()):
+                            if key[0] == 'final_answer':
+                                del self.tool_call_counts[key]
+                        continue
+                return messages, self.token_count
 
             # Check repeated tool calls (already counted in self.tool_call_counts)
             for (tool, args_json), count in self.tool_call_counts.items():
@@ -398,6 +432,11 @@ if __name__ == '__main__':
         action='store_true',
         help='When running runner.py with --save, messages will be saves to eval/dumps/',
     )
+    parser.add_argument(
+        '--rerun-on-incorrect',
+        action='store_true',
+        help='If set, rerun the loop with a message if the final answer is incorrect.',
+    )
 
     args = parser.parse_args()
 
@@ -413,6 +452,7 @@ if __name__ == '__main__':
         toolbox=args.toolbox,
         debug=args.debug,
         n_shots=args.n_shots,
+        rerun_on_incorrect=args.rerun_on_incorrect,  # Pass new argument
     )
 
     file = Path('dataset', 'answerable-full.jsonl')
@@ -420,11 +460,15 @@ if __name__ == '__main__':
         dataset = pd.read_json(f, lines=True)
     dataset = dataset.sample(1)
 
-    messages = runner.loop(dataset['question'].to_list()[0])
+    messages = runner.loop(
+        dataset['question'].to_list()[0],
+        gold_answer=dataset['answer'].to_list()[0] if 'answer' in dataset.columns else None,
+        answer_format=dataset['answer_format'].to_list()[0] if 'answer_format' in dataset.columns else None,
+    )
 
     # Example: match results if gold answer and format are present
     gold_answer = dataset['answer'].to_list()[0] if 'answer' in dataset.columns else None
-    answer_format = None
+    answer_format = dataset['answer_format'].to_list()[0] if 'answer_format' in dataset.columns else None
     if 'metadata' in dataset.columns and isinstance(dataset.iloc[0]['metadata'], dict):
         answer_format = dataset.iloc[0]['metadata'].get('answer_format')
     if gold_answer is not None:
@@ -439,5 +483,4 @@ if __name__ == '__main__':
         logging.info(f"💾 Saved messages to '{output_path}'")
         with output_path.open('w') as f:
             f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
-        logging.info(f"💾 Saved messages to '{output_path}'")
         logging.info(f"💾 Saved messages to '{output_path}'")
