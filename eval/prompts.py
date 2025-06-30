@@ -31,7 +31,25 @@ Pay attention to the tool names, arguments, descriptions, and the types of outpu
 
 If there is a tool available that can help you with the next step, you must use it rather than trying to solve the problem without it.
 
-I will execute tool calls that you provide. You can use multiple tools in one step, but make sure you follow the correct format.
+I will execute tool calls that you provide. Each tool call will result in variable(s) being set in the environment.
+
+**You must make subsequent tool calls by passing as arguments the variable names that were set by previous tool calls, not the values themselves.**
+
+For example:
+
+```python
+# This is incorrect:
+result = some_tool_call(arg1=previous_result)
+```
+
+```python
+# This is correct:
+result = get_country_code_from_name(country_name='France') # OK because 'France' used in question.
+# A variable using the tool call id is set in the environment:
+previous_result_variable_name = result
+# Use the variable name in subsequent tool calls:
+result = some_tool_call(arg1=previous_result_variable_name) # I will get the value of previous_result_variable_name from the environment.
+```
 
 Use the results of each tool call to inform your next step. Passing tool calls as arguments to other tool calls is not allowed. Instead, execute each tool call separately and use the results to perform subsequent calls.
 

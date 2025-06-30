@@ -89,6 +89,7 @@ class FrankensteinEvaluator:
 
         for idx, (_, row) in enumerate(self.dataset.iterrows()):
             runner.reset()
+            runner.row = row.to_dict()  # Pass the current row to the runner for context
 
             logging.info(f'✨ Processing question {idx + 1}/{len(self.dataset)}')
             logging.info('🔎 Question Metadata')

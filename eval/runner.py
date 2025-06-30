@@ -2,7 +2,6 @@
 
 import argparse
 import datetime
-import gc
 import json
 import logging
 from pathlib import Path
@@ -31,6 +30,7 @@ class Runner:
         toolbox: str = 'all',
         debug: bool = False,
         n_shots: int = 0,
+        row: dict | None = None,
     ) -> None:
         """Initialize the Runner class.
 
@@ -44,6 +44,8 @@ class Runner:
             If True, the loop will wait for user input after each message.
         n_shots : int
             Number of n-shot examples to prepend to the prompt.
+        row : dict | None
+            Optionally pass a row from a dataframe to use additional context or metadata.
 
         """
         if model_name.startswith('openai/'):
@@ -75,6 +77,8 @@ class Runner:
             self.system_prompt += '\n\n' + create_n_shot_examples(self.n_shots, toolbox=toolbox)
 
         self.debug = debug
+        self.row = row
+
         self.MAX_REPEATED_TOOL_CALLS = 10
         self.tool_call_counts = {}
         self.matcher = Matcher()
@@ -125,7 +129,7 @@ class Runner:
                 messages=messages,
                 temperature=0.0,
                 tools=self.tools,
-                # tool_choice='required',
+                tool_choice='required',
                 api_base=self.api_base,
                 # max_tokens=4096,
                 # max_input_tokens=4096,
@@ -173,6 +177,8 @@ class Runner:
 
         logging.info(f'❓ {input_text!r}')
 
+        variables = {}
+
         while True:
             if self.debug:
                 i = input('')
@@ -189,20 +195,10 @@ class Runner:
             if output is None:  # Caused by error
                 return messages, self.token_count
 
-            # If output is None, it indicates a malformed tool call or an error
-            # if output is None:
-            #     logging.error("❌   Malformed tool calls detected. Exiting.")
-            #     return messages, self.token_count
-
-            # # If output is a RateLimitError, return the messages so far
-            # elif isinstance(output, litellm.exceptions.RateLimitError):
-            #     return messages, self.token_count
-
-            # Otherwise, process the output
             message = output.message
-
-            # Format and log the model's response
             tool_calls = message.tool_calls or []
+
+            # Parse tool calls/convert to a list of dicts
             parsed_tool_calls = []
             for tool_call in tool_calls:
                 parsed_tool_calls.append(
@@ -244,37 +240,81 @@ class Runner:
             # Execute each tool call
             for tool_call in tool_calls_to_execute:
                 name = tool_call['function']['name']
-                arguments = tool_call['function']['arguments']
-                parsed_args = json.loads(arguments)
+                arguments = json.loads(tool_call['function']['arguments'])
 
                 # Format and log the function call
-                args_string = ', '.join([f'{k}={v!r}' for k, v in parsed_args.items()])
+                args_string = ', '.join([f'{k}={v!r}' for k, v in arguments.items()])
                 logging.info(f'🔨 {name}({args_string})')
 
                 # Update the tool call counts
-                key = (name, json.dumps(parsed_args, sort_keys=True))
+                key = (name, json.dumps(arguments, sort_keys=True))
                 self.tool_call_counts[key] = self.tool_call_counts.get(key, 0) + 1
+
+                # Resolve variable references in arguments
+                for k, v in arguments.items():
+                    # Only resolve if the value is a string and matches a variable id
+                    if isinstance(v, str) and v in variables:
+                        arguments[k] = variables[v]
+                        logging.info(f'🔗 Resolved argument "{k}" as variable reference "{v}" → {variables[v]!r}')
+                    elif self.row and isinstance(v, str):
+                        if v in self.row['slot_values'].values():
+                            # Resolve using row context if available
+                            arguments[k] = v
+                            logging.info(f'🔗 Resolved argument "{k}" using row context: {arguments[k]!r}')
+                    else:
+                        logging.info(f'🔗 Argument "{k}" is not a variable reference.')
+                        # Tell model off for not using variables
+                        messages.append(
+                            {
+                                'role': 'tool',
+                                'tool_call_id': tool_call.get('id'),
+                                # Communicate to the model that it should use variables instead of hardcoding values
+                                'content': f'Use variables instead of hardcoding values in arguments: {k}={v!r}',
+                            }
+                        )
 
                 # Execute the function call
                 try:
-                    result = FrankensteinAction(action=name, **parsed_args).execute(error_handling='raise')
-                    logging.info(f'↪️  {result!r}')
+                    tool_call_result = FrankensteinAction(action=name, **arguments).execute(error_handling='raise')
+                    logging.info(f'↪️  {tool_call_result!r}')
 
+                    if isinstance(tool_call_result, (str, dict, float, int)):
+                        variables[tool_call['id']] = tool_call_result
+                        # Log variable creation
+                        logging.info(f'🔧 Variable created: {tool_call["id"]}={tool_call_result!r}')
+
+                    elif isinstance(tool_call_result, list):
+                        for i, item in enumerate(tool_call_result):
+                            variables[f'{tool_call["id"]}_{i}'] = item
+                            # Log variable creation
+                            logging.info(f'🔧 Variable created: {tool_call["id"]}_{i}={item!r}')
+
+                    messages.append(
+                        {
+                            'role': 'tool',
+                            'tool_call_id': tool_call.get('id'),
+                            # Communicate variable creation and associated values back to the model
+                            'content': f'Variable(s) created from tool call: {tool_call["id"]}={tool_call_result!r}',
+                        }
+                    )
+
+                # Handle exceptions during tool call execution
                 except Exception as e:
-                    result = e
+                    tool_call_result = e
                     # Check if first word of message is "Warning" or "Error" and log accordingly
-                    if str(result).startswith('Warning'):
-                        logging.warning(f'⚠️  {result}')
-                    elif str(result).startswith('Error'):
-                        logging.error(f'❌ {result}')  # noqa: TRY400
+                    if str(tool_call_result).startswith('Warning'):
+                        logging.warning(f'⚠️  {tool_call_result}')
+                    elif str(tool_call_result).startswith('Error'):
+                        logging.error(f'❌ {tool_call_result}')  # noqa: TRY400
 
-                messages.append(
-                    {
-                        'role': 'tool',
-                        'tool_call_id': tool_call.get('id'),
-                        'content': str(result),
-                    }
-                )
+                    messages.append(
+                        {
+                            'role': 'tool',
+                            'tool_call_id': tool_call.get('id'),
+                            # Communicate error back to the model
+                            'content': str(tool_call_result),
+                        }
+                    )
 
                 # After first tool call, add user message if single-tool-call model
                 if single_tool_call_model:
@@ -311,9 +351,6 @@ class Runner:
                         f'🛑 Tool "{tool}" called {self.MAX_REPEATED_TOOL_CALLS} times with same arguments: {args_json}'
                     )
                     return messages, self.token_count
-
-            # Optionally run garbage collection to free memory
-            gc.collect()
 
         return messages, self.token_count
 
@@ -439,5 +476,4 @@ if __name__ == '__main__':
         logging.info(f"💾 Saved messages to '{output_path}'")
         with output_path.open('w') as f:
             f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
-        logging.info(f"💾 Saved messages to '{output_path}'")
         logging.info(f"💾 Saved messages to '{output_path}'")
