@@ -233,20 +233,24 @@ class FrankensteinQuestion:
     def pretty_print(self) -> str:
         """Pretty print the question."""
         console = Console()
+        table_width = min(128, console.width)
 
         # Compute answer and format output
         self.compute_actions()
-
-        # Decide if data_availability == partial is answerable or not
-        # if self.metadata['data_availability'] == 'missing' or self.metadata['data_availability'] == 'partial':
-        #     self.metadata['answerable'] = False
-        # elif self.metadata['data_availability'] == 'full':
-        #     self.metadata['answerable'] = True
-
         formatted_output = self.format_output()
 
+        # New table for metadata
+        slot_values_table = Table(title='Question Slot Values', show_lines=True, width=table_width)
+        slot_values_table.add_column('Key', justify='right', style='cyan', no_wrap=True, width=table_width // 2)
+        slot_values_table.add_column('Value', style='magenta', width=table_width // 2)
+        for key, value in formatted_output['slot_values'].items():
+            slot_values_table.add_row(key, str(value))
+        console.print(slot_values_table)
+
         # Create a table for the question template, slot values, and question
-        table = Table(title=formatted_output['question'], show_lines=True, width=128)
+        table = Table(
+            title=formatted_output['question'], show_lines=True, width=table_width, show_footer=formatted_output['answerable']
+        )
 
         table.add_column('Action', justify='right', style='cyan', no_wrap=True)
         table.add_column('Arguments', style='magenta')
@@ -258,14 +262,21 @@ class FrankensteinQuestion:
                 json.dumps(action['arguments']),
                 str(action['result']),
             )
-        # table.add_row('answer', str(self.answer))
+
+        # Add a footer row with the answer
+        if formatted_output['answerable']:
+            table.columns[0].footer = 'Final Answer'
+            table.columns[1].footer = ''
+            table.columns[2].footer = str(formatted_output['answer'])
 
         console.print(table)
 
-        # New table for metadata
-        metadata_table = Table(title='Metadata', show_lines=True, width=128)
-        metadata_table.add_column('Key', justify='right', style='cyan', no_wrap=True)
-        metadata_table.add_column('Value', style='magenta')
-        for key, value in formatted_output['metadata'].items():
-            metadata_table.add_row(key, str(value))
+        # Final table for metadata
+        metadata_table = Table(title='Metadata', show_lines=True, width=table_width)
+        metadata_table.add_column('Key', justify='right', style='cyan', no_wrap=True, width=table_width // 2)
+        metadata_table.add_column('Value', style='magenta', width=table_width // 2)
+        metadata_table.add_row('Question Template', formatted_output['question_template'])
+        metadata_table.add_row('Answerable', str(formatted_output['answerable']))
+        metadata_table.add_row('Data Availability', formatted_output['data_availability'])
+        metadata_table.add_row('Answer Format', formatted_output['answer_format'])
         console.print(metadata_table)

@@ -29,24 +29,24 @@ def add(
     if isinstance(values, str):
         values = ast.literal_eval(values)
     values = [float(value) for value in values if pd.notna(value)]
-    return sum(float(value) for value in values if pd.notna(value))
+    return round(sum(float(value) for value in values if pd.notna(value)), 5)
 
 
 def subtract(
     value_a: float,
     value_b: float,
 ) -> float:
-    """Subtract two numbers.
+    """Subtract value_b from value_a.
 
     Args:
         value_a: The first number.
         value_b: The second number.
 
     Returns:
-        The difference between the two numbers.
+        The difference between the two numbers, rounded to 5 decimal places.
 
     """
-    return float(value_a) - float(value_b)
+    return round(float(value_a) - float(value_b), 5)
 
 
 def greater_than(
@@ -92,7 +92,7 @@ def multiply(
         values: A list of numbers to multiply.
 
     Returns:
-        The product of the numbers in the list.
+        The product of the numbers in the list, rounded to 5 decimal places.
 
     """
     if isinstance(values, str):
@@ -101,7 +101,7 @@ def multiply(
     product = 1
     for number in values:
         product *= number
-    return product
+    return round(product, 5)
 
 
 def divide(
@@ -115,12 +115,12 @@ def divide(
         value_b: The second number.
 
     Returns:
-        The quotient of the two numbers.
+        The quotient of the two numbers, rounded to 5 decimal places.
 
     """
     if float(value_b) == 0:
         raise ZeroDivisionError('Division by zero is not allowed. Double-check your inputs.')
-    return float(value_a) / float(value_b)
+    return round(float(value_a) / float(value_b), 5)
 
 
 def mean(
@@ -132,7 +132,7 @@ def mean(
         values: A list of numbers to calculate the mean for.
 
     Returns:
-        The mean of the numbers in the list.
+        The mean of the numbers in the list, rounded to 5 decimal places.
 
     """
     if isinstance(values, str):
@@ -140,50 +140,52 @@ def mean(
     values = [float(value) for value in values if pd.notna(value)]
     if not values:
         raise ValueError('No valid (non-NaN) values provided to mean()')
-    return sum(values) / len(values)
+    return round(sum(values) / len(values), 5)
 
 
-def mode(
-    values: list[float],
-) -> float:
-    """Calculate the mode of a list of numbers.
+# def mode(
+#     values: list[float],
+# ) -> float:
+#     """Calculate the mode of a list of numbers.
 
-    Args:
-        values: A list of numbers to calculate the mode for.
+#     Args:
+#         values: A list of numbers to calculate the mode for.
 
-    Returns:
-        The mode of the numbers in the list.
+#     Returns:
+#         The mode of the numbers in the list.
 
-    """
-    if isinstance(values, str):
-        values = ast.literal_eval(values)
-    values = [float(value) for value in values if pd.notna(value)]
-    if not values:
-        raise ValueError('No valid (non-NaN) values provided to mode()')
-    return max(set(values), key=values.count)
+#     """
+#     if isinstance(values, str):
+#         values = ast.literal_eval(values)
+#     values = [float(value) for value in values if pd.notna(value)]
+#     if not values:
+#         raise ValueError('No valid (non-NaN) values provided to mode()')
+#     return max(set(values), key=values.count)
 
 
-def median(
-    values: list[float],
-) -> float:
-    """Calculate the median of a list of numbers.
+# def median(
+#     values: list[float],
+# ) -> float:
+#     """Calculate the median of a list of numbers.
 
-    Args:
-        values: A list of numbers to calculate the median for.
+#     Args:
+#         values: A list of numbers to calculate the median for.
 
-    Returns:
-        The median of the numbers in the list.
+#     Returns:
+#         The median of the numbers in the list.
 
-    """
-    if isinstance(values, str):
-        values = ast.literal_eval(values)
-    values = [float(value) for value in values if pd.notna(value)]
-    if not values:
-        raise ValueError('No valid (non-NaN) values provided to median()')
-    sorted_values = sorted(values)
-    n = len(sorted_values)
-    median_value = (sorted_values[n // 2 - 1] + sorted_values[n // 2]) / 2 if n % 2 == 0 else sorted_values[n // 2]
-    return median_value
+#     """
+#     if isinstance(values, str):
+#         values = ast.literal_eval(values)
+#     values = [float(value) for value in values if pd.notna(value)]
+#     if not values:
+#         raise ValueError('No valid (non-NaN) values provided to median()')
+#     sorted_values = sorted(values)
+#     n = len(sorted_values)
+#     median_value = (
+#         round(sorted_values[n // 2 - 1] + sorted_values[n // 2], 5) / 2 if n % 2 == 0 else round(sorted_values[n // 2], 5)
+#     )
+#     return median_value
 
 
 def maximum(
@@ -204,7 +206,7 @@ def maximum(
     values = [float(value) for value in values if pd.notna(value)]
     if not values:
         raise ValueError('No valid (non-NaN) values provided to maximum()')
-    return max(values)
+    return round(max(values), 5)
 
 
 def minimum(
@@ -225,7 +227,7 @@ def minimum(
     values = [float(value) for value in values if pd.notna(value)]
     if not values:
         raise ValueError('No valid (non-NaN) values provided to minimum()')
-    return min(values)
+    return round(min(values), 5)
 
 
 def count(
@@ -269,9 +271,7 @@ def rank(
     try:
         return sorted_values.index(query_value) + 1
     except ValueError as e:
-        raise ValueError(
-            f"Value {query_value} not found in the list. Ensure it is present in the values."
-        ) from e
+        raise ValueError(f'Value {query_value} not found in the list. Ensure it is present in the values.') from e
 
 
 def sort(
@@ -312,9 +312,7 @@ def index(
     try:
         return values.index(query_value)
     except ValueError as e:
-        raise ValueError(
-            f"Value {query_value} not found in the list. Ensure it is present in the values."
-        ) from e
+        raise ValueError(f'Value {query_value} not found in the list. Ensure it is present in the values.') from e
 
 
 if __name__ == '__main__':
@@ -339,13 +337,13 @@ if __name__ == '__main__':
     print('mean([1, 2, 3, 4, 5])')
     print('Result:', mean([1, 2, 3, 4, 5]))
 
-    print('\n=== Median ===')
-    print('median([1, 3, 2, 5, 4])')
-    print('Result:', median([1, 3, 2, 5, 4]))
+    # print('\n=== Median ===')
+    # print('median([1, 3, 2, 5, 4])')
+    # print('Result:', median([1, 3, 2, 5, 4]))
 
-    print('\n=== Mode ===')
-    print('mode([1, 2, 2, 3, 4])')
-    print('Result:', mode([1, 2, 2, 3, 4]))
+    # print('\n=== Mode ===')
+    # print('mode([1, 2, 2, 3, 4])')
+    # print('Result:', mode([1, 2, 2, 3, 4]))
 
     print('\n=== Maximum ===')
     print('maximum([1, 5, 3, 2])')

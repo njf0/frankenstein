@@ -2,6 +2,7 @@
 
 import ast
 import logging
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -61,7 +62,9 @@ def search_for_indicator_codes(
     data['name'] = data['name'].str.lower()
     # Only search if keywords is not empty
     if keywords:
-        data = data[data['name'].str.contains('|'.join(keywords))]
+        # Escape keywords to avoid regex warnings
+        pattern = '|'.join([re.escape(k) for k in keywords])
+        data = data[data['name'].str.contains(pattern, regex=True)]
         data = data[['id', 'original_name']]
         data = data.rename(columns={'id': 'indicator_code', 'original_name': 'indicator_name'})
         data = data.to_dict(orient='records')
@@ -180,7 +183,7 @@ def retrieve_value(
         year: The year to look up the indicator for.
 
     Returns:
-        The value of the property for the subject at the given year.
+        The value of the property for the subject at the given year, rounded to 5 decimal places.
 
     Raises:
         InvalidCountryCodeError: If the country code is not valid.
@@ -220,7 +223,7 @@ def retrieve_value(
             }
         )
 
-    return float(value)
+    return round(float(value), 5)
     # return {'subject': country_code, 'property': indicator_code, 'object': float(value), 'time': year}
 
 
