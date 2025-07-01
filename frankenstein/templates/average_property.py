@@ -23,9 +23,9 @@ class AverageProperty(FrankensteinQuestion):
 
         """
         self.templates = (
-            'What was the mean {property} of the countries in {region} in {year}?',
-            'For the countries in {region}, what was the mean {property} in {year}?',
-            'In {year}, what was the mean {property} of the countries in {region}?',
+            'What was the average {property} of the countries in {region} in {year}?',
+            'For the countries in {region}, what was the average {property} in {year}?',
+            'In {year}, what was the average {property} of the countries in {region}?',
         )
 
         allowed_values = {
@@ -48,14 +48,15 @@ class AverageProperty(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         countries = action.result
 
-        # Get the indicator code from the property name
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Get the country codes from the country names and then get the value
         indicator_values = []
@@ -82,16 +83,13 @@ class AverageProperty(FrankensteinQuestion):
             return
 
         # Retrieve the mean value for the region
-        action = FrankensteinAction('mean', values=indicator_values)
+        action = FrankensteinAction('mean', values=[i for i in indicator_values if i is not None])
         action.execute()
         self.actions.append(action.to_dict())
         value = action.result
 
-        # Set the answer
-        action = FrankensteinAction('final_answer', answer=value)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        # Set the answer (no final_answer action)
+        self.answer = value
 
         return self.answer
 

@@ -25,7 +25,7 @@ class RegionProportionChange(FrankensteinQuestion):
         self.templates = (
             "Was {subject}'s share of the total {property} in {region} {operator} in {year_a} than it was in {year_b}?",
             "In {year_a}, was {subject}'s share of the total {property} in {region} {operator} than it was in {year_b}?",
-            "Compared to {region} as a whole, was {subject}'s share of the total {property} in {year_a} {operator} than it was in {year_b}?",
+            "Compared to {region} as a whole, was {subject}'s share of the total {property} {operator} in {year_a} than it was in {year_b}?",
         )
 
         allowed_values = {
@@ -49,23 +49,15 @@ class RegionProportionChange(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get the country code for the subject
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_country_code_from_name',
-            country_name=self.c2n[self.subject],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        subject_code = action.result
-
-        # Get the indicator code for the property
-        action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
-        )
-        action.execute()
-        self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Get the countries in the region
         action = FrankensteinAction(
@@ -79,7 +71,7 @@ class RegionProportionChange(FrankensteinQuestion):
         # Retrieve the property value for the subject at year_a
         action = FrankensteinAction(
             'retrieve_value',
-            country_code=subject_code,
+            country_code=self.slot_values['subject'],
             indicator_code=indicator_code,
             year=self.year_a,
         )
@@ -96,7 +88,7 @@ class RegionProportionChange(FrankensteinQuestion):
         # Retrieve the property value for the subject at year_b
         action = FrankensteinAction(
             'retrieve_value',
-            country_code=subject_code,
+            country_code=self.slot_values['subject'],
             indicator_code=indicator_code,
             year=self.year_b,
         )
@@ -153,13 +145,13 @@ class RegionProportionChange(FrankensteinQuestion):
             return
 
         # Compute the total property value for the region at year_a
-        action = FrankensteinAction('add', values=region_values_a)
+        action = FrankensteinAction('add', values=[i for i in region_values_a if i is not None])
         action.execute()
         self.actions.append(action.to_dict())
         region_total_a = action.result
 
         # Compute the total property value for the region at year_b
-        action = FrankensteinAction('add', values=region_values_b)
+        action = FrankensteinAction('add', values=[i for i in region_values_b if i is not None])
         action.execute()
         self.actions.append(action.to_dict())
         region_total_b = action.result
@@ -180,17 +172,14 @@ class RegionProportionChange(FrankensteinQuestion):
         if self.operator == 'higher':
             action = FrankensteinAction('greater_than', value_a=proportion_a, value_b=proportion_b)
         elif self.operator == 'lower':
-            action = FrankensteinAction('less_than', value_a=proportion_a, value_b=proportion_b)
+            action = FrankensteinAction('greater_than', value_a=proportion_b, value_b=proportion_a)
 
         action.execute()
         self.actions.append(action.to_dict())
         comparison_result = action.result
 
         # Set the final answer
-        action = FrankensteinAction('final_answer', answer=comparison_result)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        self.answer = comparison_result
 
         return self.answer
 

@@ -51,11 +51,15 @@ class RegionPropertyChange(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         countries = action.result
 
-        # Get the indicator code for the property
-        action = FrankensteinAction('get_indicator_code_from_name', indicator_name=self.i2n[self.property])
+        # Search for the indicator code for the property (for traceability)
+        action = FrankensteinAction(
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
+        )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Retrieve values for each country for both years
         changes = []
@@ -116,13 +120,17 @@ class RegionPropertyChange(FrankensteinQuestion):
         target_change = action.result
 
         # Get all countries with the target change (handle ties)
-        top_countries = [self.c2n[c] for c, v in valid_changes if v == target_change]
+        top_countries = [c for c, v in valid_changes if v == target_change]
 
-        # Set the final answer
-        action = FrankensteinAction('final_answer', answer=top_countries)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        # Get the country names from the codes
+        country_names = []
+        for country in top_countries:
+            action = FrankensteinAction('get_country_name_from_code', country_code=country)
+            action.execute()
+            self.actions.append(action.to_dict())
+            country_names.append(action.result)
+
+        self.answer = country_names
 
         return self.answer
 

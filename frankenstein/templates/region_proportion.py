@@ -48,23 +48,15 @@ class RegionProportion(FrankensteinQuestion):
 
     def compute_actions(self):
         """Compute actions for the question."""
-        # Get the country code for the subject
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_country_code_from_name',
-            country_name=self.c2n[self.subject],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        subject_code = action.result
-
-        # Get the indicator code for the property
-        action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
-        )
-        action.execute()
-        self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Get the countries in the region
         action = FrankensteinAction(
@@ -78,7 +70,7 @@ class RegionProportion(FrankensteinQuestion):
         # Retrieve the property value for the subject
         action = FrankensteinAction(
             'retrieve_value',
-            country_code=subject_code,
+            country_code=self.slot_values['subject'],
             indicator_code=indicator_code,
             year=self.year,
         )
@@ -118,7 +110,7 @@ class RegionProportion(FrankensteinQuestion):
             return
 
         # Compute the total property value for the region
-        action = FrankensteinAction('add', values=region_values)
+        action = FrankensteinAction('add', values=[i for i in region_values if i is not None])
         action.execute()
         self.actions.append(action.to_dict())
         region_total = action.result
@@ -130,10 +122,7 @@ class RegionProportion(FrankensteinQuestion):
         proportion = action.result
 
         # Set the final answer
-        action = FrankensteinAction('final_answer', answer=proportion)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        self.answer = proportion
 
         return self.answer
 

@@ -46,11 +46,15 @@ class RegionPropertyRatio(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         countries = action.result
 
-        # Get the indicator code for the property
-        action = FrankensteinAction('get_indicator_code_from_name', indicator_name=self.i2n[self.property])
+        # Search for the indicator code for the property (for traceability)
+        action = FrankensteinAction(
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
+        )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Retrieve the property values for the countries
         property_values = []
@@ -75,6 +79,8 @@ class RegionPropertyRatio(FrankensteinQuestion):
             self.metadata['answerable'] = False
             return
 
+        property_values = [value for value in property_values if value is not None]
+
         # Find the highest and lowest values
         action = FrankensteinAction('maximum', values=property_values)
         action.execute()
@@ -89,7 +95,6 @@ class RegionPropertyRatio(FrankensteinQuestion):
         # Compute the ratio
         if min_value == 0:
             self.metadata['data_availability'] = 'partial'
-
             return
 
         action = FrankensteinAction('divide', value_a=max_value, value_b=min_value)
@@ -97,11 +102,8 @@ class RegionPropertyRatio(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         ratio = action.result
 
-        # Set the final answer
-        action = FrankensteinAction('final_answer', answer=ratio)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        # Set the final answer (no final_answer action)
+        self.answer = ratio
 
         return self.answer
 

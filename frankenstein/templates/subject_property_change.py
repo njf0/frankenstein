@@ -7,7 +7,7 @@ from frankenstein.frankenstein_question import FrankensteinQuestion
 from frankenstein.slot_values import Property, Subject, Year
 
 
-class FactorIncreaseComparison(FrankensteinQuestion):
+class SubjectPropertyChange(FrankensteinQuestion):
     """Class representing a property increase comparison question."""
 
     def __init__(
@@ -68,14 +68,15 @@ class FactorIncreaseComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         country_code = action.result
 
-        # Get the indicator code for the property
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Get the values for the property for the subject for both years
         action = FrankensteinAction(
@@ -134,7 +135,7 @@ class FactorIncreaseComparison(FrankensteinQuestion):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate a FactorIncreaseComparison question.')
+    parser = argparse.ArgumentParser(description='Generate a SubjectPropertyChange() question.')
     parser.add_argument('--property', type=str, choices=Property.get_values(), help='The property to compare.')
     parser.add_argument('--subject', type=str, choices=Subject.get_values(), help='The subject to get the property value for.')
     parser.add_argument('--year_a', type=str, choices=Year.get_values(), help='The first year to compare.')
@@ -142,7 +143,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    q = FactorIncreaseComparison()
+    q = SubjectPropertyChange()
     if all(
         [
             args.property,

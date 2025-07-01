@@ -52,14 +52,15 @@ class AveragePropertyComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         subject_code = action.result
 
-        # Get the indicator code for the property
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Retrieve the property value for the subject
         action = FrankensteinAction(
@@ -112,7 +113,7 @@ class AveragePropertyComparison(FrankensteinQuestion):
             return
 
         # Compute the average property value for the region
-        action = FrankensteinAction('mean', values=region_values)
+        action = FrankensteinAction('mean', values=[i for i in region_values if i is not None])
         action.execute()
         self.actions.append(action.to_dict())
         region_mean = action.result
@@ -121,17 +122,17 @@ class AveragePropertyComparison(FrankensteinQuestion):
         if self.operator == 'higher':
             action = FrankensteinAction('greater_than', value_a=subject_value, value_b=region_mean)
         elif self.operator == 'lower':
-            action = FrankensteinAction('less_than', value_a=subject_value, value_b=region_mean)
+            action = FrankensteinAction('greater_than', value_a=region_mean, value_b=subject_value)
 
-        action.execute()
-        self.actions.append(action.to_dict())
-        comparison_result = action.result
-
-        # Set the final answer
-        action = FrankensteinAction('final_answer', answer=comparison_result)
         action.execute()
         self.actions.append(action.to_dict())
         self.answer = action.result
+
+        # # Set the final answer
+        # action = FrankensteinAction('final_answer', answer=comparison_result)
+        # action.execute()
+        # self.actions.append(action.to_dict())
+        # self.answer = action.result
 
         return self.answer
 

@@ -76,14 +76,15 @@ class AverageChange(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         subject_code = action.result
 
-        # Get the indicator code for the property
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Collect all yearly values for the subject between year_a and year_b (inclusive)
         years = list(range(int(self.year_a), int(self.year_b) + 1))
@@ -126,16 +127,13 @@ class AverageChange(FrankensteinQuestion):
             return
 
         # Compute the average yearly change
-        action = FrankensteinAction('mean', values=yearly_changes)
+        action = FrankensteinAction('mean', values=[i for i in yearly_changes if i is not None])
         action.execute()
         self.actions.append(action.to_dict())
         avg_change = action.result
 
-        # Set the final answer
-        action = FrankensteinAction('final_answer', answer=avg_change)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        # Set the final answer (no final_answer action)
+        self.answer = avg_change
 
         return self.answer
 

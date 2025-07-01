@@ -64,29 +64,26 @@ class RegionComparisonResult(FrankensteinQuestion):
         action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
-        countries = action.result
+        country_codes = action.result
 
-        # Get the indicator code for property
-        action = FrankensteinAction('get_indicator_code_from_name', indicator_name=self.i2n[self.property])
+        # Search for the indicator code for property (for traceability)
+        action = FrankensteinAction(
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
+        )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
-        # Retrieve the property values for the countries in year_2
+        # Retrieve the property values for the country_codes in year_2
         property_values = []
-        for country in countries:
-            action = FrankensteinAction('get_country_code_from_name', country_name=self.c2n[country])
-            action.execute()
-            self.actions.append(action.to_dict())
-            country_code = action.result
-
-            action = FrankensteinAction(
-                'retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.year_2
-            )
+        for code in country_codes:
+            action = FrankensteinAction('retrieve_value', country_code=code, indicator_code=indicator_code, year=self.year_2)
             action.execute()
             self.actions.append(action.to_dict())
             value = action.result
-            property_values.append((country_code, value))
+            property_values.append((code, value))
 
         # Check if any values are missing
         if any(v[1] is None for v in property_values):
@@ -125,10 +122,7 @@ class RegionComparisonResult(FrankensteinQuestion):
             return
 
         # Set the final answer
-        action = FrankensteinAction('final_answer', answer=property_value_year_1)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        self.answer = property_value_year_1
 
         return self.answer
 

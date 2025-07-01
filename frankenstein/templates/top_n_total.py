@@ -48,14 +48,15 @@ class TopNTotal(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         countries = action.result
 
-        # Get the indicator code for the property
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Retrieve the property values for the countries
         property_values = []
@@ -99,14 +100,18 @@ class TopNTotal(FrankensteinQuestion):
         # Check if the number of top countries is less than `n`
         if len(top_countries) < int(self.n):
             self.metadata['data_availability'] = 'partial'
-
             return
 
-        # Set the final answer
-        action = FrankensteinAction('final_answer', answer=[self.c2n[c] for c in top_countries])
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        # Set the final answer (no final_answer action)
+        country_names = []
+        for country in top_countries:
+            action = FrankensteinAction('get_country_name_from_code', country_code=country)
+            action.execute()
+            self.actions.append(action.to_dict())
+            action.execute()
+            country_names.append(action.result)
+
+        self.answer = country_names
 
         return self.answer
 

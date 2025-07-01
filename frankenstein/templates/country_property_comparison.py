@@ -80,14 +80,16 @@ class CountryPropertyComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         country_b = action.result
 
-        # Get the indicator code for the property
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        # Use the property slot value directly as the indicator code
+        indicator_code = self.slot_values['property']
 
         # Retrieve the values for the subjects at the given years
         action = FrankensteinAction(
@@ -132,9 +134,9 @@ class CountryPropertyComparison(FrankensteinQuestion):
             )
         elif self.operator == 'lower':
             action = FrankensteinAction(
-                'less_than',
-                value_a=value_a,
-                value_b=value_b,
+                'greater_than',
+                value_a=value_b,
+                value_b=value_a,
             )
         action.execute()
         self.actions.append(action.to_dict())

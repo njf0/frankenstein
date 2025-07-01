@@ -1,4 +1,4 @@
-"""Template for region range comparison questions."""
+"""Template for region average comparison questions."""
 
 import argparse
 
@@ -7,14 +7,14 @@ from frankenstein.frankenstein_question import FrankensteinQuestion
 from frankenstein.slot_values import BinaryOperator, Property, Region, Year
 
 
-class RegionRangeComparison(FrankensteinQuestion):
-    """Class representing a region range comparison question."""
+class RegionAverageComparison(FrankensteinQuestion):
+    """Class representing a region average comparison question."""
 
     def __init__(
         self,
         slot_values: dict[str, str] | None = None,
     ):
-        """Initialize a region range comparison question.
+        """Initialize a region average comparison question.
 
         Parameters
         ----------
@@ -23,9 +23,9 @@ class RegionRangeComparison(FrankensteinQuestion):
 
         """
         self.templates = (
-            'Did {region_a} have a {operator} range of values for {property} than {region_b} in {year}?',
-            'In {year}, did {region_a} have a {operator} range of values for {property} than {region_b}?',
-            'In {region_a}, was the range of values for {property} {operator} than that of {region_b} in {year}?',
+            'Did {region_a} have a {operator} average {property} than {region_b} in {year}?',
+            'In {year}, did {region_a} have a {operator} average {property} than {region_b}?',
+            'Was the average {property} in {region_a} {operator} than in {region_b} in {year}?',
         )
 
         allowed_values = {
@@ -56,7 +56,7 @@ class RegionRangeComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = self.slot_values['property']
 
-        region_ranges = {}
+        region_averages = {}
         for region in [self.region_a, self.region_b]:
             # Get the countries in the region
             action = FrankensteinAction(
@@ -93,30 +93,20 @@ class RegionRangeComparison(FrankensteinQuestion):
             # Remove None values
             values = [v for v in values if v is not None]
 
-            # Compute the range (max - min)
-            action = FrankensteinAction('maximum', values=values)
+            # Compute the mean
+            action = FrankensteinAction('mean', values=values)
             action.execute()
             self.actions.append(action.to_dict())
-            max_value = action.result
+            region_averages[region] = action.result
 
-            action = FrankensteinAction('minimum', values=values)
-            action.execute()
-            self.actions.append(action.to_dict())
-            min_value = action.result
-
-            action = FrankensteinAction('subtract', value_a=max_value, value_b=min_value)
-            action.execute()
-            self.actions.append(action.to_dict())
-            region_ranges[region] = action.result
-
-        # Compare the ranges using the operator
+        # Compare the averages using the operator
         if self.operator == 'higher':
             action = FrankensteinAction(
-                'greater_than', value_a=region_ranges[self.region_a], value_b=region_ranges[self.region_b]
+                'greater_than', value_a=region_averages[self.region_a], value_b=region_averages[self.region_b]
             )
         elif self.operator == 'lower':
             action = FrankensteinAction(
-                'greater_than', value_a=region_ranges[self.region_b], value_b=region_ranges[self.region_a]
+                'greater_than', value_a=region_averages[self.region_b], value_b=region_averages[self.region_a]
             )
 
         action.execute()
@@ -130,7 +120,7 @@ class RegionRangeComparison(FrankensteinQuestion):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate a RegionRangeComparison question.')
+    parser = argparse.ArgumentParser(description='Generate a RegionAverageComparison question.')
     parser.add_argument('--region_a', type=str, choices=Region.get_values(), help='The first region to compare.')
     parser.add_argument('--region_b', type=str, choices=Region.get_values(), help='The second region to compare.')
     parser.add_argument('--operator', type=str, choices=['higher', 'lower'], help='The operator to use for comparison.')
@@ -139,7 +129,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    q = RegionRangeComparison()
+    q = RegionAverageComparison()
     if all([args.region_a, args.region_b, args.operator, args.property, args.year]):
         comb = {
             'region_a': args.region_a,

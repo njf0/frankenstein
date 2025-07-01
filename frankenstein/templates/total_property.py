@@ -46,11 +46,15 @@ class TotalProperty(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         countries = action.result
 
-        # Get the indicator code for the property
-        action = FrankensteinAction('get_indicator_code_from_name', indicator_name=self.i2n[self.property])
+        # Search for the indicator code for the property (for traceability)
+        action = FrankensteinAction(
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
+        )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Retrieve the property values for the countries
         property_values = []
@@ -77,16 +81,13 @@ class TotalProperty(FrankensteinQuestion):
             self.metadata['data_availability'] = 'partial'
 
         # Compute the total property value
-        action = FrankensteinAction('add', values=property_values)
+        action = FrankensteinAction('add', values=[i for i in property_values if i is not None])
         action.execute()
         self.actions.append(action.to_dict())
         total_value = action.result
 
-        # Set the final answer
-        action = FrankensteinAction('final_answer', answer=total_value)
-        action.execute()
-        self.actions.append(action.to_dict())
-        self.answer = action.result
+        # Set the final answer (no final_answer action)
+        self.answer = total_value
 
         return self.answer
 

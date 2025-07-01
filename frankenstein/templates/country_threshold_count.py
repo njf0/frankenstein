@@ -83,14 +83,15 @@ class CountryThresholdCount(FrankensteinQuestion):
         else:
             threshold_subject_country_code = None
 
-        # Get the indicator code from the property name
+        # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'get_indicator_code_from_name',
-            indicator_name=self.i2n[self.property],
+            'search_for_indicator_codes',
+            keywords=self.i2n[self.property],
         )
         action.execute()
+        action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = action.result
+        indicator_code = self.slot_values['property']
 
         # Retrieve the values for the subjects in the region
         values = []
@@ -158,9 +159,9 @@ class CountryThresholdCount(FrankensteinQuestion):
                 comparisons.append(action.result)
             elif self.operator == 'lower':
                 action = FrankensteinAction(
-                    'less_than',
-                    value_a=value,
-                    value_b=threshold_value,
+                    'greater_than',
+                    value_a=threshold_value,
+                    value_b=value,
                 )
                 action.execute()
                 self.actions.append(action.to_dict())
@@ -173,13 +174,11 @@ class CountryThresholdCount(FrankensteinQuestion):
             self.metadata['data_availability'] = 'missing'
             self.metadata['answerable'] = False
 
-        # Get the number of countries that satisfy the condition
-        self.answer = sum(valid_comparisons)
-
-        # Final answer
-        action = FrankensteinAction('final_answer', answer=self.answer)
+        # Use the count tool to get the number of countries that satisfy the condition
+        action = FrankensteinAction('count', values=[i for i in valid_comparisons if i is True])
         action.execute()
         self.actions.append(action.to_dict())
+        self.answer = action.result
 
         return self.answer
 
