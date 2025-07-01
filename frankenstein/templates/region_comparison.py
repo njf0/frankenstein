@@ -45,7 +45,7 @@ class RegionComparison(FrankensteinQuestion):
         action = FrankensteinAction('get_country_codes_in_region', region=self.region)
         action.execute()
         self.actions.append(action.to_dict())
-        countries = action.result
+        country_codes = action.result
 
         # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
@@ -57,14 +57,9 @@ class RegionComparison(FrankensteinQuestion):
         self.actions.append(action.to_dict())
         indicator_code = self.slot_values['property']
 
-        # Retrieve the property values for the countries
+        # Retrieve the property values for the country_codes
         property_values = []
-        for country in countries:
-            action = FrankensteinAction('get_country_code_from_name', country_name=self.c2n[country])
-            action.execute()
-            self.actions.append(action.to_dict())
-            country_code = action.result
-
+        for country_code in country_codes:
             action = FrankensteinAction(
                 'retrieve_value', country_code=country_code, indicator_code=indicator_code, year=self.year
             )
