@@ -1,17 +1,17 @@
 """Library of tools to be provided to the model and provide the basis for solutions."""
 
 import ast
-import logging
 
 import pandas as pd
-from rich.logging import RichHandler
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(message)s',
-    datefmt='[%X]',
-    handlers=[RichHandler(rich_tracebacks=True)],
-)
+# from rich.logging import RichHandler
+
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(message)s',
+#     datefmt='[%X]',
+#     handlers=[RichHandler(rich_tracebacks=True)],
+# )
 
 
 def add(

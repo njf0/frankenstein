@@ -61,7 +61,7 @@ class FrankensteinEvaluator:
 
         # Load dataset from dataset/{split}.jsonl or .json
         dataset_path = Path('dataset', f'{self.split}.jsonl')
-        self.dataset = pd.read_json(dataset_path, orient='records', lines=True)
+        self.dataset = pd.read_json(dataset_path, orient='records', lines=True, precise_float=True)
         if self.num_samples != -1:
             self.dataset = self.dataset.sample(self.num_samples)
         logging.info(f'Loaded dataset from {dataset_path} with {len(self.dataset)} samples.')
@@ -116,7 +116,7 @@ class FrankensteinEvaluator:
             # Save after every iteration
             if self.save:
                 model_name = str(self.model_name).split('/')[-1]
-                output_path = Path('eval', 'runs', f'{model_name}_{self.split}s.jsonl')
+                output_path = Path('eval', 'runs', f'{model_name}_{self.split}_{self.toolbox}-tools_{self.n_shots}-shot.jsonl')
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 pd.DataFrame(results).to_json(output_path, orient='records', lines=True)
 
@@ -124,7 +124,7 @@ class FrankensteinEvaluator:
 
         if self.save:
             model_name = str(self.model_name).split('/')[-1]
-            output_path = Path('eval', 'runs', f'{model_name}_{self.split}.jsonl')
+            output_path = Path('eval', 'runs', f'{model_name}_{self.split}_{self.toolbox}-tools_{self.n_shots}-shot.jsonl')
             output_path.parent.mkdir(parents=True, exist_ok=True)
             results_df.to_json(output_path, orient='records', lines=True)
             logging.info(f'Saved evaluation results to {output_path}')

@@ -53,9 +53,7 @@ ARITHMETIC_TOOLS = f"""The tools you have access to are below:
 
 {get_tool_metadata(toolbox='arithmetic')}
 
-These tools can help you perform arithmetic operations (e.g., summation, averages, differences, ratios) on numeric values. However, you must **recall or retrieve the necessary data yourself**—these tools cannot access external data sources like the World Bank.
-
-Clearly express the data you recall using the following quadruple format: {{'subject': 'subject_name', 'property': 'property_name', 'object': 'object, 'time': 'year'}}.
+These tools can help you perform arithmetic operations (e.g., summation, averages, differences, ratios) on numeric values. However, you must **recall the necessary data yourself** — these tools cannot access external data sources like the World Bank.
 
 """
 
@@ -70,7 +68,7 @@ However, you must **perform any necessary arithmetic manually**, without tool su
 """
 
 
-def generate_tool_call_example(tool_name, tool_modules):
+def generate_tool_call_example(tool_name: str, tool_modules: list) -> str:
     """Generate and execute a single tool call example for a given tool name."""
     # Gather all available tool functions
     tool_map = {}
@@ -83,7 +81,7 @@ def generate_tool_call_example(tool_name, tool_modules):
     regions = [r for r in Region.get_values() if r and isinstance(r, str)]
     indicator_codes = Property.get_values()
     try:
-        wdi_data = pd.read_csv(Path('resources', 'wdi.csv'))
+        wdi_data = pd.read_json(Path('resources', 'indicator_paraphrases.json'))
         indicator_names = wdi_data['name'].dropna().unique().tolist()
     except Exception:
         indicator_names = indicator_codes
@@ -111,21 +109,27 @@ def generate_tool_call_example(tool_name, tool_modules):
             kwargs[pname] = random.choice(indicator_codes)
         elif pname == 'year':
             kwargs[pname] = random.choice(years)
-        elif pname in {'a', 'b', 'value_a', 'value_b'}:
+        elif pname in {'value_a', 'value_b'}:
             kwargs[pname] = round((random.random() - 0.5) * 10, random.randint(3, 10))
         elif pname == 'values':
             kwargs[pname] = [round((random.random() - 0.5) * 10, random.randint(3, 10)) for _ in range(3)]
         elif pname == 'keywords':
-            kwargs[pname] = ['water']
+            kwargs[pname] = random.choice(['water', 'secondary', 'poverty', 'tuberculosis'])
         elif pname == 'thought':
             kwargs[pname] = 'Use this field to plan or think aloud about what actions to take.'
         elif pname == 'answer':
             kwargs[pname] = round((random.random() - 0.5) * 100, random.randint(0, 10))
+        elif pname == 'query_value':
+            kwargs[pname] = 0.0
         else:
             kwargs[pname] = 'test'
 
     action = FrankensteinAction(tool_name, **kwargs)
-    result = action.execute()
+    try:
+        result = action.execute(error_handling='raise')
+    except Exception as e:
+        result = e
+
     tool_call = f'{tool_name}({", ".join(f"{k}={v!r}" for k, v in kwargs.items())})'
     example = f'Example of `{tool_name}` tool call: {tool_call}\nReturns: {result}'
     return example

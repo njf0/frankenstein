@@ -262,7 +262,7 @@ class Runner:
                 # Execute the function call
                 try:
                     result = FrankensteinAction(action=name, **parsed_args).execute(error_handling='raise')
-                    logging.info(f'↪️  {result!r}')
+                    logging.info(f'↪️ {result!r}')
 
                 except Exception as e:
                     result = e
@@ -478,9 +478,6 @@ if __name__ == '__main__':
         timestamp = datetime.datetime.now()
         output_path = Path('eval', 'dumps', f'{timestamp}').with_suffix('.json')
         parsed_messages = parse_json_arguments(messages)
-        with output_path.open('w') as f:
-            f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
-        logging.info(f"💾 Saved messages to '{output_path}'")
         with output_path.open('w') as f:
             f.write(json.dumps(to_json_safe(parsed_messages), indent=2) + '\n')
         logging.info(f"💾 Saved messages to '{output_path}'")

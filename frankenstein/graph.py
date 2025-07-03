@@ -212,7 +212,7 @@ class FrankensteinGraph(nx.DiGraph):
         3. If a tool call result starts with 'Error:', an edge is added from the node to a generic error node.
         4. If a tool call result starts with 'Warning:', an edge is added from the node to a generic warning node.
         5. Special cases:
-           5a. For 'search_for_indicator_codes', propagate indicator names and ids for provenance.
+           5a. For 'search_for_indicator_names', propagate indicator names and ids for provenance.
            5b. For 'get_country_codes_in_region', track all country codes for provenance.
 
         Parameters
@@ -272,8 +272,8 @@ class FrankensteinGraph(nx.DiGraph):
                         self.value_provenance.setdefault(v, []).append(call_id)
                         logging.info(f"🧬 Provenance: output '{v}' produced by {call_id}")
 
-                    # 5a. Special case: propagate indicator names/ids for search_for_indicator_codes
-                    if action.action == 'search_for_indicator_codes' and isinstance(result, list):
+                    # 5a. Special case: propagate indicator names/ids for search_for_indicator_names
+                    if action.action == 'search_for_indicator_names' and isinstance(result, list):
                         for item in result:
                             if isinstance(item, dict):
                                 name = item.get('name')
@@ -283,7 +283,7 @@ class FrankensteinGraph(nx.DiGraph):
                                 if id_:
                                     self.value_provenance.setdefault(id_, []).append(call_id)
                         self._search_results_by_node[call_id] = result
-                        logging.info(f'🔗 Stored search_for_indicator_codes result for node {call_id}')
+                        logging.info(f'🔗 Stored search_for_indicator_names result for node {call_id}')
                     # 5b. Special case: track all get_country_codes_in_region results
                     if action.action == 'get_country_codes_in_region' and isinstance(result, list):
                         for code in result:
@@ -322,9 +322,9 @@ class FrankensteinGraph(nx.DiGraph):
             a. Adds edge if `get_indicator_code_from_name` has an `indicator_name` argument matching `property_original`.
             b. Adds edge if `get_country_code_from_name` has a `country_name` argument matching `subject_name`.
         2. A produced value matches an argument in a subsequent action.
-        3. A word or phrase from the NLQ matches keywords in `search_for_indicator_codes`.
-        4. A `get_indicator_code_from_name` argument matches any `indicator_name` produced from `search_for_indicator_codes`.
-        5. An `indicator_code` argument in a `retrieve_value` call matches any `indicator_code` produced from `search_for_indicator_codes`.
+        3. A word or phrase from the NLQ matches keywords in `search_for_indicator_names`.
+        4. A `get_indicator_code_from_name` argument matches any `indicator_name` produced from `search_for_indicator_names`.
+        5. An `indicator_code` argument in a `retrieve_value` call matches any `indicator_code` produced from `search_for_indicator_names`.
         6. If a node's result is an error or warning, add an edge to the generic error/warning node (if not already present).
 
         """
@@ -490,10 +490,10 @@ class FrankensteinGraph(nx.DiGraph):
                             break
                 # If no unused src_id is found, do nothing (prevents duplicate edges from same src to same tgt for same value)
 
-            # 3. Heuristic: check for NLQ keywords in search_for_indicator_codes and get_indicator_code_from_name
+            # 3. Heuristic: check for NLQ keywords in search_for_indicator_names and get_indicator_code_from_name
             # if self.question:
-            # 3a. For search_for_indicator_codes: check keywords
-            if action.action == 'search_for_indicator_codes' and 'keywords' in action.kwargs:
+            # 3a. For search_for_indicator_names: check keywords
+            if action.action == 'search_for_indicator_names' and 'keywords' in action.kwargs:
                 keywords = action.kwargs['keywords']
                 if isinstance(keywords, str):
                     keywords = [keywords]
@@ -522,7 +522,7 @@ class FrankensteinGraph(nx.DiGraph):
                         f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
                     )
 
-            # 4. Heuristic: search_for_indicator_codes results match get_indicator_code_from_name
+            # 4. Heuristic: search_for_indicator_names results match get_indicator_code_from_name
             if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
                 indicator_name = str(action.kwargs['indicator_name']).strip().lower()
                 for src_id, search_results in self._search_results_by_node.items():
@@ -542,7 +542,7 @@ class FrankensteinGraph(nx.DiGraph):
                             self.add_edge(src_id, tgt_id, label='indicator_name match')
                             break
 
-            # 5. Heuristic: retrieve_value with indicator_code matches search_for_indicator_codes
+            # 5. Heuristic: retrieve_value with indicator_code matches search_for_indicator_names
             if action.action == 'retrieve_value' and 'indicator_code' in action.kwargs:
                 indicator_code = str(action.kwargs['indicator_code'])
                 for src_id, search_results in self._search_results_by_node.items():
