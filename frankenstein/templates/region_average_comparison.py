@@ -48,13 +48,21 @@ class RegionAverageComparison(FrankensteinQuestion):
         """Compute actions for the question."""
         # Search for the indicator code for the property (for traceability)
         action = FrankensteinAction(
-            'search_for_indicator_codes',
+            'search_for_indicator_names',
             keywords=self.i2n[self.property],
         )
         action.execute()
         action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = self.slot_values['property']
+
+        # Now get the indicator code from the name
+        action = FrankensteinAction(
+            'get_indicator_code_from_name',
+            indicator_name=self.i2n[self.property],
+        )
+        action.execute()
+        self.actions.append(action.to_dict())
+        indicator_code = action.result
 
         region_averages = {}
         for region in [self.region_a, self.region_b]:

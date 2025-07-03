@@ -48,13 +48,21 @@ class PropertyOfSubject(FrankensteinQuestion):
         country = action.result
 
         action = FrankensteinAction(
-            'search_for_indicator_codes',
+            'search_for_indicator_names',
             keywords=self.i2n[self.property],
         )
         action.execute()
         action.result = [d for d in action.result if d['indicator_name'] == self.i2n[self.property]]
         self.actions.append(action.to_dict())
-        indicator_code = self.slot_values['property']
+
+        # Add explicit get_indicator_code_from_name step
+        action = FrankensteinAction(
+            'get_indicator_code_from_name',
+            indicator_name=self.i2n[self.property],
+        )
+        action.execute()
+        self.actions.append(action.to_dict())
+        indicator_code = action.result
 
         action = FrankensteinAction(
             'retrieve_value',

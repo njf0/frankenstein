@@ -2,7 +2,6 @@
 
 import ast
 import logging
-import re
 from pathlib import Path
 
 import pandas as pd
@@ -25,53 +24,70 @@ logging.basicConfig(
 )
 
 
-def search_for_indicator_codes(
-    keywords: list[str],
-) -> list[str]:
-    """Search the database of indicators for codes and names that match the keywords.
+def search_for_indicator_names(
+    keywords: list[str] | str,
+) -> list[dict]:
+    """Retrieve indicator names and descriptions that match the given keywords.
 
     Args:
-        keywords: A list of keywords to search for.
+        keywords: A list of keywords or a string to search for.
 
     Returns:
-        A list of indicator codes that match the keywords.
+        A list of dictionaries containing the indicator names and descriptions that match the keywords.
 
     """
-    # Accept both string and list input for keywords
+    indicator_key = pd.read_json(Path('resources', 'indicator_paraphrases.json'))
+    indicator_key['original_name'] = indicator_key['name']
+    indicator_key['name'] = indicator_key['name'].str.lower()
+    indicator_key = indicator_key.drop('paraphrase', axis=1)
+    indicator_key = indicator_key.rename(
+        columns={
+            'original_name': 'indicator_name',
+            'description': 'indicator_description',
+        }
+    )
+    indicator_key = indicator_key.to_dict(orient='records')
+
+    def clean_dict(indicators: list[dict]) -> list[dict]:
+        """Clean the indicator dictionary by removing 'name' and 'id' keys from dicts."""
+        cleaned_dict = []
+        for indicator in indicators:
+            cleaned_indicator = {k: v for k, v in indicator.items() if k in ['indicator_name', 'indicator_description']}
+            # cleaned_indicator['indicator_name'] = cleaned_indicator.pop('original_name')
+            # cleaned_indicator['indicator_description'] = cleaned_indicator.pop('description', '')
+            cleaned_dict.append(cleaned_indicator)
+        return cleaned_dict
+
     if isinstance(keywords, str):
+        # First check for exact match on original name
+        result = [item for item in indicator_key if item['name'] == keywords]
+        if result:
+            return clean_dict(result)
+
+        # Otherwise, treat as a string to search for
         try:
-            # Try to parse string representation of a list
+            # Try to parse string representation of a list, e.g., "['freshwater', 'resources']"
             keywords = ast.literal_eval(keywords)
         except Exception:
-            # If not a list, treat as a single keyword
+            # If not formatted as a list, treat as a single keyword
             keywords = [keywords]
-    if not isinstance(keywords, list):
-        keywords = [str(keywords)]
 
-    # Lowercase and split multi-word keywords into individual words
-    split_keywords = []
+    expanded_keywords = []
     for keyword in keywords:
-        if isinstance(keyword, str):
-            split_keywords.extend(keyword.lower().split())
-        else:
-            split_keywords.append(str(keyword).lower())
-    keywords = split_keywords
+        for k in keyword.split():
+            expanded_keywords.append(k.strip(','))
 
-    data = pd.read_json(Path('resources', 'indicator_paraphrases.json'))
-    data['original_name'] = data['name']
-    data['name'] = data['name'].str.lower()
-    # Only search if keywords is not empty
-    if keywords:
-        # Escape keywords to avoid regex warnings
-        pattern = '|'.join([re.escape(k) for k in keywords])
-        data = data[data['name'].str.contains(pattern, regex=True)]
-        data = data[['id', 'original_name']]
-        data = data.rename(columns={'id': 'indicator_code', 'original_name': 'indicator_name'})
-        data = data.to_dict(orient='records')
-    else:
-        data = []
+    matched_indicators = []
+    # Now, treat each element in the list as a phrase to be searched for in name or description
+    for indicator in indicator_key:
+        for keyword in expanded_keywords:
+            if keyword.lower() in [
+                k.strip('(),') for k in indicator['name'].split()
+            ]:  # or keyword in indicator['indicator_description']:
+                matched_term = keyword.strip().lower()
+                matched_indicators.append(indicator)
 
-    return data
+    return clean_dict(matched_indicators)
 
 
 def get_country_code_from_name(
@@ -229,12 +245,36 @@ def retrieve_value(
 
 if __name__ == '__main__':
     print('\n=== Search for Indicator Codes ===')
-    print('search_for_indicator_codes(["total internal renewable water resources"])')
-    print('Result:', search_for_indicator_codes(['total internal renewable water resources']))
+    print('search_for_indicator_names("Children enrolled in preprimary education")')
+    print('Result:', search_for_indicator_names('Children enrolled in preprimary education'))
+
+    # print('\n=== Search for Indicator Codes ===')
+    # print('search_for_indicator_names("Land under cereal production (hectares)")')
+    # print('Result:', search_for_indicator_names('Land under cereal production (hectares)'))
+
+    print('\n=== Search for Indicator Codes ===')
+    print('search_for_indicator_names(["freshwater", "resources"])')
+    print('Result:', search_for_indicator_names(['freshwater', 'resources']))
+
+    print('\n=== Search for Indicator Codes ===')
+    print('search_for_indicator_names("freshwater resources")')
+    print('Result:', search_for_indicator_names('freshwater resources'))
+
+    print('\n=== Search for Indicator Codes ===')
+    print("search_for_indicator_names(\"['freshwater', 'resources']\")")
+    print('Result:', search_for_indicator_names("['freshwater', 'resources']"))
+
+    print('\n=== Get Country Name from Code ===')
+    print('get_country_name_from_code("COM")')
+    print('Result:', get_country_name_from_code('COM'))
 
     print('\n=== Get Country Code from Name ===')
     print('get_country_code_from_name("Comoros")')
     print('Result:', get_country_code_from_name('Comoros'))
+
+    print('\n=== Get Indicator Name from Code ===')
+    print('get_indicator_name_from_code("NY.GDP.MKTP.CD")')
+    print('Result:', get_indicator_name_from_code('NY.GDP.MKTP.CD'))
 
     print('\n=== Get Indicator Code from Name ===')
     print('get_indicator_code_from_name("Revenue, excluding grants (% of GDP)")')
