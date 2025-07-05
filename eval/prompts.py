@@ -65,6 +65,7 @@ These tools allow you to access World Bank indicators and retrieve data for spec
 
 However, you must **perform any necessary arithmetic manually**, without tool support for computation. If the answer requires calculations (e.g., summation, averages), you must compute these yourself based on the retrieved data.
 
+If it helps you, generate the tool calls in your message content, structured as follows: {{'name': 'tool_name', 'arguments': {{'arg1': value1, 'arg2': value2, ...}}}}, 'result': <your_result>}}.
 """
 
 

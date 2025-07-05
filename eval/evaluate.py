@@ -97,7 +97,11 @@ class FrankensteinEvaluator:
                 results = prev_results.to_dict(orient='records')
                 # Use question text as unique identifier for resuming
                 completed_questions = set(row['question'] for row in results if 'question' in row)
-                logging.info(f'Resuming from partial run: {len(results)} questions already processed.')
+                if len(completed_questions) == len(prev_results):
+                    logging.info('All questions already processed. No need to resume.')
+                    return prev_results['messages'].tolist()
+                else:
+                    logging.info(f'Resuming from partial run: {len(results)} questions already processed.')
             except Exception as e:
                 logging.warning(f'Could not load previous results for resuming: {e}')
         # --- Resume logic end ---
