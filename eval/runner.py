@@ -262,7 +262,7 @@ class Runner:
                 # Execute the function call
                 try:
                     result = FrankensteinAction(action=name, **parsed_args).execute(error_handling='raise')
-                    logging.info(f'↪️ {result!r}')
+                    logging.info(f'↪️  {result!r}')
 
                 except Exception as e:
                     result = e

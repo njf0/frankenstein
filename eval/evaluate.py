@@ -87,10 +87,29 @@ class FrankensteinEvaluator:
             debug=self.debug,
         )
 
+        # --- Resume logic start ---
+        model_name = str(self.model_name).split('/')[-1]
+        output_path = Path('eval', 'runs', f'{model_name}_{self.split}_{self.toolbox}-tools_{self.n_shots}-shot.jsonl')
+        completed_questions = set()
+        if output_path.exists():
+            try:
+                prev_results = pd.read_json(output_path, orient='records', lines=True, precise_float=True)
+                results = prev_results.to_dict(orient='records')
+                # Use question text as unique identifier for resuming
+                completed_questions = set(row['question'] for row in results if 'question' in row)
+                logging.info(f'Resuming from partial run: {len(results)} questions already processed.')
+            except Exception as e:
+                logging.warning(f'Could not load previous results for resuming: {e}')
+        # --- Resume logic end ---
+
         for idx, (_, row) in enumerate(self.dataset.iterrows()):
+            # Skip if already processed
+            if row['question'] in completed_questions:
+                continue
+
             runner.reset()
 
-            logging.info(f'✨ Processing question {idx + 1}/{len(self.dataset)}')
+            logging.info(f"✨ Processing question {idx + 1}/{len(self.dataset)} of '{output_path}'")
             logging.info('🔎 Question Metadata')
             self.log_question_info(row)
 
@@ -115,16 +134,12 @@ class FrankensteinEvaluator:
 
             # Save after every iteration
             if self.save:
-                model_name = str(self.model_name).split('/')[-1]
-                output_path = Path('eval', 'runs', f'{model_name}_{self.split}_{self.toolbox}-tools_{self.n_shots}-shot.jsonl')
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 pd.DataFrame(results).to_json(output_path, orient='records', lines=True)
 
         results_df = pd.DataFrame(results)
 
         if self.save:
-            model_name = str(self.model_name).split('/')[-1]
-            output_path = Path('eval', 'runs', f'{model_name}_{self.split}_{self.toolbox}-tools_{self.n_shots}-shot.jsonl')
             output_path.parent.mkdir(parents=True, exist_ok=True)
             results_df.to_json(output_path, orient='records', lines=True)
             logging.info(f'Saved evaluation results to {output_path}')

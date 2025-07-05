@@ -4,16 +4,24 @@ import ast
 import csv
 import json
 import logging
-from pathlib import Path
 import re
+from pathlib import Path
 
 import pandas as pd
+from rich.logging import RichHandler
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(message)s',
+    datefmt='[%X]',
+    handlers=[RichHandler(markup=True)],
+)
 
 
 def load_country_code_map():
     code_map = {}
     try:
-        with Path('resources','un_m49_cleaned.csv').open(encoding='utf-8') as f:
+        with Path('resources', 'un_m49_cleaned.csv').open(encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 code = row['country_code'].strip().upper()
@@ -21,10 +29,12 @@ def load_country_code_map():
                 if code and name:
                     code_map[code] = name
     except Exception as e:
-        logging.warning(f"Could not load country code map: {e}")
+        logging.warning(f'Could not load country code map: {e}')
     return code_map
 
+
 COUNTRY_CODE_MAP = load_country_code_map()
+
 
 class Matcher:
     """Flexible answer matcher using answer_format from metadata."""
@@ -200,6 +210,10 @@ class Matcher:
         # Parse pred to list
         try:
             pred_list = ast.literal_eval(pred.strip()) if isinstance(pred, str) else pred
+            if not isinstance(pred_list, list):
+                logging.warning('🔬 Cannot parse list from predicted answer.')
+                return False, 100.0
+
         except Exception as e:
             logging.warning(f'🔬 Failed to parse pred: {e}. Using fallback parsing.')
             pred_list = [item.strip() for item in str(pred).strip('[](){}').split(',') if item.strip()]
@@ -378,3 +392,11 @@ class Matcher:
         if isinstance(metadata, dict):
             answer_format = metadata.get('answer_format')
         return self.match(messages, gold, answer_format)
+
+
+if __name__ == '__main__':
+    # Example usage
+    matcher = Matcher()
+    pred = '4325.0'
+    gold = "['Canada', 'USA']"
+    correct, percent_error = matcher.match(pred, gold, 'list')
