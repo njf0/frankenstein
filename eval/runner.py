@@ -249,7 +249,11 @@ class Runner:
             for tool_call in tool_calls_to_execute:
                 name = tool_call['function']['name']
                 arguments = tool_call['function']['arguments']
-                parsed_args = json.loads(arguments)
+                try:
+                    parsed_args = json.loads(arguments)
+                except json.JSONDecodeError:
+                    logging.exception('❌ Could not parse tool call arguments.')
+                    return messages, self.token_count
 
                 # Format and log the function call
                 args_string = ', '.join([f'{k}={v!r}' for k, v in parsed_args.items()])

@@ -87,28 +87,28 @@ class FrankensteinEvaluator:
             debug=self.debug,
         )
 
-        # --- Resume logic start ---
         model_name = str(self.model_name).split('/')[-1]
         output_path = Path('eval', 'runs', f'{model_name}_{self.split}_{self.toolbox}-tools_{self.n_shots}-shot.jsonl')
-        completed_questions = set()
+
+        # --- Resume logic: load previous results and skip already processed questions ---
+        completed_ids = set()
         if output_path.exists():
             try:
-                prev_results = pd.read_json(output_path, orient='records', lines=True, precise_float=True)
-                results = prev_results.to_dict(orient='records')
-                # Use question text as unique identifier for resuming
-                completed_questions = set(row['question'] for row in results if 'question' in row)
-                if len(completed_questions) == len(prev_results):
-                    logging.info('All questions already processed. No need to resume.')
-                    return prev_results['messages'].tolist()
+                prev_results_df = pd.read_json(output_path, orient='records', lines=True, precise_float=True)
+                results = prev_results_df.to_dict(orient='records')
+                # Use a unique identifier for each row; fallback to question text if 'id' not present
+                if 'id' in prev_results_df.columns:
+                    completed_ids = set(prev_results_df['id'])
                 else:
-                    logging.info(f'Resuming from partial run: {len(results)} questions already processed.')
+                    completed_ids = set(prev_results_df['question'])
+                logging.info(f'Resuming from partial run: {len(completed_ids)} questions already processed.')
             except Exception as e:
                 logging.warning(f'Could not load previous results for resuming: {e}')
-        # --- Resume logic end ---
 
         for idx, (_, row) in enumerate(self.dataset.iterrows()):
-            # Skip if already processed
-            if row['question'] in completed_questions:
+            # Use 'id' if present, else fallback to question text as unique identifier
+            row_id = row['id'] if 'id' in row else row['question']
+            if row_id in completed_ids:
                 continue
 
             runner.reset()
@@ -135,6 +135,7 @@ class FrankensteinEvaluator:
                 }
             )
             results.append(result_row)
+            completed_ids.add(row_id)
 
             # Save after every iteration
             if self.save:

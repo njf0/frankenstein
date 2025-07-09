@@ -207,6 +207,10 @@ class Matcher:
         """
         logging.info(f'🔬 Matcher().match_list(pred={pred!r}, gold={gold!r})')
 
+        if not gold:
+            logging.warning('🔬 Gold answer is empty or None. Cannot match lists.')
+            return False, 100.0
+
         # Parse pred to list
         try:
             pred_list = ast.literal_eval(pred.strip()) if isinstance(pred, str) else pred
