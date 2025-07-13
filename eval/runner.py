@@ -300,9 +300,9 @@ class Runner:
                 logging.warning('🛑 Stopping: total number of tool calls reached the limit of 100.')
                 return messages, self.token_count
 
-            # Also stop after 200 messages to prevent infinite loops
-            if len(messages) >= 200:
-                logging.warning('🛑 Stopping: total number of messages reached the limit of 200.')
+            # Also stop after 150 messages to prevent infinite loops
+            if len(messages) >= 150:
+                logging.warning('🛑 Stopping: total number of messages reached the limit of 150.')
                 return messages, self.token_count
 
             # --- Folded stop condition here ---
