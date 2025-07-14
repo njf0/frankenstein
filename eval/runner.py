@@ -127,7 +127,7 @@ class Runner:
                 messages=messages,
                 temperature=0.0,
                 tools=self.tools,
-                # tool_choice='required',
+                tool_choice='required',
                 api_base=self.api_base,
                 # max_tokens=4096,
                 # max_input_tokens=4096,
