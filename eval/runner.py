@@ -127,7 +127,8 @@ class Runner:
                 messages=messages,
                 temperature=0.0,
                 tools=self.tools,
-                tool_choice='required',
+                # tool_choice='required',
+                tool_choice='auto',
                 api_base=self.api_base,
                 # max_tokens=4096,
                 # max_input_tokens=4096,
@@ -303,6 +304,14 @@ class Runner:
             # Also stop after 100 messages to prevent infinite loops
             if len(messages) >= 100:
                 logging.warning('🛑 Stopping: total number of messages reached the limit of 100.')
+                return messages, self.token_count
+
+            # Or, stop if the last 5 messages do not contain tool calls
+            last_five_messages = messages[-5:]
+            if all(
+                'tool_calls' not in msg or not msg['tool_calls'] for msg in last_five_messages
+            ):
+                logging.warning('🛑 Stopping: last 5 messages do not contain tool calls.')
                 return messages, self.token_count
 
             # --- Folded stop condition here ---
