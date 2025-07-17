@@ -126,6 +126,7 @@ class Runner:
                 model=self.model_name,
                 messages=messages,
                 temperature=0.0,
+                # top_p=0.95,
                 tools=self.tools,
                 # tool_choice='required',
                 tool_choice='auto',
@@ -306,13 +307,11 @@ class Runner:
                 logging.warning('🛑 Stopping: total number of messages reached the limit of 100.')
                 return messages, self.token_count
 
-            # Or, stop if the last 5 messages do not contain tool calls
-            last_five_messages = messages[-5:]
-            if all(
-                'tool_calls' not in msg or not msg['tool_calls'] for msg in last_five_messages
-            ):
-                logging.warning('🛑 Stopping: last 5 messages do not contain tool calls.')
-                return messages, self.token_count
+            # # Or, stop if the last 5 messages do not contain tool calls
+            # last_five_messages = [msg for msg in messages[-5:] if msg['role'] == 'assistant']
+            # if all('tool_calls' not in msg or not msg['tool_calls'] for msg in last_five_messages):
+            #     logging.warning('🛑 Stopping: last 5 messages do not contain tool calls.')
+            #     return messages, self.token_count
 
             # --- Folded stop condition here ---
             # Stop if 'final_answer' tool has been called once
