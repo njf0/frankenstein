@@ -31,6 +31,8 @@ Pay attention to the tool names, arguments, descriptions, and the types of outpu
 
 If there is a tool available that can help you with the next step, you must use it rather than trying to solve the problem without it.
 
+Do not format tool calls inside message content, instead, create them as dedicated tool calls in the `tool_calls` field of the message.
+
 I will execute tool calls that you provide. You can use multiple tools in one step, but make sure you follow the correct format.
 
 Use the results of each tool call to inform your next step. Passing tool calls as arguments to other tool calls is not allowed. Instead, execute each tool call separately and use the results to perform subsequent calls.
