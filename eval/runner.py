@@ -125,11 +125,11 @@ class Runner:
             response = litellm.completion(
                 model=self.model_name,
                 messages=messages,
-                temperature=0.0,
+                temperature=0.15,
                 # top_p=0.95,
                 tools=self.tools,
                 # tool_choice='required',
-                tool_choice='auto',
+                tool_choice='required',
                 api_base=self.api_base,
                 # max_tokens=4096,
                 # max_input_tokens=4096,
