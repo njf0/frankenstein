@@ -1,1 +1,1 @@
-python eval/evaluate.py --save --model "Mistral-Small-3.1-24B" --split "answerable-full" --toolbox "data"
+python eval/evaluate.py --save --model "Llama-3.3-70B-Instruct" --split "answerable-full" --toolbox "data"

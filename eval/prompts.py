@@ -35,7 +35,7 @@ Do not format tool calls inside message content, instead, create them as dedicat
 
 I will execute tool calls that you provide. You can use multiple tools in one step, but make sure you follow the correct format.
 
-Use the results of each tool call to inform your next step. Passing tool calls as arguments to other tool calls is not allowed. Instead, execute each tool call separately and use the results to perform subsequent calls.
+Use the results of each tool call to inform your next step. **Passing tool calls as arguments to other tool calls is not allowed.** Instead, execute each tool call separately and use the results to perform subsequent calls -- I will not execute nested tool calls.
 
 If a tool call fails, use the error message to help you debug the issue, re-plan, and try again if possible.
 
