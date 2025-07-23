@@ -1,1 +1,1 @@
-python eval/evaluate.py --save --model "Llama-3.3-70B-Instruct" --split "answerable-partial"
+python eval/evaluate.py --save --model "Llama-3.1-70B-Instruct" --split "answerable-partial"

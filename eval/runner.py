@@ -18,6 +18,8 @@ from frankenstein.utils import get_tool_metadata, parse_json_arguments, to_json_
 
 SINGLE_TOOL_CALL_MODELS = {
     'Llama-3.1-8B-Instruct',
+    'Llama-3.1-70B-Instruct',
+    'Llama-3.1-70B',
     'Llama-3.2-3B-Instruct',
 }
 
