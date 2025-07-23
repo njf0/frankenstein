@@ -52,8 +52,8 @@ def get_pred_tool_calls(row: pd.Series) -> list[dict]:
     tool_calls = []
 
     # Extract tool calls from messages
-    for msg in row['messages']:
-        if 'tool_calls' in msg:
+    for msg in row.get('messages', []):
+        if 'tool_calls' in msg and isinstance(msg['tool_calls'], list):
             for call in msg['tool_calls']:
                 function = call['function']
                 pred_call = {'name': function['name'], 'arguments': function['arguments'], 'id': call.get('id')}
@@ -66,8 +66,8 @@ def get_pred_tool_calls(row: pd.Series) -> list[dict]:
     for call in tool_calls:
         if call['name'] == 'less_than':
             call['name'] = 'greater_than'
-            value_a = call['arguments']['value_a']
-            value_b = call['arguments']['value_b']
+            value_a = call['arguments'].get('value_a', None)
+            value_b = call['arguments'].get('value_b', None)
             call['arguments'] = {'value_a': value_b, 'value_b': value_a}
 
     # Remove any final_answer tool calls
@@ -77,13 +77,15 @@ def get_pred_tool_calls(row: pd.Series) -> list[dict]:
     for call in tool_calls:
         if call['name'] == 'search_for_indicator_names':
             # Check if any of the returned indicator names match the 'property' slot value
-            for d in call['result']:
-                if d['indicator_name'] == row['slot_values']['property_original']:
-                    # This counts as a successful search.
-                    # Now, because it's successful, we rewrite this to match the gold call to aid analysis.
-                    call['arguments'] = {
-                        'keywords': row['slot_values']['property_original']
-                    }  # Use the full name of the indicator.
+            for d in call.get('result', []):
+                # If the indicator name matches the property, we rewrite this to match the gold call to aid analysis.
+                # This is because the model has successfully found the indicator name.
+                if isinstance(d, dict):
+                    if d.get('indicator_name') == row.get('slot_values', {}).get('property', ''):
+                        # This counts as a successful search.
+                        # Now, because it's successful, we rewrite this to match the gold call to aid analysis.
+                        call.get('arguments', {})['keywords'] = row.get('slot_values', {}).get('property_original', '')
+                        # Use the full name of the indicator.
 
     # For functions with a 'values' argument (which takes a list of values), we should sort the values to perform a fair comparison.
     for call in tool_calls:
