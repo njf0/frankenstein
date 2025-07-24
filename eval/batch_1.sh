@@ -1,1 +1,1 @@
-python eval/evaluate.py --save --model "Llama-3.1-70B-Instruct" --split "answerable-full" --toolbox "data"
+python eval/evaluate.py --save --model "Qwen3-30B-A3B" --split "answerable-full" --toolbox "data"
