@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def get_gold_tool_calls(row: pd.Series) -> list[dict]:
+def get_gold_tool_calls(row: pd.Series, tools: list) -> list[dict]:
     """Get the gold tool calls from a row (Series).
 
     Parameters
@@ -25,6 +25,10 @@ def get_gold_tool_calls(row: pd.Series) -> list[dict]:
         if 'values' in call['arguments']:
             # Sort the values for comparison
             call['arguments']['values'] = sorted(call['arguments']['values'])
+
+    # Filter out tool calls that are not in the tools list
+    if tools:
+        tool_calls = [call for call in tool_calls if call['name'] in tools]
 
     return tool_calls
 
@@ -78,14 +82,12 @@ def get_pred_tool_calls(row: pd.Series) -> list[dict]:
         if call['name'] == 'search_for_indicator_names':
             # Check if any of the returned indicator names match the 'property' slot value
             for d in call.get('result', []):
-                # If the indicator name matches the property, we rewrite this to match the gold call to aid analysis.
-                # This is because the model has successfully found the indicator name.
                 if isinstance(d, dict):
-                    if d.get('indicator_name') == row.get('slot_values', {}).get('property', ''):
+                    if d.get('indicator_name') == row.get('slot_values', {}).get('property_original', ''):
                         # This counts as a successful search.
                         # Now, because it's successful, we rewrite this to match the gold call to aid analysis.
-                        call.get('arguments', {})['keywords'] = row.get('slot_values', {}).get('property_original', '')
-                        # Use the full name of the indicator.
+                        # Use direct assignment to update the keywords argument
+                        call['arguments']['keywords'] = row.get('slot_values', {}).get('property_original', '')
 
     # For functions with a 'values' argument (which takes a list of values), we should sort the values to perform a fair comparison.
     for call in tool_calls:
@@ -101,6 +103,9 @@ def get_pred_tool_calls(row: pd.Series) -> list[dict]:
     for call in tool_calls:
         call.pop('id', None)
         call.pop('result', None)
+
+    # Drop 'think' and 'final_answer' calls
+    tool_calls = [call for call in tool_calls if call['name'] not in ['think', 'final_answer']]
 
     return tool_calls
 
@@ -304,8 +309,8 @@ def get_error_made(row: pd.Series) -> list[dict]:
     return tool_call_error
 
 
-def get_no_search_for_indicator_names(row: pd.Series) -> bool:
-    """Check if the model did not make any search_for_indicator_names tool calls.
+def get_correct_indicator_data_process(row: pd.Series) -> bool:
+    """Check if the model performs the correct series of steps for data retrieval.
 
     Parameters
     ----------
@@ -315,10 +320,50 @@ def get_no_search_for_indicator_names(row: pd.Series) -> bool:
     Returns
     -------
     bool
-        True if no search_for_indicator_names tool calls were made, False otherwise.
+        True if no correct indicator data process is performed, False otherwise.
 
     """
-    return all(call['name'] != 'search_for_indicator_names' for call in row['pred_tool_calls'])
+    indicator_code = row['slot_values']['property']
+    gold_subset = [
+        c
+        for c in row['gold_tool_calls']
+        if c['name']
+        in [
+            'search_for_indicator_names',
+            'get_indicator_code_from_name',
+            'get_country_code_from_name',
+            'get_country_name_from_code',
+            'get_indicator_name_from_code',
+            'get_country_codes_in_region',
+        ]
+    ]
+    pred_subset = [
+        c
+        for c in row['pred_tool_calls']
+        if c['name']
+        in [
+            'search_for_indicator_names',
+            'get_indicator_code_from_name',
+            'get_country_code_from_name',
+            'get_country_name_from_code',
+            'get_indicator_name_from_code',
+            'get_country_codes_in_region',
+        ]
+    ]
+    for call in pred_subset:
+        if call['name'] == 'search_for_indicator_names':
+            # Check if any of the returned indicator names match the 'property' slot value
+            for d in call.get('result', []):
+                # If the indicator name matches the property, we rewrite this to match the gold call to aid analysis.
+                # This is because the model has successfully found the indicator name.
+                if isinstance(d, dict):
+                    if d.get('indicator_name') == row.get('slot_values', {}).get('property', ''):
+                        # This counts as a successful search.
+                        # Now, because it's successful, we rewrite this to match the gold call to aid analysis.
+                        call['arguments']['keywords'] = row.get('slot_values', {}).get('property_original', '')
+                        # Use the full name of the indicator.
+
+    return all(g in pred_subset for g in gold_subset)
 
 
 def get_missing_tool_calls(row: pd.Series) -> list[dict]:
@@ -346,6 +391,34 @@ def get_missing_tool_calls(row: pd.Series) -> list[dict]:
         else:
             missing.append(g)
     return missing
+
+
+def get_additional_tool_calls(row: pd.Series) -> list[dict]:
+    """Return a list of additional tool calls that are present in the model's predicted tool calls but not in the gold tool calls.
+
+    Parameters
+    ----------
+    row : pd.Series
+        A single row from the DataFrame containing the predicted and gold tool calls.
+
+    Returns
+    -------
+    list[dict]
+        List of tool calls (dicts) present in pred_tool_calls but not in gold_tool_calls.
+
+    """
+    pred = list(row['pred_tool_calls']) if 'pred_tool_calls' in row else []
+    gold = list(row['gold_tool_calls']) if 'gold_tool_calls' in row else []
+    # Make a copy of gold so we can remove matches as we go (to handle duplicates correctly)
+    gold_remaining = gold.copy()
+    additional = []
+    for p in pred:
+        if p in gold_remaining:
+            gold_remaining.remove(p)
+        else:
+            additional.append(p)
+
+    return additional
 
 
 def get_incorrect_indicator_code_used(row: pd.Series) -> list[dict]:
