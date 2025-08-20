@@ -12,15 +12,15 @@ dependencies = [
     "ipykernel",
     "litellm>=1.69.3",
     "matplotlib>=3.10.3",
+    "nbformat>=5.10.4",
+    "ndex2>=3.11.0",
     "networkx>=3.5",
     "openai",
     "pandas",
+    "plotly>=6.3.0",
     "rich",
-    "vllm>=0.9.1",
     "vllm ; sys_platform == 'linux'",
 ]
 
 [tool.setuptools.packages.find]
 include = ["frankenstein*"]
-
-

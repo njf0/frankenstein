@@ -690,7 +690,7 @@ class FrankensteinGraph(nx.DiGraph):
         plt.tight_layout()
         plt.show()
 
-    def draw(self, layout='tree'):
+    def draw(self, layout='shell'):
         def fmt(name, args=None, node_data=None):
             if args is None:
                 return name
@@ -738,8 +738,25 @@ if __name__ == '__main__':
         handlers=[RichHandler()],
     )
 
-    df = pd.read_json('eval/runs/gpt-4o-mini_answerable-full.jsonl', orient='records', lines=True)
+    df = pd.read_json('eval/runs/Qwen3-32B_answerable-full_all-tools_0-shot.jsonl', orient='records', lines=True)
+    df = df[df['answer_format'] == 'float']
 
     G = FrankensteinGraph(df.sample(1).iloc[0])
-    G.draw(layout='shell')
-    # G.draw_pretty()
+
+    def flatten_graph_attributes(G):
+        """Convert all node/edge attributes to JSON strings if they are not simple types."""
+        for n, data in G.nodes(data=True):
+            for k, v in data.items():
+                if isinstance(v, (dict, list)):
+                    data[k] = json.dumps(v)
+        for u, v, data in G.edges(data=True):
+            for k, v in data.items():
+                if isinstance(v, (dict, list)):
+                    data[k] = json.dumps(v)
+        return G
+
+    # Flatten attributes
+    G = flatten_graph_attributes(G)
+
+    # Save as GraphML
+    nx.write_graphml(G, 'graph.graphml')
