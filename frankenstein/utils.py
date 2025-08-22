@@ -270,5 +270,15 @@ def get_tool_metadata(
 if __name__ == '__main__':
     # Example usage
     metadata = get_tool_metadata(toolbox='all')
+    # for func in metadata:
+    # print(func)
+    from rich.pretty import pprint
+
+    # actually use rich
     for func in metadata:
-        print(func)
+        pprint(func)
+
+    # save schema to file
+    with open('tool_schema.jsonl', 'w') as f:
+        for func in metadata:
+            f.write(json.dumps(func) + '\n')

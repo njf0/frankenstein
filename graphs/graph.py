@@ -25,13 +25,17 @@ class FrankensteinGraph(nx.DiGraph):
     def __init__(
         self,
         row: pd.Series,
+        enable_logging: bool = True,
     ):
+        if not enable_logging:
+            logging.getLogger().setLevel(logging.CRITICAL + 1)
         # Expect a pandas Series row as input
         super().__init__()
-        slot_values = row.get('slot_values', {})
-        question_structure = [{k: v} for k, v in slot_values.items()]
+        self.slot_values = row.get('slot_values', {})
+        question_structure = [{k: v} for k, v in self.slot_values.items()]
         question = row['question']
         messages = row['messages']
+        self.row = row
 
         self.actions: dict[str, FrankensteinAction] = {}
         self.value_provenance: dict[str, List[str]] = {}  # value → list[producer_id]
@@ -48,7 +52,7 @@ class FrankensteinGraph(nx.DiGraph):
         self.n2i = self.indicator_key.set_index('name')['id'].to_dict()
         self.i2n = self.indicator_key.set_index('id')['name'].to_dict()
 
-        self._call_order_counter = 0  # Track call order for nodes
+        self._call_index_counter = 0  # Track call order for nodes
 
         self._add_origin_root(question_structure or [])
         self._build_graph(messages)
@@ -83,15 +87,15 @@ class FrankensteinGraph(nx.DiGraph):
         for k, v in flat_pairs:
             slot_values_flat[f'slot_{k}'] = v
 
-        # Add one root node with call_order=0, flattening attributes
+        # Add one root node with call_index=0, flattening attributes
         self.add_node(
             self.origin_node_id,
             label=self.question,
             type='question_param',
-            call_order=0,
+            call_index=0,
             **slot_values_flat,
         )
-        self._call_order_counter = 1  # Next node will be 1
+        self._call_index_counter = 1  # Next node will be 1
         logging.info(f'🌟 Added question root node with slot values: {dict(flat_pairs)}')
 
     # ---------- tree layout ----------------------------------------------
@@ -259,24 +263,47 @@ class FrankensteinGraph(nx.DiGraph):
                     self.actions[call_id] = action
                     # Use formatted args for logging
                     formatted_args = self._format_args(action.kwargs)
-                    # Assign call_order and increment counter
+                    # Assign call_index and increment counter
 
                     # --- FLATTEN ARGS AND RESULT FOR NODE ATTRIBUTES ---
                     flat_args = {}
                     for k, v in action.kwargs.items():
                         flat_args[f'arg_{k}'] = v
-                    # If result is a dict or list, convert to JSON string
-                    flat_result = result
-                    if isinstance(result, (dict, list)):
-                        flat_result = json.dumps(result, ensure_ascii=False)
+
+                    # 5a. Special case: propagate indicator names/ids for search_for_indicator_names
+                    if action.action == 'search_for_indicator_names' and isinstance(result, list):
+                        # If the search call was correct, replace result with only the correct indicator name/description
+                        correct_property = self.slot_values.get('property_original', '')
+                        filtered = [d for d in result if isinstance(d, dict) and d.get('indicator_name') == correct_property]
+                        if filtered:
+                            # Replace result with only the correct indicator dict(s)
+                            flat_result = json.dumps(filtered, ensure_ascii=False)
+                        else:
+                            flat_result = json.dumps(result, ensure_ascii=False)
+                        for item in result:
+                            if isinstance(item, dict):
+                                name = item.get('name')
+                                id_ = item.get('id')
+                                if name:
+                                    self.value_provenance.setdefault(name, []).append(call_id)
+                                if id_:
+                                    self.value_provenance.setdefault(id_, []).append(call_id)
+                        self._search_results_by_node[call_id] = result
+                        logging.info(f'🔗 Stored search_for_indicator_names result for node {call_id}')
+                    else:
+                        # If not search_for_indicator_names, handle result as before
+                        flat_result = result
+                        if isinstance(result, (dict, list)):
+                            flat_result = json.dumps(result, ensure_ascii=False)
+
                     self.add_node(
                         call_id,
                         label=action.action,
-                        call_order=self._call_order_counter,
+                        call_index=self._call_index_counter,
                         result=flat_result,
                         **flat_args,
                     )
-                    self._call_order_counter += 1
+                    self._call_index_counter += 1
                     logging.info(f'🧱 Added node for action with id {call_id}:')
                     logging.info(f'    🔗 Name: {action.action}')
                     logging.info(f'    🔍 Args: {action.kwargs}')
@@ -298,6 +325,7 @@ class FrankensteinGraph(nx.DiGraph):
                                     self.value_provenance.setdefault(id_, []).append(call_id)
                         self._search_results_by_node[call_id] = result
                         logging.info(f'🔗 Stored search_for_indicator_names result for node {call_id}')
+
                     # 5b. Special case: track all get_country_codes_in_region results
                     if action.action == 'get_country_codes_in_region' and isinstance(result, list):
                         for code in result:
@@ -351,32 +379,26 @@ class FrankensteinGraph(nx.DiGraph):
             logging.info(f'➡️  Processing edges for node: {tgt_label}')
             for arg_key, arg_val in action.kwargs.items():
                 normed_vals = self._norm(arg_val)
-                # Buffer for candidate edges: {val: (src_id, label, call_order)}
+                # Buffer for candidate edges: {val: (src_id, label, call_index)}
                 candidate_edges = {}
                 used_src_ids = set()
                 for idx, val in enumerate(normed_vals):
-                    src_ids = []
+                    src_ids = []  # <-- Fix: always define src_ids for this value
                     # 1. Heuristic: origin node matches action arguments
                     if (arg_key, val) in self.origin_values:
                         self.add_edge(self.origin_node_id, tgt_id, label=f'{arg_key}={val}')
                         logging.info(f'🌱 Question({self.origin_node_id}) --[{arg_key}="{val}"]--> {tgt_label}')
                         continue
 
-                    # 1a. Heuristic: get_indicator_code_from_name uses property_original exactly from question
+                    # 1a. Heuristic: slot_values match for get_indicator_code_from_name
                     if (
                         action.action == 'get_indicator_code_from_name'
                         and arg_key == 'indicator_name'
+                        and ('property_original', val) in self.origin_values
                     ):
-                        # Check if property_original is in slot values and matches exactly
-                        property_original = None
-                        for k, v in self.origin_values:
-                            if k == 'property_original':
-                                property_original = v
-                                break
-                        if property_original is not None and val == property_original:
-                            self.add_edge(self.origin_node_id, tgt_id, label=f'property_original={val}')
-                            logging.info(f'🌱 Question({self.origin_node_id}) --[property_original="{val}"]--> {tgt_label}')
-                            continue
+                        self.add_edge(self.origin_node_id, tgt_id, label=f'property_original={val}')
+                        logging.info(f'🌱 Question({self.origin_node_id}) --[property_original="{val}"]--> {tgt_label}')
+                        continue
 
                     # 1b. Heuristic: subject_name match for get_country_code_from_name
                     if (
@@ -417,8 +439,8 @@ class FrankensteinGraph(nx.DiGraph):
                         if src_action and src_action.action == 'final_answer':
                             continue
                         if src_id != tgt_id:
-                            call_order = self.nodes[src_id].get('call_order', -1)
-                            candidate_edges.setdefault(val, []).append((call_order, src_id, f'{arg_key}={val}'))
+                            call_index = self.nodes[src_id].get('call_index', -1)
+                            candidate_edges.setdefault(val, []).append((call_index, src_id, f'{arg_key}={val}'))
                     # .0 trimming match
                     if not src_ids:
                         for prov_val, prov_src_ids in self.value_provenance.items():
@@ -429,8 +451,8 @@ class FrankensteinGraph(nx.DiGraph):
                                     for src_id in reversed(prov_src_ids):
                                         src_action = self.actions.get(src_id)
                                         if src_action and src_action.action != 'final_answer' and src_id != tgt_id:
-                                            call_order = self.nodes[src_id].get('call_order', -1)
-                                            candidate_edges.setdefault(val, []).append((call_order, src_id, f'{arg_key}={val}'))
+                                            call_index = self.nodes[src_id].get('call_index', -1)
+                                            candidate_edges.setdefault(val, []).append((call_index, src_id, f'{arg_key}={val}'))
                                             break
                             except Exception:
                                 continue
@@ -447,11 +469,11 @@ class FrankensteinGraph(nx.DiGraph):
                                 for src_id in reversed(prov_src_ids):
                                     src_action = self.actions.get(src_id)
                                     if src_action and src_action.action != 'final_answer' and src_id != tgt_id:
-                                        call_order = self.nodes[src_id].get('call_order', -1)
-                                        candidate_edges.setdefault(val, []).append((call_order, src_id, f'{arg_key}≈{val}'))
+                                        call_index = self.nodes[src_id].get('call_index', -1)
+                                        candidate_edges.setdefault(val, []).append((call_index, src_id, f'{arg_key}≈{val}'))
                                         break
 
-                    # --- PICK THE MOST RECENT (HIGHEST call_order) ---
+                    # --- PICK THE MOST RECENT (HIGHEST call_index) ---
                     if candidate_edges:
                         best = max(candidate_edges[val], key=lambda x: x[0])
                         _, src_id, label = best
@@ -522,24 +544,18 @@ class FrankensteinGraph(nx.DiGraph):
                     keyword_words.update(kw_clean.split())
                 overlap = self._question_words & keyword_words
                 if overlap:
-                    self.add_edge(self.origin_node_id, tgt_id, label=f'NLQ→keywords: {"/".join(sorted(overlap))}')
+                    self.add_edge(self.origin_node_id, tgt_id, label=f'keywords={"/".join(sorted(overlap))}')
                     logging.info(
                         f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
                     )
 
             # 3b. For get_indicator_code_from_name: check indicator_name for phrases from NLQ
             if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
-                indicator_name = (
-                    str(action.kwargs['indicator_name']).lower().translate(str.maketrans('', '', string.punctuation))
-                )
-                indicator_words = set(indicator_name.split())
-                overlap = self._question_words & indicator_words
-                # Optionally, check if the indicator name appears as a substring in the question
-                if overlap or indicator_name in self.question.lower():
-                    self.add_edge(self.origin_node_id, tgt_id, label=f'keywords="{"/".join(sorted(overlap))}"')
-                    logging.info(
-                        f'💡 Question({self.origin_node_id}) --[keywords="{"/".join(sorted(overlap))}"]--> {tgt_label}'
-                    )
+                indicator_name = str(action.kwargs['indicator_name'])
+                # Add an edge if the indicator_name matches the property_original slot value
+                if indicator_name == self.slot_values.get('property_original'):
+                    self.add_edge(self.origin_node_id, tgt_id, label=f'indicator_name="{indicator_name}"')
+                    logging.info(f'💡 Question({self.origin_node_id}) --[indicator_name="{indicator_name}"]--> {tgt_label}')
 
             # 4. Heuristic: search_for_indicator_names results match get_indicator_code_from_name
             if action.action == 'get_indicator_code_from_name' and 'indicator_name' in action.kwargs:
@@ -745,7 +761,7 @@ class FrankensteinGraph(nx.DiGraph):
         nx.draw_networkx_edge_labels(self, pos, edge_labels=nx.get_edge_attributes(self, 'label'), font_size=7)
         plt.title('Frankenstein Tool-Call Graph')
         plt.axis('off')
-        plt.savefig('fig.png')
+        plt.savefig(f'eval/graphs/{self.row["id"]}.png')
 
 
 if __name__ == '__main__':
@@ -761,7 +777,18 @@ if __name__ == '__main__':
     sample = df.sample(1).iloc[0]
 
     G = FrankensteinGraph(sample)
-    nx.write_gexf(G, f'{sample["id"]}.gexf')
+
+    # --- Ensure all node/edge attributes are simple types for GEXF ---
+    for n, data in G.nodes(data=True):
+        for k, v in list(data.items()):
+            if isinstance(v, (list, dict)):
+                data[k] = json.dumps(v)
+    for u, v, data in G.edges(data=True):
+        for k, v in list(data.items()):
+            if isinstance(v, (list, dict)):
+                data[k] = json.dumps(v)
+
+    nx.write_gexf(G, f'graphs/outputs/{sample["id"]}.gexf')
     G.draw()
 
     # No need to flatten attributes here; already flattened at node creation
