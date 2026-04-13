@@ -1,0 +1,29 @@
+[project]
+name = "frankenstein"
+version = "0.1.0"
+description = "Frank-Inspired Evaluation of LLMs on multi-hop QA over tabular data"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "Nick Ferguson", email = "nick.ferguson@ed.ac.uk"},
+]
+dependencies = [
+    "beautifulsoup4",
+    "litellm>=1.69.3",
+    "matplotlib>=3.10.3",
+    "numpy",
+    "openai",
+    "pandas",
+    "requests>=2.32.4",
+    "rich",
+    "scipy>=1.16.0",
+    "statsmodels>=0.14.5",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel",
+]
+
+[tool.setuptools.packages.find]
+include = ["frankenstein*"]
